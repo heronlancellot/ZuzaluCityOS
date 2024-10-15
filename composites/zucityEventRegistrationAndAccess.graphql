@@ -21,6 +21,7 @@ type ZucityEventRegistrationAndAccess
   registrationOpen: String @string(minLength: 1, maxLength: 1000)
   checkinOpen: String @string(minLength: 1, maxLength: 1000)
   applicationForm: String @string(minLength: 1, maxLength: 10000)
+  scannedList: [DID!] @list(maxLength: 10000)
 }
 
 type ZucityEvent @loadModel(id: "$Event_ID") {
