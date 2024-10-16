@@ -343,7 +343,6 @@ export interface SocialLinks {
 export interface CreateEventRequest {
   name: string;
   tagline: string;
-  externalUrl: string;
   strDesc: string;
   spaceId: string;
   profileId: string;
