@@ -95,7 +95,13 @@ export const Verify: React.FC<IProps> = ({
       })) as Array<string>;
       setTicketAddresses(getTicketAddresses);
       if (getTicketAddresses?.length > 0) {
-        let results = [];
+        let results: {
+          whitelist: any[];
+          'non-whitelist': any[];
+        } = {
+          whitelist: [],
+          'non-whitelist': [],
+        };
         let whitelistResults = [];
         for (let i = 0; i < getTicketAddresses.length; i++) {
           const ticketAddress = getTicketAddresses[i] as Address;
@@ -185,11 +191,20 @@ export const Verify: React.FC<IProps> = ({
           const result = await client.multicall({
             contracts: multicallContracts,
           });
-          results.push({ ticketAddress, data: result });
+          if (isWhitelistTicket) {
+            results.whitelist.push({ ticketAddress, data: result });
+          } else {
+            results['non-whitelist'].push({ ticketAddress, data: result });
+          }
         }
-        const filteredResults = results.filter((result) =>
-          whitelistResults.includes(result.ticketAddress),
-        );
+        const filteredResults =
+          whitelistResults.length > 0
+            ? results.whitelist
+                .filter((result) =>
+                  whitelistResults.includes(result.ticketAddress),
+                )
+                .concat(results['non-whitelist'])
+            : results['non-whitelist'];
 
         const transformedResults = filteredResults.map((result) => {
           const newData = [result.ticketAddress, ...result.data];
