@@ -101,30 +101,8 @@ const QRCode = () => {
       <Stack spacing="14px">
         <Stack spacing="10px">
           <Typography variant="subtitleSB" color="white" textAlign="center">
-            {isZk ? '*%_||*(' : 'Username'}
+            Username
           </Typography>
-          <Typography variant="bodyS" color="white" textAlign="center">
-            {isZk ? '**&^|*@' : 'username@gmail.com'}
-          </Typography>
-        </Stack>
-        <Stack
-          sx={{
-            background: isZk
-              ? 'linear-gradient(90deg, rgba(125, 255, 209, 0.16) 0%, rgba(125, 255, 209, 0.00) 100%), var(--Inactive-White, rgba(255, 255, 255, 0.05))'
-              : '#3c3c3c',
-          }}
-          direction="row"
-          padding="10px"
-          borderRadius="10px"
-          alignItems="center"
-        >
-          <Stack direction="row" spacing="14px" flex="1" alignItems="center">
-            <ZuSwitch onClick={() => setIsZk(!isZk)} />
-            <Typography variant="bodyBB" color="white">
-              Zero-Knowledge Mode
-            </Typography>
-          </Stack>
-          <InformationIcon />
         </Stack>
       </Stack>
     </Stack>

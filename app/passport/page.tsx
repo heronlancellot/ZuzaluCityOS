@@ -1,13 +1,134 @@
 'use client';
-import * as React from 'react';
 import { Stack, Typography, Box } from '@mui/material';
 import { MOCK_DATA } from 'mock';
 import { ArrowForwardIcon, QRCodeIcon } from '@/components/icons';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useCeramicContext } from '@/context/CeramicContext';
+import { useEffect, useState } from 'react';
+import { EventData, Event, ScrollPassTickets } from '@/types';
 
 const Home = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated, composeClient, ceramic, username } =
+    useCeramicContext();
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [tickets, setTickets] = useState<ScrollPassTickets[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const getTickets = async () => {
+    const GET_Profile_QUERY = `
+            query MyQuery {
+                viewer {
+                    zucityProfile {
+                    id
+                    myScrollPassTickets {
+                        checkin
+                        contractAddress
+                        description
+                        image_url
+                        name
+                        price
+                        status
+                        tbd
+                        tokenType
+                        type
+                    }
+                    }
+                }
+                }
+        `;
+    const getProfileResponse: any =
+      await composeClient.executeQuery(GET_Profile_QUERY);
+    setTickets(
+      getProfileResponse.data.viewer.zucityProfile.myScrollPassTickets,
+    );
+  };
+
+  const getEvents = async () => {
+    try {
+      const response: any = await composeClient.executeQuery(`
+      query {
+        zucityEventIndex(first: 100) {
+          edges {
+            node {
+              id
+              imageUrl
+              title
+              members{
+              id
+              }
+              admins{
+              id
+              }
+              superAdmin{
+              id
+              }
+              profile {
+                username
+                avatar
+              }
+              space {
+                name
+                avatar
+              }
+              tracks
+            }
+          }
+        }
+      }
+    `);
+
+      if (response && response.data && 'zucityEventIndex' in response.data) {
+        const eventData: EventData = response.data as EventData;
+        return eventData.zucityEventIndex.edges.map((edge) => edge.node);
+      } else {
+        console.error('Invalid data structure:', response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        let eventsData = await getEvents();
+        await getTickets();
+        if (eventsData) {
+          eventsData =
+            eventsData.filter((eventDetails) => {
+              const admins =
+                eventDetails?.admins?.map((admin) => admin.id.toLowerCase()) ||
+                [];
+              const superadmins =
+                eventDetails?.superAdmin?.map((superAdmin) =>
+                  superAdmin.id.toLowerCase(),
+                ) || [];
+              const members =
+                eventDetails?.members?.map((member) =>
+                  member.id.toLowerCase(),
+                ) || [];
+              const userDID =
+                ceramic?.did?.parent.toString().toLowerCase() || '';
+              return (
+                superadmins.includes(userDID) ||
+                admins.includes(userDID) ||
+                members.includes(userDID)
+              );
+            }) || [];
+          setEvents(eventsData);
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    isAuthenticated && fetchData();
+  }, [ceramic?.did?.parent, isAuthenticated]);
 
   return (
     <Stack
@@ -46,15 +167,15 @@ const Home = () => {
           </Stack>
         </Stack>
       </Stack>
-      <Stack spacing="30px" pb="30px" borderBottom="1px solid #383838">
+      <Stack spacing="30px" pb="30px">
         <Typography color="white" variant="subtitleMB">
           ScrollPass Credentials
         </Typography>
         <Stack spacing="10px">
-          {MOCK_DATA.eventCredential.map((item, index) => (
+          {events.map((item, index) => (
             <Stack
               sx={{ cursor: 'pointer' }}
-              onClick={() => router.push(`passport/${index}`)}
+              onClick={() => router.push(`passport/${item.id}`)}
               key={`Scrollpass-Credential-${index}`}
               direction="row"
               spacing="14px"
@@ -65,8 +186,8 @@ const Home = () => {
             >
               <Box
                 component="img"
-                src={item.image}
-                alt={item.name}
+                src={item.imageUrl}
+                alt={item.imageUrl}
                 width="50px"
                 height="50px"
                 borderRadius="4px"
@@ -79,64 +200,16 @@ const Home = () => {
               >
                 <Stack spacing="4px">
                   <Typography variant="subtitleSB" color="white">
-                    {item.name}
+                    {item.title}
                   </Typography>
                   <Typography variant="caption" color="white">
-                    {item.desc}
+                    You have 1 ticket
                   </Typography>
                 </Stack>
                 <ArrowForwardIcon />
               </Stack>
             </Stack>
           ))}
-        </Stack>
-      </Stack>
-      <Stack spacing="30px" pb="30px" borderBottom="1px solid #383838">
-        <Typography color="white" variant="subtitleMB">
-          ZuPass Credentials
-        </Typography>
-        <Stack padding="10px" borderRadius="10px" bgcolor="#262626">
-          <Typography color="white" variant="subtitleSB">
-            No Credentials
-          </Typography>
-        </Stack>
-      </Stack>
-      <Stack spacing="30px" pb="30px" borderBottom="1px solid #383838">
-        <Typography color="white" variant="subtitleMB">
-          Invited Event Management
-        </Typography>
-        <Stack
-          direction="row"
-          spacing="14px"
-          padding="10px"
-          alignItems="center"
-          bgcolor="#262626"
-          borderRadius="10px"
-        >
-          <Box
-            component="img"
-            src="/20.webp"
-            alt="ZuVillage Georgia"
-            width="50px"
-            height="50px"
-            borderRadius="4px"
-          />
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            flex={1}
-            alignItems="center"
-          >
-            <Stack spacing="4px">
-              <Typography variant="subtitleSB" color="white">
-                ZuVillage Georgia
-              </Typography>
-              <Typography variant="caption" color="white">
-                You can scan and verify tickets
-              </Typography>
-            </Stack>
-            <ArrowForwardIcon />
-          </Stack>
         </Stack>
       </Stack>
     </Stack>
