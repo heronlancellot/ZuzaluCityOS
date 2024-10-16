@@ -57,9 +57,6 @@ const schema = Yup.object().shape({
   timezone: Yup.object().shape({
     value: Yup.string(),
   }),
-  external_url: Yup.string()
-    .url('Must be a valid URL')
-    .required('External URL is required'),
   imageUrl: Yup.string(),
   participant: Yup.number()
     .positive()
@@ -203,7 +200,6 @@ export const EventForm: React.FC<EventFormProps> = ({
           socialLinks,
           isPerson,
           timezone,
-          external_url,
           tracks,
           locations,
           imageUrl,
@@ -215,7 +211,6 @@ export const EventForm: React.FC<EventFormProps> = ({
           strDesc: descriptionEditorStore.getValueString(),
           spaceId,
           profileId,
-          externalUrl: external_url || '',
           imageUrl:
             imageUrl ||
             'https://bafkreifje7spdjm5tqts5ybraurrqp4u6ztabbpefp4kepyzcy5sk2uel4.ipfs.nftstorage.link',
@@ -407,9 +402,9 @@ export const EventForm: React.FC<EventFormProps> = ({
                 />
               </Stack>
             </Stack>
-            <Stack spacing="10px" padding="20px">
+            {/*<Stack spacing="10px" padding="20px">
               <FormLabel>External URL*</FormLabel>
-              <Controller
+             <Controller
                 name="external_url"
                 control={control}
                 render={({ field, fieldState: { error } }) => (
@@ -424,7 +419,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                   </>
                 )}
               />
-            </Stack>
+            </Stack>*/}
             {/*<Stack spacing="10px" padding="20px">
               <FormLabel>Participant*</FormLabel>
               <Controller

@@ -138,6 +138,7 @@ const Ticket = ({ event }: PropTypes) => {
     };
     try {
       setBlockClickModal(true);
+      console.log(addTicketContractInput);
       const response = await updateTicketContract(addTicketContractInput);
       if (response.status === 200) {
         setShowModal(true);
@@ -225,9 +226,7 @@ const Ticket = ({ event }: PropTypes) => {
             previewImageToUse,
             ticketInfo?.startingStatus,
             ticketInfo?.ticketName,
-            isTicketFree
-              ? 0
-              : Number(parseUnits(String(ticketInfo?.ticketPrice), decimal)),
+            isTicketFree ? 0 : Number(ticketInfo?.ticketPrice),
             selectedToken,
           );
           setPurchasingTicket(true);

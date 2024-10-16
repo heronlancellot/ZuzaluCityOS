@@ -598,6 +598,7 @@ export const Mint: React.FC<IProps> = ({
                     zucityProfile {
                     id
                     myScrollPassTickets {
+                        eventId
                         checkin
                         contractAddress
                         description
@@ -618,7 +619,13 @@ export const Mint: React.FC<IProps> = ({
             const currentTickets =
               getProfileResponse.data?.viewer?.zucityProfile
                 .myScrollPassTickets || [];
-            const updatedTickets = [...currentTickets, eventContract];
+            const updatedTickets = [
+              ...currentTickets,
+              {
+                ...eventContract,
+                eventId: event?.id,
+              },
+            ];
 
             const query = `
                 mutation UpdateZucityProfile($input: UpdateZucityProfileInput!) {
