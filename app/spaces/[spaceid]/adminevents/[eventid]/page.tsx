@@ -113,6 +113,9 @@ const EventContent: React.FC = () => {
                     image_url
                     description
                     contractAddress
+                    tokenType
+                    name
+                    price
                   }
                   zuLottoInfo {
                     name
