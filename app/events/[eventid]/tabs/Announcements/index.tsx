@@ -10,7 +10,8 @@ import {
   useMediaQuery,
   Skeleton,
 } from '@mui/material';
-import { EventDetail, EventRegister } from 'components/event';
+import { EventDetail } from 'components/event';
+import EventRegister from '@/components/event/EventRegister';
 import {
   Verify,
   Agree,
@@ -191,8 +192,8 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
               !isComplete && (
                 <Verify
                   setIsVerify={setIsVerify}
-                  eventContractID={eventData?.contractID}
                   setFilteredResults={setFilteredResults}
+                  event={eventData}
                 />
               )}
             {isVerify &&
@@ -255,7 +256,6 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
               !isSponsorComplete && (
                 <SponsorAgree
                   setIsAgree={setIsSponsorAgree}
-                  eventContractID={eventData?.contractID}
                   setFilteredResults={setFilteredResults}
                   event={eventData}
                 />
@@ -446,6 +446,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
+                eventRegistration={eventData.regAndAccess.edges[0].node}
               />
             ) : null}
           </Stack>
@@ -471,6 +472,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
+                eventRegistration={eventData.regAndAccess.edges[0].node}
               />
             ) : null}
             <EventDetail

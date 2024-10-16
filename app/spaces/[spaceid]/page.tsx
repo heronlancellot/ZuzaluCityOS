@@ -341,17 +341,6 @@ export default function SpaceDetailPage() {
                     overflow: 'hidden',
                   }}
                 >
-                  <Box
-                    sx={{
-                      fontWeight: '700',
-                      color: 'white',
-                      marginTop: '12px',
-                      fontSize: '18px',
-                      lineHeight: '160%',
-                    }}
-                  >
-                    {space.name}
-                  </Box>
                   <EditorPreview
                     value={space.description}
                     collapsed={isCollapsed}

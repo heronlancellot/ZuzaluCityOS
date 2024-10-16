@@ -18,13 +18,13 @@ import {
 import {
   EventName,
   EventDetail,
-  EventRegister,
   EventAbout,
   Initial,
   Disclaimer,
   Email,
   Payment,
 } from 'components/event';
+import EventRegister from '@/components/event/EventRegister';
 import {
   Verify,
   Agree,
@@ -188,8 +188,8 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
               !isComplete && (
                 <Verify
                   setIsVerify={setIsVerify}
-                  eventContractID={eventData?.contractID}
                   setFilteredResults={setFilteredResults}
+                  event={eventData}
                 />
               )}
             {isVerify &&
@@ -197,7 +197,11 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
               !isMint &&
               !isTransaction &&
               !isComplete && (
-                <Agree setIsVerify={setIsVerify} setIsAgree={setIsAgree} />
+                <Agree
+                  setIsVerify={setIsVerify}
+                  setIsAgree={setIsAgree}
+                  event={eventData}
+                />
               )}
             {!isVerify &&
               isAgree &&
@@ -225,6 +229,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                   setIsMint={setIsMint}
                   setIsTransaction={setIsTransaction}
                   handleClose={handleClose}
+                  event={eventData}
                 />
               )}
             {!isVerify &&
@@ -240,6 +245,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                   ticketMinted={ticketMinted}
                   mintedContract={mintedContract}
                   transactionLog={transactionLog}
+                  event={eventData}
                 />
               )}
           </>
@@ -252,7 +258,6 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
               !isSponsorComplete && (
                 <SponsorAgree
                   setIsAgree={setIsSponsorAgree}
-                  eventContractID={eventData?.contractID}
                   setFilteredResults={setFilteredResults}
                   event={eventData}
                 />
@@ -363,6 +368,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
+                eventRegistration={eventData.regAndAccess.edges[0].node}
               />
             ) : null}
             <EventAbout description={eventData.description} />
@@ -488,6 +494,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
+                eventRegistration={eventData.regAndAccess.edges[0].node}
               />
             ) : null}
             {/* <Stack spacing="4px">

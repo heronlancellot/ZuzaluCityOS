@@ -303,9 +303,9 @@ export const StepTwo = ({
                 What is Whitelisting?
               </Typography>
               {openTips ? (
-                <ChevronDownIcon size={3} />
-              ) : (
                 <ChevronUpIcon size={3} />
+              ) : (
+                <ChevronDownIcon size={3} />
               )}
             </Stack>
           </Stack>

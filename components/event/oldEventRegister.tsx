@@ -16,7 +16,7 @@ import { InitialStep } from './steps/InitialStep';
 import CheckinConnectButton from '@/components/checkin/CheckinConnectButton';
 import { dashboardEvent } from '@/constant';
 
-interface EventRegisterProps {
+interface oldEventRegisterProps {
   onToggle: (anchor: Anchor, open: boolean) => void;
   setWhitelist?: React.Dispatch<React.SetStateAction<boolean>> | any;
   setSponsor?: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -25,7 +25,7 @@ interface EventRegisterProps {
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
 }
 
-const EventRegister: React.FC<EventRegisterProps> = ({
+const oldEventRegister: React.FC<oldEventRegisterProps> = ({
   onToggle,
   setWhitelist,
   setSponsor,
@@ -733,4 +733,4 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   );
 };
 
-export default EventRegister;
+export default oldEventRegister;

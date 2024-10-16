@@ -21,6 +21,9 @@ export interface Contract {
   image_url?: string;
   status?: string;
   checkin?: string;
+  name?: string;
+  price?: number;
+  tokenType?: string;
 }
 export interface Event {
   id: string;
@@ -71,8 +74,6 @@ export interface Event {
   zupassInfo: string;
   sessionStorage: string;
   supportChain: string;
-  contractID?: number;
-  contracts?: [Contract];
   admins?: {
     id: string;
   }[];
@@ -109,6 +110,9 @@ export interface ScrollPassTickets {
   image_url: string;
   description: string;
   contractAddress: string;
+  name: string;
+  price: number;
+  tokenType: string;
 }
 
 export interface ZuPassInfo {

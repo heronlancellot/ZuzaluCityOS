@@ -9,6 +9,7 @@ type ZucityProfile
   avatar: String @string(minLength: 1, maxLength: 10000)
   customAttributes: [TBD] @list(maxLength: 10000)
   myEvents: [Event!] @list(maxLength: 10000)
+  myScrollPassTickets: [ScrollPassTicket!] @list(maxLength: 10000)
 }
 
 type TBD {
@@ -21,3 +22,15 @@ type Event {
   imageUrl: String @string(minLength: 1, maxLength: 10000)
 }
 
+type ScrollPassTicket {
+  type: String! @string(minLength: 1, maxLength: 200)
+  contractAddress: String! @string(maxLength: 1000)
+  description: String! @string(maxLength: 1000)
+  image_url: String! @string(maxLength: 1000)
+  status: String! @string(maxLength: 1000)
+  checkin: String! @string(maxLength: 1000)
+  tbd: String @string(maxLength: 1000)
+  name: String! @string(maxLength: 1000)
+  price: Int
+  tokenType: String! @string(maxLength: 1000)
+}

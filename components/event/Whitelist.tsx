@@ -26,6 +26,7 @@ import {
   mUSDT_TOKEN,
   isDev,
   SCROLL_EXPLORER,
+  composeClient,
 } from '@/constant';
 import { Address } from 'viem';
 import { TICKET_ABI } from '@/utils/ticket_abi';
@@ -38,9 +39,10 @@ import { ZuButton } from '@/components/core';
 import gaslessFundAndUpload from '@/utils/gaslessFundAndUpload';
 import { generateNFTMetadata } from '@/utils/generateNFTMetadata';
 import { createFileFromJSON } from '@/utils/generateNFTMetadata';
-import { Event, Contract } from '@/types';
+import { Event, Contract, ScrollPassTickets } from '@/types';
 import Dialog from '@/app/spaces/components/Modal/Dialog';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useCeramicContext } from '@/context/CeramicContext';
 
 interface IProps {
   setIsVerify?: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -65,8 +67,8 @@ interface IProps {
 
 export const Verify: React.FC<IProps> = ({
   setIsVerify,
-  eventContractID,
   setFilteredResults,
+  event,
 }) => {
   const [isConnect, setIsConnect] = useState<boolean>(true);
   const [validate, setValidate] = useState<boolean>(true);
@@ -89,7 +91,7 @@ export const Verify: React.FC<IProps> = ({
         address: TICKET_FACTORY_ADDRESS as Address,
         abi: TICKET_FACTORY_ABI as Abi,
         functionName: 'getTickets',
-        args: [eventContractID],
+        args: [event?.regAndAccess.edges[0].node.scrollPassContractFactoryID],
       })) as Array<string>;
       setTicketAddresses(getTicketAddresses);
       if (getTicketAddresses?.length > 0) {
@@ -226,9 +228,9 @@ export const Verify: React.FC<IProps> = ({
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -333,7 +335,7 @@ export const Verify: React.FC<IProps> = ({
   );
 };
 
-export const Agree: React.FC<IProps> = ({ setIsVerify, setIsAgree }) => {
+export const Agree: React.FC<IProps> = ({ setIsVerify, setIsAgree, event }) => {
   return (
     <Stack height="calc(100vh - 50px)">
       <Stack
@@ -348,9 +350,9 @@ export const Agree: React.FC<IProps> = ({ setIsVerify, setIsAgree }) => {
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -467,22 +469,25 @@ export const Mint: React.FC<IProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
   const { switchChainAsync } = useSwitchChain();
-
+  const { composeClient, ceramic } = useCeramicContext();
   const filteredTickets = filteredResults
     .map((ticket) => {
       const contractAddress = ticket[0].trim().toLowerCase();
-      const matchingContract = event?.contracts?.find((contract) => {
-        if (!contract.contractAddress) {
-          return false;
-        }
-        const normalizedContractAddress = contract.contractAddress
-          .trim()
-          .toLowerCase();
-        return (
-          normalizedContractAddress === contractAddress &&
-          contract.type === 'Attendee'
-        );
-      });
+      const matchingContract =
+        event?.regAndAccess?.edges[0]?.node?.scrollPassTickets?.find(
+          (contract) => {
+            if (!contract?.contractAddress) {
+              return false;
+            }
+            const normalizedContractAddress = contract.contractAddress
+              .trim()
+              .toLowerCase();
+            return (
+              normalizedContractAddress === contractAddress &&
+              contract.type === 'Attendee'
+            );
+          },
+        ) ?? null;
       return matchingContract ? { ticket, matchingContract } : null;
     })
     .filter(Boolean);
@@ -565,13 +570,67 @@ export const Mint: React.FC<IProps> = ({
 
         if (MintStatus === 'success') {
           setBlockMintClickModal(false);
-          setShowModal(true);
           if (MintLogs.length > 0) {
             setTokenId(BigInt(MintLogs[3].data).toString());
             setTransactionLog(MintHash);
             setIsAgree(false);
             setIsTransaction(true);
           }
+          try {
+            const GET_Profile_QUERY = `
+            query MyQuery {
+                viewer {
+                    zucityProfile {
+                    id
+                    myScrollPassTickets {
+                        checkin
+                        contractAddress
+                        description
+                        image_url
+                        name
+                        price
+                        status
+                        tbd
+                        tokenType
+                        type
+                    }
+                    }
+                }
+                }
+        `;
+            const getProfileResponse: any =
+              await composeClient.executeQuery(GET_Profile_QUERY);
+            const currentTickets =
+              getProfileResponse.data?.viewer?.zucityProfile
+                .myScrollPassTickets || [];
+            const updatedTickets = [...currentTickets, eventContract];
+
+            const query = `
+                mutation UpdateZucityProfile($input: UpdateZucityProfileInput!) {
+                    updateZucityProfile(input: $input) {
+                        document {
+                            id
+                        }
+                    }
+                }
+        `;
+            const variables = {
+              input: {
+                id: getProfileResponse.data?.viewer?.zucityProfile.id,
+                content: {
+                  myScrollPassTickets: updatedTickets,
+                },
+              },
+            };
+
+            const updateResult: any = await composeClient.executeQuery(
+              query,
+              variables,
+            );
+          } catch (err) {
+            console.log(err);
+          }
+          setShowModal(true);
         }
       }
     } catch (error) {
@@ -618,9 +677,9 @@ export const Mint: React.FC<IProps> = ({
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -741,6 +800,7 @@ export const Transaction: React.FC<IProps> = ({
   setIsMint,
   setIsTransaction,
   handleClose,
+  event,
 }) => {
   const [isWait, setIsWait] = useState<boolean>(false);
 
@@ -758,9 +818,9 @@ export const Transaction: React.FC<IProps> = ({
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -833,6 +893,7 @@ export const Complete: React.FC<IProps> = ({
   ticketMinted,
   mintedContract,
   transactionLog,
+  event,
 }) => {
   const [view, setView] = useState<boolean>(true);
   const [showCopyToast, setShowCopyToast] = useState<boolean>(false);
@@ -872,9 +933,9 @@ export const Complete: React.FC<IProps> = ({
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution

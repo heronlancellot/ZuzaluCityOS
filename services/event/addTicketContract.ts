@@ -7,6 +7,9 @@ export const updateTicketContract = async (addTicketContractInput: {
   description: string;
   image_url: string;
   status: string;
+  name: string;
+  price: number;
+  tokenType: string;
 }) => {
   try {
     const response = await axiosInstance.post(
