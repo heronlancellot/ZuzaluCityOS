@@ -1,5 +1,12 @@
 'use client';
-import { Stack, Typography, Box, Skeleton } from '@mui/material';
+import {
+  Stack,
+  Typography,
+  Box,
+  Skeleton,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import {
   ArrowForwardIcon,
   CalendarIcon,
@@ -16,7 +23,8 @@ import Image from 'next/image';
 
 const Home = () => {
   const router = useRouter();
-  const pathname = usePathname();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { isAuthenticated, composeClient, ceramic, username } =
     useCeramicContext();
 
@@ -155,16 +163,33 @@ const Home = () => {
   return (
     <Stack
       justifyContent={'center'}
-      spacing="40px"
-      sx={{ margin: '0 auto', color: 'white' }}
+      gap="40px"
+      sx={{
+        margin: '0 auto',
+        color: 'white',
+        [theme.breakpoints.down('sm')]: {
+          padding: '20px 10px',
+          gap: '20px',
+        },
+      }}
       maxWidth={'680px'}
       py="30px"
     >
-      <Stack pb="30px" onClick={() => router.push(`/passport/scanqr/${1}`)}>
+      <Stack>
         <Typography fontSize="24px" fontWeight={700} lineHeight={1.2}>
           Your Passport
         </Typography>
-        <Stack direction="row" spacing="20px" alignItems="center" mt="20px">
+        <Stack
+          direction="row"
+          spacing="20px"
+          alignItems="center"
+          mt="20px"
+          sx={{
+            [theme.breakpoints.down('sm')]: {
+              overflowX: 'auto',
+            },
+          }}
+        >
           {tabs.map((tab, index) => (
             <Stack
               key={`tab-${index}`}
@@ -181,7 +206,15 @@ const Home = () => {
               }}
             >
               {tab.icon}
-              <Typography fontSize="18px" lineHeight={1.2}>
+              <Typography
+                fontSize="18px"
+                lineHeight={1.2}
+                sx={{
+                  [theme.breakpoints.down('sm')]: {
+                    fontSize: '14px',
+                  },
+                }}
+              >
                 {tab.label}
               </Typography>
               <Box
@@ -192,7 +225,12 @@ const Home = () => {
                   textAlign: 'center',
                 }}
               >
-                <Typography fontSize="12px" fontWeight={600} lineHeight={1.2}>
+                <Typography
+                  fontSize="12px"
+                  fontWeight={600}
+                  lineHeight={1.2}
+                  whiteSpace="nowrap"
+                >
                   {tab.content}
                 </Typography>
               </Box>
@@ -233,6 +271,7 @@ const Home = () => {
           border="1px solid rgba(255, 255, 255, 0.10)"
           borderRadius="10px"
           sx={{ opacity: 0.8, cursor: 'pointer' }}
+          onClick={() => router.push(`/passport/scanqr`)}
         >
           <QRCodeIcon />
           <Typography variant="subtitleSB" color="white">
@@ -245,6 +284,11 @@ const Home = () => {
         spacing="20px"
         border="1px solid rgba(255, 255, 255, 0.10)"
         borderRadius="10px"
+        sx={{
+          [theme.breakpoints.down('sm')]: {
+            p: '10px',
+          },
+        }}
       >
         <Stack direction="row" alignItems="center" spacing="10px" pb="10px">
           <CalendarIcon />
@@ -284,10 +328,18 @@ const Home = () => {
                   alignItems="center"
                 >
                   <Stack spacing="4px">
-                    <Typography variant="subtitleSB" color="white">
+                    <Typography
+                      fontSize="18px"
+                      fontWeight={700}
+                      lineHeight={1.2}
+                    >
                       {item.title}
                     </Typography>
-                    <Typography variant="caption" color="white">
+                    <Typography
+                      fontSize="10px"
+                      lineHeight={1.2}
+                      sx={{ opacity: 0.7 }}
+                    >
                       You have{' '}
                       {
                         tickets.filter((ticket) => ticket.eventId === item.id)

@@ -4,7 +4,7 @@ import { Stack, Typography, Box } from '@mui/material';
 import { LeftArrowIcon } from '@/components/icons';
 import { ZuButton } from '@/components/core';
 import { useRouter } from 'next/navigation';
-import { ScanQRModal } from '../../components/QRScanModal copy';
+import { ScanQRModal } from '../components/QRScanModal copy';
 
 const Home = () => {
   const router = useRouter();
