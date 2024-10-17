@@ -7,14 +7,10 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import React from 'react';
 
 interface IProps {
-  handleConfirm: () => void;
   address: string;
 }
 
-export default function CheckinConnectButton({
-  handleConfirm,
-  address,
-}: IProps) {
+export default function CheckinConnectButton({ address }: IProps) {
   return (
     <ConnectButton.Custom>
       {({

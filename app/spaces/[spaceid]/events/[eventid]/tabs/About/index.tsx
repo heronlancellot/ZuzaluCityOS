@@ -246,7 +246,10 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
               !isComplete && (
                 <Verify
                   setIsVerify={setIsVerify}
-                  eventContractID={eventData?.contractID}
+                  eventContractID={
+                    eventData?.regAndAccess.edges[0].node
+                      .scrollPassContractFactoryID
+                  }
                   setFilteredResults={setFilteredResults}
                 />
               )}
@@ -501,14 +504,14 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
               },
             }}
           >
-            <EventRegister
+            {/*<EventRegister
               onToggle={toggleDrawer}
               setWhitelist={setWhitelist}
               setSponsor={setSponsor}
               externalUrl={eventData.externalUrl}
               eventId={eventData.id}
               setVerify={setVerify}
-            />
+            />*/}
             {/* <Stack spacing="4px">List
                       <Box component="img" src="/sponsor_banner.png" height="200px" borderRadius="10px" width="100%" />
                       <Typography variant="caption" textAlign="right">
