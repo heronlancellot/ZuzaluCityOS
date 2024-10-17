@@ -59,6 +59,7 @@ const Home = () => {
                     zucityProfile {
                     id
                     myScrollPassTickets {
+                        eventId
                         checkin
                         contractAddress
                         description
@@ -77,7 +78,7 @@ const Home = () => {
     const getProfileResponse: any =
       await composeClient.executeQuery(GET_Profile_QUERY);
     setTickets(
-      getProfileResponse.data.viewer.zucityProfile.myScrollPassTickets,
+      getProfileResponse.data.viewer.zucityProfile.myScrollPassTickets ?? [],
     );
   };
 
@@ -146,7 +147,7 @@ const Home = () => {
             [theme.breakpoints.down('sm')]: { gap: '10px' },
           }}
         >
-          {event ? (
+          {!isLoading ? (
             <>
               <ZuButton
                 startIcon={<LeftArrowIcon size={5} />}
@@ -410,7 +411,7 @@ const Home = () => {
                     sx={{
                       opacity: 0.8,
                       wordBreak: 'break-word',
-                      overflowWrap: 'break-word'
+                      overflowWrap: 'break-word',
                     }}
                   >
                     {tickets[0]?.contractAddress}

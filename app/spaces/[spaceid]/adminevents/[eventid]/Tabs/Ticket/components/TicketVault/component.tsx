@@ -22,6 +22,8 @@ import {
   CircleCloseIcon,
   CopyIcon,
   GoToExplorerIcon,
+  Square2StackIcon,
+  ArrowTopRightSquareIcon,
 } from '@/components/icons';
 import {
   Box,
@@ -36,6 +38,7 @@ import {
   Modal,
   List,
   ListItem,
+  IconButton,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -45,6 +48,8 @@ import { createFileFromJSON } from '@/utils/generateNFTMetadata';
 import { fetchEmailJsConfig } from '@/utils/emailService';
 import { send } from '@emailjs/browser';
 import { Contract } from '@/types';
+import { formatAddressString } from '@/components/layout/Header';
+import CopyToClipboard from 'react-copy-to-clipboard';
 interface IProps {
   amount?: string;
   recipient?: string;
@@ -91,6 +96,7 @@ interface ITicketVault {
   vaultIndex: number;
   ticketAddresses: Array<string>;
   tickets: Array<any>;
+  refetch?: () => void;
 }
 export const WithdrawToken = ({
   tokenSymbol,
@@ -933,6 +939,7 @@ export const Whitelist = ({
   vaultIndex,
   ticketAddresses,
   tickets,
+  refetch,
 }: ITicketVault) => {
   const [addresses, setAddresses] = useState<string[]>([]);
   const [initial, setInitial] = useState<boolean>(false);
@@ -981,6 +988,7 @@ export const Whitelist = ({
       });
 
       if (appendStatus === 'success') {
+        refetch?.();
         if (emailList.length > 0) {
           await handleSendEmails();
         }
@@ -1026,7 +1034,7 @@ export const Whitelist = ({
   };
 
   return (
-    <Stack spacing="30px">
+    <Stack spacing="30px" mt="30px">
       <Stack spacing="10px">
         <Stack direction="row" spacing="10px" alignItems="center">
           <ArrowDownSquare />
@@ -1135,45 +1143,62 @@ export const Whitelist = ({
             </Stack>
             <Stack
               sx={{ cursor: 'pointer' }}
-              direction="row"
               spacing="10px"
               padding="10px 20px"
-              justifyContent="center"
               borderRadius="10px"
               border="1px solid #383838"
             >
-              <Typography variant="bodyM">
-                View existing list of addresses added
-              </Typography>
-
-              <ChevronDownIcon size={4.5} />
-            </Stack>
-          </Stack>
-          <Stack
-            sx={{ cursor: 'pointer' }}
-            direction="row"
-            spacing="10px"
-            padding="10px 20px"
-            justifyContent="center"
-            borderRadius="10px"
-            border="1px solid #383838"
-          >
-            <List>
-              {ticket[9]?.result &&
-                ticket[9].result.map((address: string, index: number) => (
-                  <ListItem key={index}>
-                    <Typography
-                      variant="h6"
-                      fontSize="4px"
-                      fontFamily={'Inter'}
-                      lineHeight={'120%'}
-                      color="white"
+              <Stack direction="row" justifyContent="center" spacing="10px">
+                <Typography variant="bodyM">
+                  View existing list of addresses added
+                </Typography>
+                <ChevronDownIcon size={4.5} />
+              </Stack>
+              <Stack spacing="10px">
+                {ticket[9]?.result &&
+                  ticket[9].result.map((address: string, index: number) => (
+                    <Stack
+                      key={index}
+                      direction="row"
+                      spacing="10px"
+                      alignItems="center"
                     >
-                      {address}
-                    </Typography>
-                  </ListItem>
-                ))}
-            </List>
+                      <Typography
+                        fontSize={16}
+                        fontWeight={600}
+                        lineHeight={1.2}
+                        sx={{ opacity: 0.8 }}
+                      >
+                        {formatAddressString(address)}
+                      </Typography>
+                      <CopyToClipboard text={address || ''}>
+                        <IconButton
+                          sx={{ p: 0, color: 'rgba(255, 255, 255, 0.5)' }}
+                        >
+                          <Square2StackIcon size={4.5} />
+                        </IconButton>
+                      </CopyToClipboard>
+
+                      <IconButton
+                        sx={{
+                          p: 0,
+                          color: 'rgba(255, 255, 255, 0.5)',
+                          position: 'relative',
+                          top: '-1px',
+                        }}
+                        onClick={() => {
+                          window.open(
+                            `https://scrollscan.com/address/${address}`,
+                            '_blank',
+                          );
+                        }}
+                      >
+                        <ArrowTopRightSquareIcon size={4.5} />
+                      </IconButton>
+                    </Stack>
+                  ))}
+              </Stack>
+            </Stack>
           </Stack>
           <ZuButton
             sx={{
