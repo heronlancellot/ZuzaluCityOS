@@ -14,7 +14,7 @@ interface PropTypes {
 const QRCode = ({ ticketAddress, eventId, onClose }: PropTypes) => {
   const { Canvas } = useQRCode();
   const { username, profile } = useCeramicContext();
-  const profileId = profile?.id || '';
+  const authorId = profile?.author?.id || '';
 
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState<string>('M');
   const [isRotated, setIsRotated] = useState<boolean>(false);
@@ -22,7 +22,7 @@ const QRCode = ({ ticketAddress, eventId, onClose }: PropTypes) => {
 
   const refreshQRCode = () => {
     getRandomErrorCorrectionLevel();
-    setRefreshKey(prevKey => prevKey + 1);
+    setRefreshKey((prevKey) => prevKey + 1);
   };
 
   const getRandomErrorCorrectionLevel = () => {
@@ -36,7 +36,7 @@ const QRCode = ({ ticketAddress, eventId, onClose }: PropTypes) => {
 
   const getQRCode = () => {
     const qrCode = {
-      profileId,
+      authorId,
       eventId,
       ticketAddress,
       createdAt: dayjs().unix(),
