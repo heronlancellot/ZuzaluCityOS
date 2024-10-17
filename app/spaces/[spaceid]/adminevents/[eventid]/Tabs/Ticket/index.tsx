@@ -518,6 +518,7 @@ const Ticket = ({ event }: PropTypes) => {
         vaultIndex={vaultIndex}
         ticketAddresses={ticketAddresses}
         tickets={tickets}
+        refetch={readFromContract}
         eventContracts={
           event?.regAndAccess.edges[0].node.scrollPassTickets
             ? event?.regAndAccess.edges[0].node.scrollPassTickets

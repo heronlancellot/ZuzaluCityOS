@@ -157,6 +157,23 @@ async function updateScrollPass({
   });
 }
 
+async function updateScannedList({
+  id,
+  scannedList,
+}: {
+  id: string;
+  scannedList: any;
+}) {
+  return await composeClient.executeQuery(Update_QUERY, {
+    input: {
+      id,
+      content: {
+        scannedList,
+      },
+    },
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -176,6 +193,7 @@ export async function POST(req: Request) {
       zuPassInfo,
       scrollPassTickets,
       zuLottoInfo,
+      scannedList,
     } = body;
     const { data, error } = await supabase
       .from('events')
@@ -288,6 +306,13 @@ export async function POST(req: Request) {
       result = await updateZuLotto({
         id,
         zuLottoInfo,
+      });
+    }
+
+    if (type === 'scannedList') {
+      result = await updateScannedList({
+        id,
+        scannedList,
       });
     }
 

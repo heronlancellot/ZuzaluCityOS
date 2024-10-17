@@ -65,7 +65,10 @@ export default function ScrollPassList({
                   fontWeight: 600,
                   lineHeight: 1.2,
                 }}
-                onClick={onToggle}
+                onClick={() => {
+                  setToggleAction('CreateTicket');
+                  onToggle();
+                }}
               >
                 Add a ticket
               </ZuButton>

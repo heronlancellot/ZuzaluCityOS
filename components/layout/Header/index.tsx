@@ -59,6 +59,11 @@ const Header = () => {
     handleMenuClose();
   };
 
+  const handlePassport = () => {
+    handleMenuClose();
+    router.push('/passport');
+  };
+
   const address = useMemo(() => {
     if (profile) {
       const id = profile.author?.id.split(':');
@@ -197,8 +202,7 @@ const Header = () => {
                 </Stack>
               </Stack>
               <Stack
-                flexDirection="row"
-                alignItems="center"
+                flexDirection="column"
                 sx={{
                   gap: '10px',
                   padding: '8px 10px',
@@ -212,20 +216,27 @@ const Header = () => {
                 }}
                 onClick={handleProfile}
               >
-                <Image
-                  src="/user/profile.png"
-                  alt="profile"
-                  height={24}
-                  width={24}
-                />
-                <Typography
-                  sx={{
-                    fontSize: '15px',
-                    fontWeight: 500,
-                  }}
+                <Stack
+                  flexDirection="row"
+                  alignItems="center"
+                  sx={{ gap: '10px' }}
                 >
-                  My Profile
-                </Typography>
+                  <Image
+                    src="/user/profile.png"
+                    alt="profile"
+                    height={24}
+                    width={24}
+                  />
+                  <Typography
+                    sx={{
+                      fontSize: '15px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    My Profile
+                  </Typography>
+                </Stack>
+                <Typography variant="caption">Profile Coming soon</Typography>
               </Stack>
               <Stack
                 flexDirection="column"
@@ -240,6 +251,7 @@ const Header = () => {
                     borderRadius: '10px',
                   },
                 }}
+                onClick={handlePassport}
               >
                 <Stack
                   flexDirection="row"
@@ -261,7 +273,6 @@ const Header = () => {
                     My Passport
                   </Typography>
                 </Stack>
-                <Typography variant="caption">Passport Coming soon</Typography>
               </Stack>
               <Stack
                 flexDirection="row"
