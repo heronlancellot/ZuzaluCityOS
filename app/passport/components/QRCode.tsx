@@ -1,25 +1,29 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
-import { ZuSwitch } from '@/components/core';
-import {
-  ArrowPathIcon,
-  CloseIcon,
-  InformationIcon,
-  LeftArrowIcon,
-} from '@/components/icons';
+import React, { useState } from 'react';
+import { ArrowPathIcon, CloseIcon } from '@/components/icons';
 import { useQRCode } from 'next-qrcode';
 import { Stack, Typography } from '@mui/material';
+import { useCeramicContext } from '@/context/CeramicContext';
+import dayjs from 'dayjs';
 
 interface PropTypes {
-  isOpen: boolean;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  ticketAddress?: string;
+  eventId?: string;
+  onClose: () => void;
 }
 
-const QRCode = () => {
+const QRCode = ({ ticketAddress, eventId, onClose }: PropTypes) => {
   const { Canvas } = useQRCode();
+  const { username, profile } = useCeramicContext();
+  const profileId = profile?.id || '';
 
-  const [isZk, setIsZk] = useState<boolean>(false);
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState<string>('M');
   const [isRotated, setIsRotated] = useState<boolean>(false);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+
+  const refreshQRCode = () => {
+    getRandomErrorCorrectionLevel();
+    setRefreshKey(prevKey => prevKey + 1);
+  };
 
   const getRandomErrorCorrectionLevel = () => {
     const levels = ['L', 'M', 'Q', 'H'];
@@ -28,6 +32,17 @@ const QRCode = () => {
     setIsRotated(true);
     setErrorCorrectionLevel(clevel);
     setTimeout(() => setIsRotated(false), 500);
+  };
+
+  const getQRCode = () => {
+    const qrCode = {
+      profileId,
+      eventId,
+      ticketAddress,
+      createdAt: dayjs().unix(),
+      nonce: Math.random().toString(36).substring(7),
+    };
+    return JSON.stringify(qrCode);
   };
 
   return (
@@ -43,17 +58,11 @@ const QRCode = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
+        backdropFilter: 'blur(20px)',
+        color: '#fff',
       }}
     >
-      <Stack direction="row" alignItems="center">
-        <Stack
-          padding="10px"
-          bgcolor="#414141"
-          borderRadius="10px"
-          color="white"
-        >
-          <LeftArrowIcon size={5} />
-        </Stack>
+      <Stack direction="row" alignItems="center" sx={{ position: 'relative' }}>
         <Typography
           color="white"
           variant="subtitleSB"
@@ -63,32 +72,43 @@ const QRCode = () => {
           QR Code
         </Typography>
         <Stack
+          onClick={onClose}
           padding="10px"
           bgcolor="#414141"
           borderRadius="10px"
           color="white"
+          sx={{ cursor: 'pointer', position: 'absolute', right: 0 }}
         >
           <CloseIcon size={5} />
         </Stack>
       </Stack>
-      <Stack alignItems="center">
+      <Stack
+        alignItems="center"
+        sx={{
+          borderRadius: '8px',
+          overflow: 'hidden',
+          width: '316px',
+          mt: '18px !important',
+        }}
+      >
         <Canvas
-          text={'https://github.com/aagbotemi/'}
+          text={getQRCode()}
           options={{
             errorCorrectionLevel: errorCorrectionLevel,
-            margin: 3,
+            margin: 1,
             scale: 4,
-            width: 300,
+            width: 316,
             color: {
               dark: '#000000',
               light: '#FFFFFF',
             },
           }}
+          key={refreshKey}
         />
       </Stack>
       <Stack alignItems="center">
         <Stack
-          onClick={() => getRandomErrorCorrectionLevel()}
+          onClick={refreshQRCode}
           sx={{ cursor: 'pointer' }}
           padding="10px"
           bgcolor="#3f3f3f"
@@ -100,8 +120,13 @@ const QRCode = () => {
       </Stack>
       <Stack spacing="14px">
         <Stack spacing="10px">
-          <Typography variant="subtitleSB" color="white" textAlign="center">
-            Username
+          <Typography
+            fontSize="18px"
+            fontWeight={700}
+            lineHeight={1.2}
+            textAlign="center"
+          >
+            {username}
           </Typography>
         </Stack>
       </Stack>

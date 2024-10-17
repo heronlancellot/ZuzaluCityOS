@@ -12,7 +12,6 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { useQRCode } from 'next-qrcode';
 import {
   ArrowTopRightSquareIcon,
   LeftArrowIcon,
@@ -21,13 +20,12 @@ import {
   Square2StackIcon,
 } from '@/components/icons';
 import { ZuButton } from '@/components/core';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import QRCode from '../components/QRCode';
 import {
   CeramicResponseType,
   EventEdge,
   Event,
-  EventData,
   ScrollPassTickets,
 } from '@/types';
 import { useCeramicContext } from '@/context/CeramicContext';
@@ -37,18 +35,15 @@ import { SCROLL_EXPLORER } from '@/constant';
 const Home = () => {
   const router = useRouter();
   const params = useParams();
-  const { isAuthenticated, composeClient, ceramic, username } =
-    useCeramicContext();
+  const { isAuthenticated, composeClient, ceramic } = useCeramicContext();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [event, setEvent] = useState<Event>();
   const [isLoading, setIsLoading] = useState(false);
-  const { Canvas } = useQRCode();
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [tickets, setTickets] = useState<ScrollPassTickets[]>([]);
-  const [isZk, setIsZk] = useState<boolean>(false);
-  const [errorCorrectionLevel, setErrorCorrectionLevel] = useState<string>('M');
+  const [currentTicket, setCurrentTicket] = useState<ScrollPassTickets>();
 
   const eventId = params.eventid.toString();
 
@@ -123,8 +118,6 @@ const Home = () => {
     };
     isAuthenticated && fetchData();
   }, [ceramic?.did?.parent, isAuthenticated]);
-
-  console.log(event, tickets);
 
   return (
     <Stack sx={{ [theme.breakpoints.down('sm')]: { padding: '10px' } }}>
@@ -271,8 +264,12 @@ const Home = () => {
                         </Typography>
                       </Stack>
                       <Stack
-                        onClick={() => setIsOpen(true)}
+                        onClick={() => {
+                          setCurrentTicket(ticket);
+                          setIsOpen(true);
+                        }}
                         sx={{
+                          cursor: 'pointer',
                           background:
                             'var(--Inactive-White, rgba(255, 255, 255, 0.05))',
                         }}
@@ -357,7 +354,10 @@ const Home = () => {
                   </Typography>
                 </Stack>
                 <Stack
-                  onClick={() => setIsOpen(true)}
+                  onClick={() => {
+                    setCurrentTicket(tickets[0]);
+                    setIsOpen(true);
+                  }}
                   sx={{
                     background:
                       'var(--Inactive-White, rgba(255, 255, 255, 0.05))',
@@ -467,7 +467,14 @@ const Home = () => {
         <ScrollIcon />
       </Stack>
       <Modal open={isOpen} onClose={() => setIsOpen(false)}>
-        <QRCode />
+        <QRCode
+          eventId={eventId}
+          ticketAddress={currentTicket?.contractAddress}
+          onClose={() => {
+            setIsOpen(false);
+            setCurrentTicket(undefined);
+          }}
+        />
       </Modal>
     </Stack>
   );
