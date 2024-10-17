@@ -203,11 +203,27 @@ const Home = () => {
         </Stack>
 
         {tickets.length > 1 ? (
-          <Stack spacing="20px">
+          <Stack
+            spacing="20px"
+            sx={{
+              [theme.breakpoints.down('sm')]: {
+                padding: '0 10px',
+              },
+            }}
+          >
             <Typography color="white" variant="subtitleMB">
               Tickets:
             </Typography>
-            <Grid container spacing="20px">
+            <Stack
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '20px',
+                [theme.breakpoints.down('sm')]: {
+                  gridTemplateColumns: 'repeat(1, 1fr)',
+                },
+              }}
+            >
               {tickets.map((ticket, index) => (
                 <Grid item xs={12} md={6} key={`Ticket-Item-${index}`}>
                   <Stack
@@ -225,35 +241,34 @@ const Home = () => {
                       width={300}
                       height={300}
                       borderRadius="10px"
+                      sx={{
+                        [theme.breakpoints.down('sm')]: {
+                          width: '100%',
+                          height: 'auto',
+                        },
+                      }}
                       src="/23.webp"
                       alt="23.webp"
                     />
                     <Stack spacing="14px" flex="1">
-                      <Stack
-                        justifyContent="center"
-                        spacing="10px"
-                        pb="20px"
-                        borderBottom="1px solid var(--Hover-White, rgba(255, 255, 255, 0.10))"
-                      >
+                      <Stack justifyContent="center" spacing="10px">
                         <Typography
-                          variant="subtitleLB"
-                          color="white"
+                          fontSize="18px"
+                          fontWeight={700}
+                          lineHeight={1.2}
                           textAlign="center"
                         >
-                          Ticket One
+                          {ticket.name}
                         </Typography>
-                        <Stack
-                          direction="row"
-                          spacing="10px"
-                          justifyContent="center"
+                        <Typography
+                          fontSize="13px"
+                          fontWeight={700}
+                          lineHeight={1.2}
+                          textAlign="center"
+                          sx={{ opacity: 0.5 }}
                         >
-                          <Typography color="white" variant="bodySB">
-                            05/15/2024
-                          </Typography>
-                          <Typography color="white" variant="bodySB">
-                            420 USDT
-                          </Typography>
-                        </Stack>
+                          {ticket.price} {ticket.tokenType}
+                        </Typography>
                       </Stack>
                       <Stack
                         onClick={() => setIsOpen(true)}
@@ -282,7 +297,7 @@ const Home = () => {
                   </Stack>
                 </Grid>
               ))}
-            </Grid>
+            </Stack>
           </Stack>
         ) : tickets.length === 1 ? (
           <Stack spacing="20px">
