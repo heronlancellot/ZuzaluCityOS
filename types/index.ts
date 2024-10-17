@@ -113,6 +113,7 @@ export interface ScrollPassTickets {
   name: string;
   price: number;
   tokenType: string;
+  eventId: string;
 }
 
 export interface ZuPassInfo {
