@@ -700,15 +700,14 @@ export const CreateTicket = ({
               }}
               placeholder="Provide a captivating description of your event"
             />
-            <Typography
+            {/*<Typography
               variant="caption"
               display={'flex'}
               justifyContent={'end'}
               textTransform={'uppercase'}
               sx={{ opacity: '0.7' }}
             >
-              100 Characters left
-            </Typography>
+            </Typography>*/}
           </Stack>
 
           <Stack spacing="10px">

@@ -123,6 +123,7 @@ const Ticket = ({ event }: PropTypes) => {
     name: string,
     price: number,
     tokenType: string,
+    disclaimer: string,
   ) => {
     const addTicketContractInput = {
       eventId: event?.id as string,
@@ -135,6 +136,7 @@ const Ticket = ({ event }: PropTypes) => {
       name: name,
       price: price,
       tokenType: tokenType,
+      disclaimer: disclaimer,
     };
     try {
       setBlockClickModal(true);
@@ -228,6 +230,7 @@ const Ticket = ({ event }: PropTypes) => {
             ticketInfo?.ticketName,
             isTicketFree ? 0 : Number(ticketInfo?.ticketPrice),
             selectedToken,
+            ticketInfo?.message,
           );
           setPurchasingTicket(true);
           setGoToSummary(false);

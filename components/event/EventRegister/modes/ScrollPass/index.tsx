@@ -13,6 +13,7 @@ import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import TicketCard from '../components/ticketCard';
 import { Anchor, ScrollPassTickets } from '@/types';
+import VerifyAccess from '../components/verify';
 
 export interface ScrollPassDefaultProps {
   tickets: ScrollPassTickets[];
@@ -20,6 +21,7 @@ export interface ScrollPassDefaultProps {
   setSponsor: Dispatch<SetStateAction<boolean>>;
   setWhitelist: Dispatch<SetStateAction<boolean>>;
   onToggle: (anchor: Anchor, open: boolean) => void;
+  handleStep: (step: number) => void;
 }
 
 const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
@@ -28,6 +30,7 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
   setSponsor,
   setWhitelist,
   onToggle,
+  handleStep,
 }) => {
   return (
     <Stack
@@ -131,41 +134,7 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
           Purchase Ticket
         </ZuButton>
       </Stack>
-      <Stack spacing={2} sx={{ mt: 1 }}>
-        <hr
-          style={{
-            border: 'none',
-            borderTop: '1px dashed rgba(255, 255, 255, 0.2)',
-            margin: '10px 0',
-          }}
-        />
-        <Typography
-          sx={{
-            color: 'white',
-            fontSize: '14px',
-            fontFamily: 'Inter, sans-serif',
-            fontWeight: 600,
-            textAlign: 'center',
-          }}
-        >
-          HAVE YOU ALREADY PURCHASED?
-        </Typography>
-        <ZuButton
-          sx={{
-            width: '100%',
-            border: '1px solid rgba(255, 255, 255, 0.10)',
-            color: '#7DFFD1',
-            fontSize: '16px',
-            fontFamily: 'Inter, sans-serif',
-            fontWeight: 700,
-            lineHeight: '19.2px',
-            textTransform: 'none',
-            backgroundColor: 'rgba(125, 255, 209, 0.1)',
-          }}
-        >
-          Verify Access
-        </ZuButton>
-      </Stack>
+      <VerifyAccess handleStep={handleStep} />
     </Stack>
   );
 };

@@ -24,6 +24,7 @@ export interface Contract {
   name?: string;
   price?: number;
   tokenType?: string;
+  disclaimer?: string;
 }
 export interface Event {
   id: string;
@@ -113,6 +114,8 @@ export interface ScrollPassTickets {
   name: string;
   price: number;
   tokenType: string;
+  disclaimer?: string;
+  tbd?: string;
 }
 
 export interface ZuPassInfo {

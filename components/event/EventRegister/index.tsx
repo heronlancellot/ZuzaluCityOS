@@ -18,6 +18,10 @@ import { dashboardEvent } from '@/constant';
 import ScrollPassDefault, { ScrollPassDefaultProps } from './modes/ScrollPass';
 import ZuPassDefault from './modes/Zupass';
 import ExternalTicketingDefault from './modes/ExternalTicketing';
+import ValidateCredential from './validateCredential';
+import { injected } from 'wagmi/connectors';
+import { checkNFTOwnership } from '@/utils/checkNFTOwnership';
+import LinkAddress from './linkAddress';
 
 interface EventRegisterProps {
   onToggle: (anchor: Anchor, open: boolean) => void;
@@ -45,10 +49,12 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   const [showZupassModal, setShowZupassModal] = useState(false);
   const [modalTitle, setModalTitle] = useState<string>('');
   const { connect, connectors, error } = useConnect();
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const [modalText, setModalText] = useState<string>('');
   const authenticateCalled = useRef(false);
-
+  const [isValidating, setIsValidating] = useState(false);
+  const [isValid, setIsValid] = useState<boolean>();
+  const [selectedOption, setSelectedOption] = useState<string>('same');
   const {
     pcdStr,
     authState,
@@ -145,6 +151,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
       }
     }
   }, [localStorage.getItem('username')]);
+
   useEffect(() => {
     if (isAuthenticated) {
       if (stage !== 'Wallet Link') {
@@ -170,40 +177,34 @@ const EventRegister: React.FC<EventRegisterProps> = ({
     CeramicLogout();
     window.location.reload();
   };
+  const ticketType = eventRegistration.ticketType as keyof typeof componentsMap;
 
-  const ticketType = eventRegistration.ticketType;
-  type TicketType = 'Scrollpass' | 'Zupass' | 'ExternalTicketing';
-
-  const ticketingIcon = () => {
-    return (
-      <Box
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          height: '10px',
-          width: '10px',
-          verticalAlign: 'middle',
-        }}
-      >
-        {ticketType === 'Scrollpass' && <ScrollPassIcon />}
-        {ticketType === 'Zupass' && <ZuPassIcon />}
-      </Box>
-    );
-  };
   const componentsMap = {
     Scrollpass: {
       component: ScrollPassDefault,
       icon: ScrollPassIcon,
+      verifyButtonText: address
+        ? 'Verify with ' + address.slice(0, 10) + '...'
+        : 'Verify on Wallet',
+      verifyButtonIcon: '/user/wallet.png',
     },
     Zupass: {
       component: ZuPassDefault,
       icon: ZuPassIcon,
+      verifyButtonText: 'Validate Zupass',
+      verifyButtonIcon: 'ZuPassIcon',
     },
     ExternalTicketing: {
       component: ExternalTicketingDefault,
       icon: null,
+      verifyButtonText: undefined,
+      verifyButtonIcon: undefined,
     },
   };
+  const { verifyButtonText, verifyButtonIcon } =
+    componentsMap[ticketType] || componentsMap.Scrollpass;
+
+  type TicketType = keyof typeof componentsMap;
 
   const TicketIcon = () => {
     const { icon: TicketIcon } = componentsMap[ticketType as TicketType];
@@ -234,10 +235,58 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           onToggle={onToggle}
           setSponsor={setSponsor}
           setWhitelist={setWhitelist}
+          handleStep={handleStep}
         />
       );
     }
   };
+
+  const handleVerify = async () => {
+    try {
+      if (ticketType === 'Scrollpass') {
+        if (!isConnected) {
+          await connect({ connector: injected() });
+        }
+        if (address) {
+          setIsValidating(true);
+          const contractAddresses =
+            eventRegistration.scrollPassTickets
+              ?.filter(
+                (ticket) =>
+                  ticket.type === 'Attendee' &&
+                  ticket.checkin === '1' &&
+                  ticket.status === 'available',
+              )
+              .map((ticket) => ticket.contractAddress) || [];
+
+          const ownershipChecks = contractAddresses.map((contractAddress) =>
+            checkNFTOwnership(address, contractAddress),
+          );
+
+          const results = await Promise.all(ownershipChecks);
+          const hasNFT = results.some((result) => result);
+          setIsValidating(false);
+          if (hasNFT) {
+            setIsValid(true);
+          } else {
+            setIsValid(false);
+          }
+        }
+      } else if (ticketType === 'Zupass') {
+        if (!nullifierHash) {
+          await auth();
+        } else {
+          setStage('Wallet Link');
+        }
+      } else if (ticketType === 'ExternalTicketing') {
+        handleClick();
+      }
+      setVerify(true);
+    } catch (error) {
+      console.error('Verification failed:', error);
+    }
+  };
+
   return (
     <Stack
       borderRadius="10px"
@@ -257,6 +306,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
         onClose={() => setShowModal(false)}
         setVerify={setVerify}
         eventId={eventId}
+        ticketType={ticketType}
       />
       <Stack
         padding="10px 14px"
@@ -288,7 +338,30 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           </Typography>
         </Stack>
       </Stack>
-      <TicketDefault />
+      {currentStep === 0 && <TicketDefault />}
+      {currentStep === 1 && (
+        <ValidateCredential
+          handleStep={handleStep}
+          onVerify={handleVerify}
+          verifyButtonText={verifyButtonText}
+          verifyButtonIcon={verifyButtonIcon}
+          isValidating={isValidating}
+          isValid={isValid}
+          setIsValid={setIsValid}
+          setIsValidating={setIsValidating}
+        />
+      )}
+      {currentStep === 2 && (
+        <LinkAddress
+          handleStep={handleStep}
+          address={address?.slice(0, 10) + '...'}
+          setSelectedOption={setSelectedOption}
+          selectedOption={selectedOption}
+          handleConfirm={() => {
+            setShowModal(true);
+          }}
+        />
+      )}
     </Stack>
   );
 };

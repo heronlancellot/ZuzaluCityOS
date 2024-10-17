@@ -23,6 +23,7 @@ export async function POST(req: Request) {
       name,
       price,
       tokenType,
+      disclaimer,
     } = body;
     const { data, error } = await supabase
       .from('events')
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
                     name
                     price
                     tokenType
+                    disclaimer
                   }
                 }
               }
@@ -101,6 +103,7 @@ export async function POST(req: Request) {
       name,
       price,
       tokenType,
+      disclaimer,
     };
     const updatedContracts: Contract[] = [...existingContracts, newContract];
     const variables = {

@@ -179,12 +179,12 @@ const oldEventRegister: React.FC<oldEventRegisterProps> = ({
         onClose={() => setShowZupassModal(false)}
         onConfirm={() => setShowZupassModal(false)}
       />
-      <NewUserPromptModal
+      {/*<NewUserPromptModal
         showModal={showModal}
         onClose={() => setShowModal(false)}
         setVerify={setVerify}
         eventId={eventId}
-      />
+      />*/}
       <Stack
         padding="10px 14px"
         borderBottom="1px solid #383838"
@@ -589,11 +589,11 @@ const oldEventRegister: React.FC<oldEventRegisterProps> = ({
           alignItems={'center'}
           justifyContent={'center'}
         >
-          <CheckinConnectButton
+          {/*<CheckinConnectButton
             handleConfirm={() => {
               setShowModal(true);
             }}
-          />
+          />*/}
         </Stack>
       )}
       {stage === 'Checked-in' && (
