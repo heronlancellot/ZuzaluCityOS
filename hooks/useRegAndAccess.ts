@@ -123,6 +123,9 @@ const useRegAndAccess = (props: Props) => {
     if (regAndAccess?.ticketType === TicketingMethod.LottoPGF) {
       return hasWhitelist;
     }
+    if (regAndAccess?.ticketType === TicketingMethod.ScrollPass) {
+      return hasWhitelist && hasConfigedApplicationForm && (regAndAccess.scrollPassTickets?.length ?? 0) > 0;
+    }
     return hasWhitelist && hasConfigedApplicationForm;
   }, [hasConfigedApplicationForm, noApplication, regAndAccess]);
 
