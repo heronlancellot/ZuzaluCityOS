@@ -402,7 +402,7 @@ export const SendNFTTicket = ({
     try {
       const metadata = generateNFTMetadata(
         ticket[0].result,
-        'ZuVillage Georgia',
+        'NFT ticket',
         eventContract.image_url as string,
         [
           {

@@ -1161,7 +1161,7 @@ export const Complete: React.FC<IProps> = ({
           Donate to the Event
         </Typography>
         <Typography variant="bodyBB">
-          Send your donated tokens to zuvillage.eth
+          Contact the event admin to donate
         </Typography>
       </Stack>
       <Stack direction="row" spacing="10px" justifyContent="center">

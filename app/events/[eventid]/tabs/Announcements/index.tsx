@@ -53,7 +53,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
   const [isDisclaimer, setIsDisclaimer] = useState<boolean>(false);
   const [isEmail, setIsEmail] = useState<boolean>(false);
   const [isPayment, setIsPayment] = useState<boolean>(false);
-
+  const [application, setApplication] = useState<any>();
   const [isVerify, setIsVerify] = useState<boolean>(false);
   const [isAgree, setIsAgree] = useState<boolean>(false);
   const [isMint, setIsMint] = useState<boolean>(false);
@@ -447,6 +447,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 eventId={eventData.id}
                 setVerify={setVerify}
                 eventRegistration={eventData.regAndAccess.edges[0].node}
+                setApplication={setApplication}
               />
             ) : null}
           </Stack>
@@ -473,6 +474,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 eventId={eventData.id}
                 setVerify={setVerify}
                 eventRegistration={eventData.regAndAccess.edges[0].node}
+                setApplication={setApplication}
               />
             ) : null}
             <EventDetail
