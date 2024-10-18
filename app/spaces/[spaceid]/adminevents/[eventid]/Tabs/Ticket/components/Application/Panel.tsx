@@ -11,7 +11,7 @@ import { useParams } from 'next/navigation';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, RegistrationAndAccess } from '@/types';
 import { useMemo } from 'react';
-import { TagProps, TicketingMethod } from '../types';
+import { TagProps } from '../types';
 
 interface PanelProps {
   regAndAccess?: RegistrationAndAccess;
@@ -52,9 +52,17 @@ export default function Panel({ regAndAccess }: PanelProps) {
   const data = applicationForms?.data?.node?.applicationForms?.edges;
   const hasConfiged = !!regAndAccess?.applicationForm;
   const hasAnswers = data?.length && data.length > 0;
-  const questions = hasConfiged
-    ? regAndAccess!.applicationForm!.split(',')
-    : [''];
+
+  const questions = useMemo(() => {
+    if (!hasConfiged) return [''];
+    try {
+      return JSON.parse(regAndAccess!.applicationForm!).map(
+        (q: { question: string }) => q.question,
+      );
+    } catch (error) {
+      return [''];
+    }
+  }, [hasConfiged, regAndAccess]);
 
   const tags = useMemo(() => {
     const tags: TagProps[] = [
