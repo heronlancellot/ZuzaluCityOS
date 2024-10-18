@@ -21,7 +21,6 @@ export async function POST(req: Request) {
     const {
       name,
       tagline,
-      externalUrl,
       strDesc,
       spaceId,
       profileId,
@@ -62,7 +61,6 @@ export async function POST(req: Request) {
             superAdmin {
               id
             }
-            externalUrl
             timezone
           }
         }
@@ -84,7 +82,6 @@ export async function POST(req: Request) {
             status: person ? 'In-Person' : 'Online',
             tracks: tracks.join(','),
             superAdmin: adminId,
-            externalUrl: externalUrl,
             timezone: timezone,
           },
         },

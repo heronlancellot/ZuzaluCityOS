@@ -21,6 +21,10 @@ export interface Contract {
   image_url?: string;
   status?: string;
   checkin?: string;
+  name?: string;
+  price?: number;
+  tokenType?: string;
+  disclaimer?: string;
 }
 export interface Event {
   id: string;
@@ -71,8 +75,6 @@ export interface Event {
   zupassInfo: string;
   sessionStorage: string;
   supportChain: string;
-  contractID?: number;
-  contracts?: [Contract];
   admins?: {
     id: string;
   }[];
@@ -100,6 +102,9 @@ export interface RegistrationAndAccess {
   scrollPassTickets?: ScrollPassTickets[];
   zuLottoInfo?: ZuLottoInfo[];
   scrollPassContractFactoryID?: number;
+  scannedList: {
+    id: string;
+  }[];
 }
 
 export interface ScrollPassTickets {
@@ -109,6 +114,12 @@ export interface ScrollPassTickets {
   image_url: string;
   description: string;
   contractAddress: string;
+  name: string;
+  price: number;
+  tokenType: string;
+  disclaimer?: string;
+  tbd?: string;
+  eventId: string;
 }
 
 export interface ZuPassInfo {
@@ -128,6 +139,12 @@ export interface ApplicationForm {
   id: string;
   answers: string;
   approveStatus: string;
+  eventId: string;
+  profile: {
+    id: string;
+    username: string;
+    avatar: string;
+  };
 }
 
 export interface EventEdge {
@@ -339,7 +356,6 @@ export interface SocialLinks {
 export interface CreateEventRequest {
   name: string;
   tagline: string;
-  externalUrl: string;
   strDesc: string;
   spaceId: string;
   profileId: string;
@@ -448,7 +464,8 @@ export interface UpdateRegAndAccessRequest
     | 'whitelist'
     | 'zuPass'
     | 'scrollpass'
-    | 'zuLotto';
+    | 'zuLotto'
+    | 'scannedList';
   id: string;
   applicationForm?: string;
   checkinOpen?: string;
@@ -456,4 +473,7 @@ export interface UpdateRegAndAccessRequest
   zuPassInfo?: ZuPassInfo;
   scrollPassTickets?: ScrollPassTickets[];
   zuLottoInfo?: ZuLottoInfo;
+  scannedList?: {
+    id: string;
+  }[];
 }

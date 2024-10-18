@@ -1,5 +1,11 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Button, IconButton, useMediaQuery, useTheme } from '@mui/material';
+import {
+  Button,
+  CircularProgress,
+  IconButton,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import MDialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -15,6 +21,7 @@ interface Proptypes {
   actions?: React.ReactNode;
   onClose?: () => void;
   onConfirm?: () => void;
+  isLoading?: boolean;
 }
 
 export default function Dialog({
@@ -26,6 +33,7 @@ export default function Dialog({
   actions,
   showActions = true,
   confirmText = 'Finish',
+  isLoading = false,
 }: Proptypes) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -94,8 +102,17 @@ export default function Dialog({
         {actions ? (
           actions
         ) : showActions ? (
-          <Button onClick={onConfirm} variant="contained" fullWidth>
-            {confirmText}
+          <Button
+            onClick={onConfirm}
+            variant="contained"
+            fullWidth
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              confirmText
+            )}
           </Button>
         ) : null}
       </DialogActions>

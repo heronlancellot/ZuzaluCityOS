@@ -80,7 +80,12 @@ export default function Form({
       updateMutation.mutate({
         type: 'question',
         id: id!,
-        applicationForm: data.questions?.map((q) => q.question).join(','),
+        applicationForm: JSON.stringify(
+          data.questions?.map((q) => ({
+            question: q.question,
+            type: 'input',
+          })),
+        ),
         profileId,
         eventId,
       });

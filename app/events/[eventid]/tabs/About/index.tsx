@@ -18,13 +18,13 @@ import {
 import {
   EventName,
   EventDetail,
-  EventRegister,
   EventAbout,
   Initial,
   Disclaimer,
   Email,
   Payment,
 } from 'components/event';
+import EventRegister from '@/components/event/EventRegister';
 import {
   Verify,
   Agree,
@@ -48,7 +48,8 @@ import { Anchor, Contract } from '@/types';
 import { LatLngLiteral } from 'leaflet';
 import getLatLngFromAddress from '@/utils/osm';
 import LotteryCard from '@/components/cards/LotteryCard';
-
+import { ApplicationForm } from '@/components/event/EventApplication/ApplicationForm';
+import { ApplicationSubmit } from '@/components/event/EventApplication/ApplicationSubmit';
 interface IAbout {
   eventData: Event | undefined;
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -64,7 +65,10 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
   const [isDisclaimer, setIsDisclaimer] = useState<boolean>(false);
   const [isEmail, setIsEmail] = useState<boolean>(false);
   const [isPayment, setIsPayment] = useState<boolean>(false);
-
+  const [application, setApplication] = useState<boolean>(false);
+  const [isApplicationStep, setIsApplicationStep] = useState<boolean>(false);
+  const [isApplicationSubmitStep, setIsApplicationSubmitStep] =
+    useState<boolean>(false);
   const [isVerify, setIsVerify] = useState<boolean>(false);
   const [isAgree, setIsAgree] = useState<boolean>(false);
   const [isMint, setIsMint] = useState<boolean>(false);
@@ -86,7 +90,8 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
   const { breakpoints } = useTheme();
   const isMobile = useMediaQuery(breakpoints.down('sm'));
 
-  const { composeClient } = useCeramicContext();
+  const { composeClient, profile } = useCeramicContext();
+  const profileId = profile?.id || '';
 
   const [state, setState] = useState({
     top: false,
@@ -139,19 +144,19 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
     fetchData();
   }, [location]);
 
-  const List = (anchor: Anchor) => {
-    const handleClose = () => {
-      toggleDrawer('right', false);
-      setIsVerify(false);
-      setIsAgree(false);
-      setIsMint(false);
-      setIsTransaction(false);
-      setIsComplete(false);
-      const root = ref.current?.getElementsByClassName('MuiPaper-root');
-      if (root) root?.[0].scrollTo(0, 0);
-      // setIsEmail(false);
-    };
+  const handleClose = () => {
+    toggleDrawer('right', false);
+    setIsVerify(false);
+    setIsAgree(false);
+    setIsMint(false);
+    setIsTransaction(false);
+    setIsComplete(false);
+    const root = ref.current?.getElementsByClassName('MuiPaper-root');
+    if (root) root?.[0].scrollTo(0, 0);
+    // setIsEmail(false);
+  };
 
+  const List = (anchor: Anchor) => {
     return (
       <Box
         sx={{
@@ -173,128 +178,184 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
           <ZuButton startIcon={<XMarkIcon />} onClick={() => handleClose()}>
             Close
           </ZuButton>
-          <Typography variant="subtitleSB">Register for Event</Typography>
+          <Typography variant="subtitleSB">
+            {whitelist ? 'Register for Event' : 'Apply to Event'}
+          </Typography>
         </Stack>
         {/* {!isInitial && !isDisclaimer && !isEmail && !isPayment && <Initial setIsInitial={setIsInitial} />}
         {isInitial && !isDisclaimer && !isEmail && !isPayment && <Disclaimer setIsInitial={setIsInitial} setIsDisclaimer={setIsDisclaimer} />}
         {!isInitial && isDisclaimer && !isEmail && !isPayment && <Email setIsDisclaimer={setIsDisclaimer} setIsEmail={setIsEmail} />}
         {!isInitial && !isDisclaimer && isEmail && !isPayment && <Payment setIsEmail={setIsEmail} setIsPayment={setIsPayment} handleClose={handleClose} />} */}
-        {whitelist && (
-          <>
-            {!isVerify &&
-              !isAgree &&
-              !isMint &&
-              !isTransaction &&
-              !isComplete && (
-                <Verify
-                  setIsVerify={setIsVerify}
-                  eventContractID={eventData?.contractID}
-                  setFilteredResults={setFilteredResults}
-                />
-              )}
-            {isVerify &&
-              !isAgree &&
-              !isMint &&
-              !isTransaction &&
-              !isComplete && (
-                <Agree setIsVerify={setIsVerify} setIsAgree={setIsAgree} />
-              )}
-            {!isVerify &&
-              isAgree &&
-              !isMint &&
-              !isTransaction &&
-              !isComplete && (
-                <Mint
-                  setIsAgree={setIsAgree}
-                  setIsMint={setIsMint}
-                  filteredResults={filteredResults}
-                  event={eventData}
-                  setTokenId={setTokenId}
-                  setTicketMinted={setTicketMinted}
-                  setIsTransaction={setIsTransaction}
-                  setMintedContract={setMintedContract}
-                  setTransactionLog={setTransactionLog}
-                />
-              )}
-            {!isVerify &&
-              !isAgree &&
-              isMint &&
-              !isTransaction &&
-              !isComplete && (
-                <Transaction
-                  setIsMint={setIsMint}
-                  setIsTransaction={setIsTransaction}
-                  handleClose={handleClose}
-                />
-              )}
-            {!isVerify &&
-              !isAgree &&
-              !isMint &&
-              isTransaction &&
-              !isComplete && (
-                <Complete
-                  setIsTransaction={setIsTransaction}
-                  setIsComplete={setIsComplete}
-                  handleClose={handleClose}
-                  tokenId={tokenId}
-                  ticketMinted={ticketMinted}
-                  mintedContract={mintedContract}
-                  transactionLog={transactionLog}
-                />
-              )}
-          </>
-        )}
-        {sponsor && (
-          <>
-            {!isSponsorAgree &&
-              !isSponsorMint &&
-              !isSponsorTransaction &&
-              !isSponsorComplete && (
-                <SponsorAgree
-                  setIsAgree={setIsSponsorAgree}
-                  eventContractID={eventData?.contractID}
-                  setFilteredResults={setFilteredResults}
-                  event={eventData}
-                />
-              )}
-            {isSponsorAgree &&
-              !isSponsorMint &&
-              !isSponsorTransaction &&
-              !isSponsorComplete && (
-                <SponsorMint
-                  setIsAgree={setIsSponsorAgree}
-                  setIsMint={setIsSponsorMint}
-                  filteredResults={filteredResults}
-                  event={eventData}
-                  setTokenId={setTokenId}
-                  setTicketMinted={setTicketMinted}
-                />
-              )}
-            {!isSponsorAgree &&
-              isSponsorMint &&
-              !isSponsorTransaction &&
-              !isSponsorComplete && (
-                <SponsorTransaction
-                  setIsMint={setIsSponsorMint}
-                  setIsTransaction={setIsSponsorTransaction}
-                  handleClose={handleClose}
-                />
-              )}
-            {!isSponsorAgree &&
-              !isSponsorMint &&
-              isSponsorTransaction &&
-              !isSponsorComplete && (
-                <SponsorComplete
-                  setIsTransaction={setIsSponsorTransaction}
-                  setIsComplete={setIsSponsorComplete}
-                  handleClose={handleClose}
-                  tokenId={tokenId}
-                  ticketMinted={ticketMinted}
-                />
-              )}
-          </>
-        )}
+        {whitelist && renderWhitelistSteps()}
+        {sponsor && renderSponsorSteps()}
+        {application && renderApplicationSteps()}
       </Box>
+    );
+  };
+  const renderApplicationSteps = () => {
+    const steps = [
+      {
+        condition: !isApplicationStep && !isApplicationSubmitStep,
+        Component: ApplicationForm,
+        props: {
+          event: eventData as Event,
+          setIsApplicationStep,
+          handleClose,
+          setIsApplicationSubmitStep,
+          profileId,
+        },
+      },
+      /*{
+        condition: isApplicationStep && !isApplicationSubmitStep,
+        Component: ApplicationSubmit,
+        props: {
+          setIsApplicationSubmitStep,
+          setIsApplicationStep,
+          event: eventData as Event,
+          handleClose,
+        },
+      },*/
+    ] as const;
+
+    return (
+      <>
+        {steps.map(
+          ({ condition, Component, props }, index) =>
+            condition && <Component key={index} {...props} />,
+        )}
+      </>
+    );
+  };
+  const renderWhitelistSteps = () => {
+    const steps = [
+      {
+        condition:
+          !isVerify && !isAgree && !isMint && !isTransaction && !isComplete,
+        Component: Verify,
+        props: { setIsVerify, setFilteredResults, event: eventData },
+      },
+      {
+        condition:
+          isVerify && !isAgree && !isMint && !isTransaction && !isComplete,
+        Component: Agree,
+        props: { setIsVerify, setIsAgree, event: eventData },
+      },
+      {
+        condition:
+          !isVerify && isAgree && !isMint && !isTransaction && !isComplete,
+        Component: Mint,
+        props: {
+          setIsAgree,
+          setIsMint,
+          filteredResults,
+          event: eventData,
+          setTokenId,
+          setTicketMinted,
+          setIsTransaction,
+          setMintedContract,
+          setTransactionLog,
+        },
+      },
+      {
+        condition:
+          !isVerify && !isAgree && isMint && !isTransaction && !isComplete,
+        Component: Transaction,
+        props: { setIsMint, setIsTransaction, handleClose, event: eventData },
+      },
+      {
+        condition:
+          !isVerify && !isAgree && !isMint && isTransaction && !isComplete,
+        Component: Complete,
+        props: {
+          setIsTransaction,
+          setIsComplete,
+          handleClose,
+          tokenId,
+          ticketMinted,
+          mintedContract,
+          transactionLog,
+          event: eventData,
+        },
+      },
+    ];
+
+    return (
+      <>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography variant="subtitleSB">Register for Event</Typography>
+        </Stack>
+        {steps.map(
+          ({ condition, Component, props }, index) =>
+            condition && <Component key={index} {...props} />,
+        )}
+      </>
+    );
+  };
+
+  const renderSponsorSteps = () => {
+    const steps = [
+      {
+        condition:
+          !isSponsorAgree &&
+          !isSponsorMint &&
+          !isSponsorTransaction &&
+          !isSponsorComplete,
+        Component: SponsorAgree,
+        props: {
+          setIsAgree: setIsSponsorAgree,
+          setFilteredResults,
+          event: eventData,
+        },
+      },
+      {
+        condition:
+          isSponsorAgree &&
+          !isSponsorMint &&
+          !isSponsorTransaction &&
+          !isSponsorComplete,
+        Component: SponsorMint,
+        props: {
+          setIsAgree: setIsSponsorAgree,
+          setIsMint: setIsSponsorMint,
+          filteredResults,
+          event: eventData,
+          setTokenId,
+          setTicketMinted,
+        },
+      },
+      {
+        condition:
+          !isSponsorAgree &&
+          isSponsorMint &&
+          !isSponsorTransaction &&
+          !isSponsorComplete,
+        Component: SponsorTransaction,
+        props: {
+          setIsMint: setIsSponsorMint,
+          setIsTransaction: setIsSponsorTransaction,
+          handleClose,
+        },
+      },
+      {
+        condition:
+          !isSponsorAgree &&
+          !isSponsorMint &&
+          isSponsorTransaction &&
+          !isSponsorComplete,
+        Component: SponsorComplete,
+        props: {
+          setIsTransaction: setIsSponsorTransaction,
+          setIsComplete: setIsSponsorComplete,
+          handleClose,
+          tokenId,
+          ticketMinted,
+        },
+      },
+    ];
+
+    return steps.map(
+      ({ condition, Component, props }, index) =>
+        condition && <Component key={index} {...props} />,
     );
   };
 
@@ -363,6 +424,8 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
+                eventRegistration={eventData.regAndAccess.edges[0].node}
+                setApplication={setApplication}
               />
             ) : null}
             <EventAbout description={eventData.description} />
@@ -488,6 +551,8 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
+                eventRegistration={eventData.regAndAccess.edges[0].node}
+                setApplication={setApplication}
               />
             ) : null}
             {/* <Stack spacing="4px">

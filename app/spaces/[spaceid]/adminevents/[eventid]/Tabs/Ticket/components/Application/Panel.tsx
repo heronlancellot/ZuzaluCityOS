@@ -11,7 +11,8 @@ import { useParams } from 'next/navigation';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, RegistrationAndAccess } from '@/types';
 import { useMemo } from 'react';
-import { TagProps, TicketingMethod } from '../types';
+import { TagProps } from '../types';
+import { useEventContext } from '../../../../EventContext';
 
 interface PanelProps {
   regAndAccess?: RegistrationAndAccess;
@@ -19,42 +20,21 @@ interface PanelProps {
 
 export default function Panel({ regAndAccess }: PanelProps) {
   const { open, handleOpen, handleClose } = useOpenDraw();
-  const pathname = useParams();
-  const { composeClient } = useCeramicContext();
+  const { event } = useEventContext();
 
-  const eventId = pathname.eventid.toString();
-
-  const { data: applicationForms } = useQuery({
-    queryKey: ['fetchApplicationForms', eventId],
-    queryFn: () => {
-      const query = `
-      query FetchEvent($id: ID!) {
-        node(id: $id) {
-          ...on ZucityEvent {
-            applicationForms(first:1000) {
-              edges {
-                node {
-                  id
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
-      return composeClient.executeQuery<{ node: Event }>(query, {
-        id: eventId,
-      });
-    },
-    enabled: !!eventId,
-  });
-
-  const data = applicationForms?.data?.node?.applicationForms?.edges;
   const hasConfiged = !!regAndAccess?.applicationForm;
-  const hasAnswers = data?.length && data.length > 0;
-  const questions = hasConfiged
-    ? regAndAccess!.applicationForm!.split(',')
-    : [''];
+  const applicationForms = event?.applicationForms.edges ?? [];
+
+  const questions = useMemo(() => {
+    if (!hasConfiged) return [''];
+    try {
+      return JSON.parse(regAndAccess!.applicationForm!).map(
+        (q: { question: string }) => q.question,
+      );
+    } catch (error) {
+      return [''];
+    }
+  }, [hasConfiged, regAndAccess]);
 
   const tags = useMemo(() => {
     const tags: TagProps[] = [
@@ -86,7 +66,11 @@ export default function Panel({ regAndAccess }: PanelProps) {
       />
       <Box>
         {hasConfiged ? (
-          <Submissions list={[]} />
+          <Submissions
+            regAndAccess={regAndAccess}
+            questions={questions}
+            list={applicationForms.map((form) => form.node)}
+          />
         ) : (
           <ZuButton
             startIcon={<PlusIcon size={4} />}

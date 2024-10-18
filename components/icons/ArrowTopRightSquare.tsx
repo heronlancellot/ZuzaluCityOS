@@ -1,14 +1,17 @@
 import * as React from 'react';
 import { IconProps } from 'types';
 
-export const ArrowTopRightSquareIcon: React.FC<IconProps> = ({ size = 6 }) => {
+export const ArrowTopRightSquareIcon: React.FC<IconProps> = ({
+  size = 6,
+  color = 'currentColor',
+}) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
       strokeWidth={1.5}
-      stroke="currentColor"
+      stroke={color}
       width={`${size * 4}px`}
       height={`${size * 4}px`}
     >

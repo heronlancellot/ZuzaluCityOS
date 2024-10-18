@@ -40,7 +40,6 @@ const EventContent: React.FC = () => {
   });
 
   const fetchEventById = async (id: string) => {
-    console.log('FETCH EVENT BY ID: ', id);
     const query = `
       query FetchEvent($id: ID!) {
         node(id: $id) {
@@ -79,6 +78,12 @@ const EventContent: React.FC = () => {
               edges {
                 node {
                   id
+                  answers
+                  approveStatus
+                  profile {
+                    avatar
+                    username
+                  }
                 }
               }
             }
@@ -113,6 +118,10 @@ const EventContent: React.FC = () => {
                     image_url
                     description
                     contractAddress
+                    tokenType
+                    name
+                    price
+                    disclaimer
                   }
                   zuLottoInfo {
                     name

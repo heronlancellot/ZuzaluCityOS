@@ -1,4 +1,4 @@
-import Dialog from '@/app/spaces/components/Modal/Dialog';
+/*import Dialog from '@/app/spaces/components/Modal/Dialog';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { useZupassContext } from '@/context/ZupassContext';
 import { Anchor } from '@/types';
@@ -16,7 +16,7 @@ import { InitialStep } from './steps/InitialStep';
 import CheckinConnectButton from '@/components/checkin/CheckinConnectButton';
 import { dashboardEvent } from '@/constant';
 
-interface EventRegisterProps {
+interface oldEventRegisterProps {
   onToggle: (anchor: Anchor, open: boolean) => void;
   setWhitelist?: React.Dispatch<React.SetStateAction<boolean>> | any;
   setSponsor?: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -25,7 +25,7 @@ interface EventRegisterProps {
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
 }
 
-const EventRegister: React.FC<EventRegisterProps> = ({
+const oldEventRegister: React.FC<oldEventRegisterProps> = ({
   onToggle,
   setWhitelist,
   setSponsor,
@@ -72,7 +72,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
       setShowZupassModal(true);
     } else {
       auth();
-    }*/
+    }
     if (!nullifierHash) {
       auth();
     } else {
@@ -116,7 +116,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           setShowModal(true);
         });
     }
-  }, [nullifierHash]);*/
+  }, [nullifierHash])
   useEffect(() => {
     if (nullifierHash) {
       setStage('Wallet Link');
@@ -179,7 +179,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
         onClose={() => setShowZupassModal(false)}
         onConfirm={() => setShowZupassModal(false)}
       />
-      <NewUserPromptModal
+      {/*<NewUserPromptModal
         showModal={showModal}
         onClose={() => setShowModal(false)}
         setVerify={setVerify}
@@ -219,7 +219,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           <Typography color="#FF9C66" variant="bodyS">
             All tickets require an invite code to mint
           </Typography>
-        </Stack>*/}
+        </Stack>
             {/*<Stack spacing="10px">
           <Stack
             onClick={() => setIsOne((prev) => !prev)}
@@ -247,7 +247,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
                 This pass does not include accomodation.
               </Typography>
             </Stack>
-          </Stack>*/}
+          </Stack>
             {/*{isOne && (
             <Stack>
               <Typography variant="bodyS" textAlign="center">
@@ -324,7 +324,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
                 This pass does not include accomodation.
               </Typography>
             </Stack>
-          </Stack>*/}
+          </Stack>
             {/*{isTwo && (
             <Stack>
               <Typography variant="bodyS" textAlign="center">
@@ -375,7 +375,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
               </Stack>
             </Stack>
           )}
-        </Stack>*/}
+        </Stack>
             {/* <Stack spacing="20px">
           <Typography
             color="white"
@@ -447,14 +447,14 @@ const EventRegister: React.FC<EventRegisterProps> = ({
               </Typography>
             </Box>
           </Box>
-        </Stack> */}
+        </Stack>
 
             {/*currentStep === 1 && (
           <FirstStep
             handleStep={handleStep}
             handleRegisterAsSponsor={handleRegisterAsSponsor}
           />
-        )*/}
+        )
             <ZuButton
               sx={{
                 width: '100%',
@@ -589,7 +589,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           alignItems={'center'}
           justifyContent={'center'}
         >
-          <CheckinConnectButton
+          {/*<CheckinConnectButton
             handleConfirm={() => {
               setShowModal(true);
             }}
@@ -733,4 +733,4 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   );
 };
 
-export default EventRegister;
+export default oldEventRegister;*/

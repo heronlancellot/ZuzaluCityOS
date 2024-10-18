@@ -120,6 +120,10 @@ const Ticket = ({ event }: PropTypes) => {
     description: string,
     image_url: string,
     status: string,
+    name: string,
+    price: number,
+    tokenType: string,
+    disclaimer: string,
   ) => {
     const addTicketContractInput = {
       eventId: event?.id as string,
@@ -129,9 +133,14 @@ const Ticket = ({ event }: PropTypes) => {
       image_url: image_url,
       status: status,
       id: regAndAccess?.id,
+      name: name,
+      price: price,
+      tokenType: tokenType,
+      disclaimer: disclaimer,
     };
     try {
       setBlockClickModal(true);
+      console.log(addTicketContractInput);
       const response = await updateTicketContract(addTicketContractInput);
       if (response.status === 200) {
         setShowModal(true);
@@ -218,6 +227,10 @@ const Ticket = ({ event }: PropTypes) => {
             ticketInfo?.description,
             previewImageToUse,
             ticketInfo?.startingStatus,
+            ticketInfo?.ticketName,
+            isTicketFree ? 0 : Number(ticketInfo?.ticketPrice),
+            selectedToken,
+            ticketInfo?.message,
           );
           setPurchasingTicket(true);
           setGoToSummary(false);
@@ -460,6 +473,7 @@ const Ticket = ({ event }: PropTypes) => {
             isWhiteList={isWhiteList}
             ticketInfo={ticketInfo}
             setIsConfirm={setIsConfirm}
+            ticketImageURL={ticketImageURL}
             setPurchasingTicket={setPurchasingTicket}
             setGoToSummary={setGoToSummary}
           />
@@ -504,7 +518,13 @@ const Ticket = ({ event }: PropTypes) => {
         vaultIndex={vaultIndex}
         ticketAddresses={ticketAddresses}
         tickets={tickets}
-        eventContracts={event?.contracts ? event.contracts : []}
+        refetch={readFromContract}
+        eventContracts={
+          event?.regAndAccess.edges[0].node.scrollPassTickets
+            ? event?.regAndAccess.edges[0].node.scrollPassTickets
+            : []
+        }
+        onClose={handleClose}
       />
     </Box>
   );
@@ -549,7 +569,11 @@ const Ticket = ({ event }: PropTypes) => {
           setToggleAction={setToggleAction}
           onToggle={handleOpen}
           event={event!}
-          eventContracts={event?.contracts ? event.contracts : []}
+          eventContracts={
+            event?.regAndAccess.edges[0].node.scrollPassTickets
+              ? event?.regAndAccess.edges[0].node.scrollPassTickets
+              : []
+          }
         />
       )}
       {/* <TicketAccess /> */}

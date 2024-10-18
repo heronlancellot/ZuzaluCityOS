@@ -26,59 +26,86 @@ const Home = () => {
         query MyQuery($id: ID!) {
           node (id: $id) {
             ...on ZucityEvent {
-              createdAt
-              description
-              endTime
-              externalUrl
-              gated
-              id
-              imageUrl
-              meetingUrl
-              profileId
-              spaceId
-              startTime
-              status
-              tagline
-              timezone
-              title
-              tracks
-              contractID
-              members{
-              id
-              }
-              admins{
-              id
-              }
-              superAdmin{
-              id
-              }
-              space {
-                id
-                name
-                gated
-                avatar
-                banner
-                description
-              }
-              profile {
-                username
-                avatar
-              }
-              customLinks {
-                title
-                links
-              }
-              contracts {
-                contractAddress
-                description
-                image_url
-                status
-                type
-                checkin
+                  id
+                  admins {
+                    id
+                  }
+                  createdAt
+                  customLinks {
+                    links
+                    title
+                  }
+                  description
+                  endTime
+                  externalUrl
+                  gated
+                  imageUrl
+                  meetingUrl
+                  members {
+                    id
+                  }
+                  spaceId
+                  startTime
+                  status
+                  superAdmin {
+                    id
+                  }
+                  supportChain
+                  tagline
+                  timezone
+                  title
+                  tracks
+                  space {
+                    avatar
+                    name
+                  }
+                  regAndAccess(first: 1) {
+                    edges {
+                      node {
+                        applicationForm
+                        applyOption
+                        applyRule
+                        checkinOpen
+                        id
+                        registrationAccess
+                        registrationOpen
+                        registrationWhitelist {
+                          id
+                        }
+                        scannedList {
+                          id
+                        }
+                        scrollPassContractFactoryID
+                        scrollPassTickets {
+                          checkin
+                          contractAddress
+                          description
+                          image_url
+                          status
+                          tbd
+                          type
+                          name
+                          price
+                          tokenType
+                        }
+                        ticketType
+                        zuPassInfo {
+                          access
+                          eventId
+                          eventName
+                          registration
+                        }
+                        zuLottoInfo {
+                          contractAddress
+                          description
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
-          }
-        }
       `,
           {
             id: eventId,

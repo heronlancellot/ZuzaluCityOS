@@ -85,6 +85,7 @@ import { ExclamationCircleIcon } from './ExclamationCircle';
 import { BuildStoreFrontIcon } from './BuildStoreFront';
 import { LottoPGFIcon } from './LottoPGF';
 import { WrenchIcon } from './Wrench';
+import { KeyIcon } from './Key';
 export {
   HomeIcon,
   SearchIcon,
@@ -173,4 +174,5 @@ export {
   BuildStoreFrontIcon,
   LottoPGFIcon,
   WrenchIcon,
+  KeyIcon,
 };

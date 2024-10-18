@@ -20,6 +20,10 @@ export async function POST(req: Request) {
       image_url,
       status,
       checkin,
+      name,
+      price,
+      tokenType,
+      disclaimer,
     } = body;
     const { data, error } = await supabase
       .from('events')
@@ -51,6 +55,10 @@ export async function POST(req: Request) {
                     image_url
                     description
                     contractAddress
+                    name
+                    price
+                    tokenType
+                    disclaimer
                   }
                 }
               }
@@ -92,6 +100,10 @@ export async function POST(req: Request) {
       image_url,
       status,
       checkin: checkin ?? '0',
+      name,
+      price,
+      tokenType,
+      disclaimer,
     };
     const updatedContracts: Contract[] = [...existingContracts, newContract];
     const variables = {

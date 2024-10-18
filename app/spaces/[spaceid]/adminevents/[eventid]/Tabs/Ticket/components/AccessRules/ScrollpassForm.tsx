@@ -1,11 +1,11 @@
 import FormHeader from '@/components/form/FormHeader';
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { CommonWrapper, ButtonGroup, RoundCheckbox } from '../Common';
-import { ScrollIcon, ScrollPassIcon } from '@/components/icons';
+import { ScrollPassIcon } from '@/components/icons';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import Image from 'next/image';
 import { RegistrationAndAccess } from '@/types';
 import { shortenAddress } from '@/utils/format';

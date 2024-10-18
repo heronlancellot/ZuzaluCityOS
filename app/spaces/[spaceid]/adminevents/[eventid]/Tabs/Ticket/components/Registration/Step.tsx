@@ -185,7 +185,7 @@ const stepTwoItems: ItemType[] = [
   },
   {
     id: TicketingMethod.LottoPGF,
-    name: 'LottoPGF',
+    name: 'LottoPGF (Auditing in progress, coming Very Soon)',
     description: (
       <Stack spacing="10px">
         <Typography fontSize={13} lineHeight={1.4} sx={{ opacity: 0.8 }}>
@@ -208,6 +208,7 @@ const stepTwoItems: ItemType[] = [
       </Stack>
     ),
     icon: <LottoPGFIcon size={5} />,
+    disabled: true,
   },
 ];
 
@@ -303,9 +304,9 @@ export const StepTwo = ({
                 What is Whitelisting?
               </Typography>
               {openTips ? (
-                <ChevronDownIcon size={3} />
-              ) : (
                 <ChevronUpIcon size={3} />
+              ) : (
+                <ChevronDownIcon size={3} />
               )}
             </Stack>
           </Stack>

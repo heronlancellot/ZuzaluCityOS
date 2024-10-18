@@ -193,7 +193,12 @@ const Create = () => {
       }
       const urlName = covertNameToUrlName(name);
       // @ts-ignore
-      await createUrl(urlName, result.data.createSpace.document.id, 'spaces');
+      await createUrl(
+        urlName,
+        // @ts-ignore
+        result.data?.createZucitySpace?.document?.id,
+        'spaces',
+      );
       setShowModal(true);
     } catch (err: any) {
       console.log(err);

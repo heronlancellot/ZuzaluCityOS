@@ -35,7 +35,6 @@ import { Event, IProps, Contract } from '@/types';
 
 export const SponsorAgree: React.FC<IProps> = ({
   setIsAgree,
-  eventContractID,
   setFilteredResults,
   event,
 }) => {
@@ -54,7 +53,7 @@ export const SponsorAgree: React.FC<IProps> = ({
         address: TICKET_FACTORY_ADDRESS as Address,
         abi: TICKET_FACTORY_ABI as Abi,
         functionName: 'getTickets',
-        args: [eventContractID],
+        args: [event?.regAndAccess.edges[0].node.scrollPassContractFactoryID],
       })) as Array<string>;
       setTicketAddresses(getTicketAddresses);
 
@@ -284,18 +283,20 @@ export const SponsorMint: React.FC<IProps> = ({
   const { address } = useAccount();
   const filteredTickets = filteredResults.filter((ticket) => {
     const contractAddress = ticket[0].trim().toLowerCase();
-    const match = event?.contracts?.some((contract) => {
-      if (!contract.contractAddress) {
-        return false;
-      }
-      const normalizedContractAddress = contract.contractAddress
-        .trim()
-        .toLowerCase();
-      const isMatch =
-        normalizedContractAddress === contractAddress &&
-        contract.type === 'Sponsor';
-      return isMatch;
-    });
+    const match = event?.regAndAccess?.edges[0]?.node?.scrollPassTickets?.some(
+      (contract) => {
+        if (!contract.contractAddress) {
+          return false;
+        }
+        const normalizedContractAddress = contract.contractAddress
+          .trim()
+          .toLowerCase();
+        const isMatch =
+          normalizedContractAddress === contractAddress &&
+          contract.type === 'Sponsor';
+        return isMatch;
+      },
+    );
     return match;
   });
   const findMatchingContract = (
@@ -451,7 +452,8 @@ export const SponsorMint: React.FC<IProps> = ({
                   startIcon={<RightArrowIcon color="#67DBFF" />}
                   onClick={() => {
                     const matchingContract = findMatchingContract(
-                      event?.contracts as Contract[],
+                      event?.regAndAccess?.edges[0]?.node
+                        ?.scrollPassTickets as Contract[],
                       ticket[0],
                     );
                     if (matchingContract) {
@@ -749,7 +751,7 @@ export const SponsorComplete: React.FC<IProps> = ({
             Donate to the Event
           </Typography>
           <Typography variant="bodyBB">
-            Send your donated tokens to zuvillage.eth
+            Contact the event admin to donate
           </Typography>
         </Stack>
         <Stack direction="row" spacing="10px" justifyContent="center">

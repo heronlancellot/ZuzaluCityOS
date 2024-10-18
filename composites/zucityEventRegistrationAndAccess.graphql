@@ -40,6 +40,10 @@ type ScrollPassTicket {
   status: String! @string(maxLength: 1000)
   checkin: String! @string(maxLength: 1000)
   tbd: String @string(maxLength: 1000)
+  name: String! @string(maxLength: 1000)
+  price: Int
+  tokenType: String! @string(maxLength: 1000)
+  disclaimer: String @string(maxLength: 50000)
 }
 
 type ZuPass {

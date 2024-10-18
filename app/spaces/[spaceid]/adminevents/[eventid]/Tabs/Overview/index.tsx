@@ -284,7 +284,6 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
           socialLinks: socialLinks ?? [],
           tracks: tracks,
           adminId: adminId,
-          externalUrl: inputs.externalUrl,
           person: person,
           locations: locations,
           timezone: selectedTimezone

@@ -5,11 +5,9 @@ import ApplicationPanel from '../Application/Panel';
 import AccessRules from '../AccessRules';
 import { PlusCircleIcon, PlusIcon } from '@/components/icons';
 import { ZuButton } from '@/components/core';
-import Dialog from '@/app/spaces/components/Modal/Dialog';
 import TicketCard, { TicketCardProps } from '../TicketList/TicketCard';
 import { Contract, Event, RegistrationAndAccess } from '@/types';
-import { useCreateEventId } from '../../hooks/useCreateEventId';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import useRegAndAccess from '@/hooks/useRegAndAccess';
 import { TagProps } from '../types';
 
@@ -67,7 +65,10 @@ export default function ScrollPassList({
                   fontWeight: 600,
                   lineHeight: 1.2,
                 }}
-                onClick={onToggle}
+                onClick={() => {
+                  setToggleAction('CreateTicket');
+                  onToggle();
+                }}
               >
                 Add a ticket
               </ZuButton>

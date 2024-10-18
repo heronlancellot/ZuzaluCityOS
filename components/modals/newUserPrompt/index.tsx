@@ -20,6 +20,7 @@ interface NewUserPromprtModalProps {
   onClose: () => void;
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
   eventId: string;
+  ticketType: string;
 }
 
 export default function NewUserPromptModal({
@@ -27,6 +28,7 @@ export default function NewUserPromptModal({
   onClose,
   setVerify,
   eventId,
+  ticketType,
 }: NewUserPromprtModalProps) {
   const [stage, setStage] = useState('Initial');
   const [nickname, setNickName] = useState<string>('');
@@ -85,50 +87,58 @@ export default function NewUserPromptModal({
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (
-        nullifierHash &&
-        ceramic?.did?.parent &&
-        !hasProcessedNullifier.current
-      ) {
-        setStage('Updating');
-        const addZupassMemberInput = {
-          eventId: eventId,
-          memberDID: ceramic?.did?.parent,
-          memberZupass: nullifierHash,
-        };
-        updateZupassMember(addZupassMemberInput)
-          .then((result) => {
-            hasProcessedNullifier.current = true;
-            if (result.status === 200) {
-              setVerify(true);
-              if (username) {
-                setStage('Final');
-              } else {
-                setStage('Nickname');
-              }
-            }
-          })
-          .catch((error) => {
-            const errorMessage =
-              typeof error === 'string'
-                ? error
-                : error instanceof Error
-                  ? error.message
-                  : 'An unknown error occurred';
-            if (errorMessage === 'You are already whitelisted') {
-              setVerify(true);
-              if (username) {
-                setStage('Final');
-              } else {
-                setStage('Nickname');
-              }
-            } else if (
-              errorMessage ===
-              'You have already use this zupass to whitelist an account, please login with that address'
-            ) {
-              setStage('Double Check-in');
-            }
-          });
+      switch (ticketType) {
+        case 'ZuPass':
+          if (
+            nullifierHash &&
+            ceramic?.did?.parent &&
+            !hasProcessedNullifier.current
+          ) {
+            setStage('Updating');
+            const addZupassMemberInput = {
+              eventId: eventId,
+              memberDID: ceramic?.did?.parent,
+              memberZupass: nullifierHash,
+            };
+            updateZupassMember(addZupassMemberInput)
+              .then((result) => {
+                hasProcessedNullifier.current = true;
+                if (result.status === 200) {
+                  setVerify(true);
+                  if (username) {
+                    setStage('Final');
+                  } else {
+                    setStage('Nickname');
+                  }
+                }
+              })
+              .catch((error) => {
+                const errorMessage =
+                  typeof error === 'string'
+                    ? error
+                    : error instanceof Error
+                      ? error.message
+                      : 'An unknown error occurred';
+                if (errorMessage === 'You are already whitelisted') {
+                  setVerify(true);
+                  if (username) {
+                    setStage('Final');
+                  } else {
+                    setStage('Nickname');
+                  }
+                } else if (
+                  errorMessage ===
+                  'You have already use this zupass to whitelist an account, please login with that address'
+                ) {
+                  setStage('Double Check-in');
+                }
+              });
+          }
+          break;
+        case 'ZuPass+':
+          break;
+        case 'ZuPass++':
+          break;
       }
     }
   }, [isAuthenticated]);
@@ -182,7 +192,7 @@ export default function NewUserPromptModal({
           {stage === 'Initial' && (
             <>
               <Typography fontSize={'18px'}>
-                Warning - Zuzalu.city is currently in Alpha
+                Warning - Zuzalu.city is currently in Beta
               </Typography>
               <ul>
                 <li>

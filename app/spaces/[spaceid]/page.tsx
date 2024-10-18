@@ -6,7 +6,6 @@ import {
   Snackbar,
   Typography,
   Alert,
-  useMediaQuery,
   Skeleton,
   Stack,
 } from '@mui/material';
@@ -14,22 +13,15 @@ import { EventCard } from '@/components/cards';
 // import AnnouncementCard from 'components/AnnouncementCart';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import {
-  ArrowDownIcon,
   ChevronDownIcon,
-  EventIcon,
-  HomeIcon,
-  PlusCircleIcon,
   ShareIcon,
 } from 'components/icons';
-import { RightArrowCircleSmallIcon } from 'components/icons/RightArrowCircleSmall';
 import SidebarButton from 'components/layout/Sidebar/SidebarButton';
-import { MOCK_DATA } from 'mock';
 import Image from 'next/image';
 import React, { Fragment, useEffect, useState } from 'react';
 import SubSidebar from 'components/layout/Sidebar/SubSidebar';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { Space, Event, SpaceEventData } from '@/types';
-import { Sidebar } from '@/components/layout';
 import {
   EventCardMonthGroup,
   EventCardSkeleton,
@@ -39,8 +31,6 @@ import {
 import { ChevronUpIcon } from '@/components/icons/ChevronUp';
 import dynamic from 'next/dynamic';
 import { getSpaceEventsQuery } from '@/services/space';
-import { useQuery } from '@tanstack/react-query';
-import { getUrlFromIdAndName } from '@/services/url';
 import useGetShareLink from '@/hooks/useGetShareLink';
 
 const EditorPreview = dynamic(
@@ -341,17 +331,6 @@ export default function SpaceDetailPage() {
                     overflow: 'hidden',
                   }}
                 >
-                  <Box
-                    sx={{
-                      fontWeight: '700',
-                      color: 'white',
-                      marginTop: '12px',
-                      fontSize: '18px',
-                      lineHeight: '160%',
-                    }}
-                  >
-                    {space.name}
-                  </Box>
                   <EditorPreview
                     value={space.description}
                     collapsed={isCollapsed}

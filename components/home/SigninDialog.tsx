@@ -41,7 +41,7 @@ export default function SigninDialog({
           alignItems={'center'}
           justifyContent={'center'}
         >
-          <CheckinConnectButton handleConfirm={handleShowNewUserModal} />
+          {/*<CheckinConnectButton handleConfirm={handleShowNewUserModal} />*/}
         </Stack>
       );
     }
