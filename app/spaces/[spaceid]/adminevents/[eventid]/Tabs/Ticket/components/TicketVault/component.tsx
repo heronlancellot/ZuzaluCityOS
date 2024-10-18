@@ -61,6 +61,7 @@ interface IWithdrawToken {
   tokenAddress: string;
   ticketAddress: string;
   ticket: Array<any>;
+  refetch?: () => void;
 }
 
 interface IConfirmWithdrawalTransaction {
@@ -97,6 +98,7 @@ interface ITicketVault {
   ticketAddresses: Array<string>;
   tickets: Array<any>;
   refetch?: () => void;
+  onClose?: () => void;
 }
 export const WithdrawToken = ({
   tokenSymbol,
@@ -104,6 +106,7 @@ export const WithdrawToken = ({
   tokenAddress,
   ticketAddress,
   ticket,
+  refetch,
 }: IWithdrawToken) => {
   const [showWithdrawalModal, setShowWithdrawalModal] = React.useState(false);
   const [withdrawInfo, setWithdrawInfo] = React.useState<IProps>();
@@ -152,6 +155,7 @@ export const WithdrawToken = ({
 
       if (withdrawStatus === 'success') {
         // action to perform
+        refetch?.();
         setShowWithdrawalModal(false);
       }
     } catch (error) {
@@ -940,6 +944,7 @@ export const Whitelist = ({
   ticketAddresses,
   tickets,
   refetch,
+  onClose,
 }: ITicketVault) => {
   const [addresses, setAddresses] = useState<string[]>([]);
   const [initial, setInitial] = useState<boolean>(false);
@@ -988,6 +993,7 @@ export const Whitelist = ({
       });
 
       if (appendStatus === 'success') {
+        setUpdated(true);
         refetch?.();
         if (emailList.length > 0) {
           await handleSendEmails();
@@ -1307,21 +1313,27 @@ export const Whitelist = ({
             </Stack>
           )}
           <TicketProcessingProgress />
-          <ZuButton
-            onClick={() => {
-              setInitial(false);
-              setProcess(false);
-              setEmail(false);
-            }}
-            sx={{
-              backgroundColor: '#2f474e',
-              color: '#67DAFF',
-              width: '100%',
-            }}
-            startIcon={<XCricleIcon color="#67DAFF" />}
-          >
-            Close
-          </ZuButton>
+          {updated && (
+            <ZuButton
+              onClick={() => {
+                setInitial(false);
+                setProcess(false);
+                setEmail(false);
+                setUpdated(false);
+                setEmailList('');
+                setAddresses([]);
+                onClose?.();
+              }}
+              sx={{
+                backgroundColor: '#2f474e',
+                color: '#67DAFF',
+                width: '100%',
+              }}
+              startIcon={<XCricleIcon color="#67DAFF" />}
+            >
+              Close
+            </ZuButton>
+          )}
         </>
       )}
     </Stack>
