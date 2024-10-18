@@ -57,6 +57,7 @@ const Home = () => {
                   tracks
                   space {
                     avatar
+                    name
                   }
                   regAndAccess(first: 1) {
                     edges {

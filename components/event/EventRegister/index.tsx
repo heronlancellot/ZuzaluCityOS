@@ -31,6 +31,7 @@ interface EventRegisterProps {
   eventId: string;
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
   eventRegistration: RegistrationAndAccess;
+  setApplication: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const EventRegister: React.FC<EventRegisterProps> = ({
@@ -41,6 +42,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   eventId,
   setVerify,
   eventRegistration,
+  setApplication,
 }) => {
   const [isOne, setIsOne] = useState<boolean>(false);
   const [isTwo, setIsTwo] = useState<boolean>(false);
@@ -236,6 +238,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           setSponsor={setSponsor}
           setWhitelist={setWhitelist}
           handleStep={handleStep}
+          setApplication={setApplication}
         />
       );
     }
@@ -339,7 +342,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
         </Stack>
       </Stack>
       {currentStep === 0 && <TicketDefault />}
-      {currentStep === 1 && (
+      {currentStep === 2 && (
         <ValidateCredential
           handleStep={handleStep}
           onVerify={handleVerify}
@@ -351,7 +354,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           setIsValidating={setIsValidating}
         />
       )}
-      {currentStep === 2 && (
+      {currentStep === 3 && (
         <LinkAddress
           handleStep={handleStep}
           address={address?.slice(0, 10) + '...'}

@@ -22,6 +22,7 @@ export interface ScrollPassDefaultProps {
   setWhitelist: Dispatch<SetStateAction<boolean>>;
   onToggle: (anchor: Anchor, open: boolean) => void;
   handleStep: (step: number) => void;
+  setApplication: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
@@ -31,6 +32,7 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
   setWhitelist,
   onToggle,
   handleStep,
+  setApplication,
 }) => {
   return (
     <Stack
@@ -94,6 +96,11 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
               backgroundColor: 'rgba(125, 255, 209, 0.1)',
             }}
             startIcon={<ArrowCircleRightIcon sx={{ color: '#7DFFD1' }} />}
+            onClick={() => {
+              setWhitelist(false);
+              setApplication(true);
+              onToggle('right', true);
+            }}
           >
             Apply to Join
           </ZuButton>

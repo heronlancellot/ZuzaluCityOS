@@ -116,6 +116,7 @@ const EventContent: React.FC = () => {
                     tokenType
                     name
                     price
+                    disclaimer
                   }
                   zuLottoInfo {
                     name

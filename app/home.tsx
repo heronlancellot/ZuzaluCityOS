@@ -515,7 +515,7 @@ const Home: React.FC = () => {
                         </Fragment>
                       );
                     })}
-                    <EventComingSoonCard />
+                    {/*<EventComingSoonCard />*/}
                   </>
                 )}
               </Box>
