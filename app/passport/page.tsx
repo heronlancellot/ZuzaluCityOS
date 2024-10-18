@@ -1,12 +1,5 @@
 'use client';
-import {
-  Stack,
-  Typography,
-  Box,
-  Skeleton,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Stack, Typography, Box, Skeleton, useTheme } from '@mui/material';
 import {
   ArrowForwardIcon,
   CalendarIcon,
@@ -15,7 +8,7 @@ import {
   ScrollPassIcon,
   ZuPassIcon,
 } from '@/components/icons';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { useEffect, useMemo, useState } from 'react';
 import { EventData, Event, ScrollPassTickets } from '@/types';
@@ -24,9 +17,7 @@ import Image from 'next/image';
 const Home = () => {
   const router = useRouter();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { isAuthenticated, composeClient, ceramic, username } =
-    useCeramicContext();
+  const { isAuthenticated, composeClient, ceramic } = useCeramicContext();
 
   const [events, setEvents] = useState<Event[]>([]);
   const [tickets, setTickets] = useState<ScrollPassTickets[]>([]);
@@ -57,9 +48,12 @@ const Home = () => {
         `;
     const getProfileResponse: any =
       await composeClient.executeQuery(GET_Profile_QUERY);
-    setTickets(
-      getProfileResponse.data.viewer.zucityProfile.myScrollPassTickets,
-    );
+    if (getProfileResponse.data) {
+      const { myScrollPassTickets } =
+        getProfileResponse.data.viewer.zucityProfile;
+      setTickets(myScrollPassTickets ?? []);
+      return myScrollPassTickets ?? [];
+    }
   };
 
   const getEvents = async () => {
@@ -72,15 +66,6 @@ const Home = () => {
               id
               imageUrl
               title
-              members{
-              id
-              }
-              admins{
-              id
-              }
-              superAdmin{
-              id
-              }
             }
           }
         }
@@ -125,28 +110,15 @@ const Home = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        const ticketsData = await getTickets();
+        if (!ticketsData) return;
         let eventsData = await getEvents();
-        await getTickets();
+        console.log(ticketsData, eventsData);
         if (eventsData) {
           eventsData =
             eventsData.filter((eventDetails) => {
-              const admins =
-                eventDetails?.admins?.map((admin) => admin.id.toLowerCase()) ||
-                [];
-              const superadmins =
-                eventDetails?.superAdmin?.map((superAdmin) =>
-                  superAdmin.id.toLowerCase(),
-                ) || [];
-              const members =
-                eventDetails?.members?.map((member) =>
-                  member.id.toLowerCase(),
-                ) || [];
-              const userDID =
-                ceramic?.did?.parent.toString().toLowerCase() || '';
-              return (
-                superadmins.includes(userDID) ||
-                admins.includes(userDID) ||
-                members.includes(userDID)
+              return ticketsData.some(
+                (ticket: any) => ticket.eventId === eventDetails.id,
               );
             }) || [];
           setEvents(eventsData);
@@ -299,7 +271,7 @@ const Home = () => {
         <Stack spacing="10px">
           {isLoading ? (
             <Skeleton variant="rounded" width="100%" height="72px" />
-          ) : (
+          ) : events.length > 0 ? (
             events.map((item, index) => (
               <Stack
                 sx={{ cursor: 'pointer' }}
@@ -352,6 +324,8 @@ const Home = () => {
                 </Stack>
               </Stack>
             ))
+          ) : (
+            <Typography sx={{ opacity: 0.7 }}>No tickets found</Typography>
           )}
         </Stack>
       </Stack>

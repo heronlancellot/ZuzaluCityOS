@@ -21,6 +21,7 @@ interface ITicketVault {
   tickets: Array<any>;
   eventContracts: Contract[];
   refetch: () => void;
+  onClose: () => void;
 }
 
 const TicketVault = ({
@@ -29,6 +30,7 @@ const TicketVault = ({
   tickets,
   eventContracts,
   refetch,
+  onClose,
 }: ITicketVault) => {
   const isMobile = useMediaQuery('(max-width:500px)');
   const [action, setAction] = React.useState('Withdraw');
@@ -507,6 +509,7 @@ const TicketVault = ({
 
         {action === 'Withdraw' ? (
           <WithdrawToken
+            refetch={refetch}
             tokenSymbol={ticket[2]?.result}
             balance={balance}
             ticketAddress={ticketAddress}
@@ -525,6 +528,7 @@ const TicketVault = ({
             vaultIndex={vaultIndex}
             ticketAddresses={ticketAddresses}
             tickets={tickets}
+            onClose={onClose}
           />
         ) : null}
 

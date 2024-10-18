@@ -524,6 +524,7 @@ const Ticket = ({ event }: PropTypes) => {
             ? event?.regAndAccess.edges[0].node.scrollPassTickets
             : []
         }
+        onClose={handleClose}
       />
     </Box>
   );
