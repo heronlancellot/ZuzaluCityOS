@@ -90,7 +90,8 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
   const { breakpoints } = useTheme();
   const isMobile = useMediaQuery(breakpoints.down('sm'));
 
-  const { composeClient } = useCeramicContext();
+  const { composeClient, profile } = useCeramicContext();
+  const profileId = profile?.id || '';
 
   const [state, setState] = useState({
     top: false,
@@ -201,9 +202,10 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
           setIsApplicationStep,
           handleClose,
           setIsApplicationSubmitStep,
+          profileId,
         },
       },
-      {
+      /*{
         condition: isApplicationStep && !isApplicationSubmitStep,
         Component: ApplicationSubmit,
         props: {
@@ -212,7 +214,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
           event: eventData as Event,
           handleClose,
         },
-      },
+      },*/
     ] as const;
 
     return (

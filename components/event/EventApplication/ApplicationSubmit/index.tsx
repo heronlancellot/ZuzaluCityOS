@@ -39,42 +39,5 @@ export const ApplicationSubmit: React.FC<ApplicationSubmitProps> = ({
     handleClose();
   };
 
-  return (
-    <Stack padding={2.5} spacing={2.5}>
-      <Typography variant="h5">{`申请参加 ${event.title}`}</Typography>
-
-      <Stack spacing={2.5}>
-        <TextField
-          name="name"
-          label="姓名"
-          value={formData.name}
-          onChange={handleChange}
-          fullWidth
-        />
-
-        <TextField
-          name="email"
-          label="电子邮箱"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          fullWidth
-        />
-
-        <TextField
-          name="reason"
-          label="申请理由"
-          multiline
-          rows={4}
-          value={formData.reason}
-          onChange={handleChange}
-          fullWidth
-        />
-      </Stack>
-
-      <Button variant="contained" color="primary" onClick={handleSubmit}>
-        提交申请
-      </Button>
-    </Stack>
-  );
+  return <Stack padding={2.5} spacing={2.5}></Stack>;
 };
