@@ -7,16 +7,21 @@ import Dialog from '@/app/spaces/components/Modal/Dialog';
 import useOpenDraw from '@/hooks/useOpenDraw';
 import ViewForm from './ViewForm';
 import Draw from '@/components/drawer';
+import { ApplicationForm, RegistrationAndAccess } from '@/types';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { updateApplicationForm } from '@/services/event/updateEvent';
+import { useParams } from 'next/navigation';
 
 interface ItemProps {
+  data: ApplicationForm;
   isLast: boolean;
   handleOperate: (type: 'approve' | 'deny') => void;
   handleView: () => void;
 }
 
-const Item = ({ isLast, handleOperate, handleView }: ItemProps) => {
-  const isOperated = true;
-  const isApproved = false;
+const Item = ({ data, isLast, handleOperate, handleView }: ItemProps) => {
+  const isOperated = data.approveStatus !== null;
+  const isApproved = data.approveStatus === 'approved';
 
   return (
     <Stack spacing="10px">
@@ -36,11 +41,11 @@ const Item = ({ isLast, handleOperate, handleView }: ItemProps) => {
             lineHeight={1.6}
             sx={{ opacity: 0.8 }}
           >
-            Name
+            {data.profile.username}&apos;s Application
           </Typography>
         </Stack>
         <Stack spacing="10px" direction="row" alignItems="center">
-          {isOperated ? (
+          {!isOperated ? (
             <>
               <ConfigButton onClick={() => handleOperate('approve')}>
                 Approve
@@ -63,7 +68,11 @@ const Item = ({ isLast, handleOperate, handleView }: ItemProps) => {
               }
               color={isApproved ? '#7DFFD1' : '#FF5E5E'}
             >
-              {isApproved ? <CheckIcon size={4} /> : <XMarkIcon size={4} />}
+              {isApproved ? (
+                <CheckIcon size={4} />
+              ) : (
+                <XMarkIcon size={4} color="#FF5E5E" />
+              )}
               <Typography fontSize={14} fontWeight={600} lineHeight={1.2}>
                 {isApproved ? 'Approved' : 'Denied'}
               </Typography>
@@ -77,33 +86,67 @@ const Item = ({ isLast, handleOperate, handleView }: ItemProps) => {
 };
 
 interface SubmissionsProps {
-  list: any[];
+  list: ApplicationForm[];
+  questions: string[];
+  regAndAccess?: RegistrationAndAccess;
 }
 
-export default function Submissions({ list = [] }: SubmissionsProps) {
+export default function Submissions({
+  regAndAccess,
+  list = [],
+  questions = [],
+}: SubmissionsProps) {
+  const pathname = useParams();
+  const eventId = pathname.eventid.toString();
+
+  const queryClient = useQueryClient();
   const { open, handleOpen, handleClose } = useOpenDraw();
   const [showDialog, setShowDialog] = useState(false);
   const [needApprove, setNeedApprove] = useState(false);
+  const [currentApplication, setCurrentApplication] =
+    useState<ApplicationForm>();
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: string; approveStatus: string }) =>
+      updateApplicationForm(eventId, data.id, data.approveStatus),
+    onSuccess: () => {
+      setCurrentApplication(undefined);
+      setNeedApprove(false);
+      handleClose();
+      handleDialog();
+      queryClient.invalidateQueries({
+        queryKey: ['fetchEventById'],
+      });
+    },
+  });
 
   const handleDialog = useCallback(() => {
     setShowDialog((v) => !v);
   }, []);
 
   const handleOperate = useCallback(
-    (type: 'approve' | 'deny') => {
-      handleDialog();
+    (type: 'approve' | 'deny', data: ApplicationForm) => {
+      setCurrentApplication(data);
       setNeedApprove(type === 'approve');
+      handleDialog();
     },
     [handleDialog],
   );
 
-  const handleView = useCallback(() => {
-    handleOpen();
-  }, [handleOpen]);
+  const handleView = useCallback(
+    (data: ApplicationForm) => {
+      setCurrentApplication(data);
+      handleOpen();
+    },
+    [handleOpen],
+  );
 
   const handleConfirm = useCallback(() => {
-    handleDialog();
-  }, [handleDialog]);
+    updateMutation.mutate({
+      id: currentApplication!.id,
+      approveStatus: needApprove ? 'approved' : 'denied',
+    });
+  }, [updateMutation, currentApplication, needApprove]);
 
   return (
     <>
@@ -130,10 +173,11 @@ export default function Submissions({ list = [] }: SubmissionsProps) {
           ) : (
             list.map((item, index) => (
               <Item
-                key={item}
+                key={index}
+                data={item}
                 isLast={index === list.length - 1}
-                handleOperate={handleOperate}
-                handleView={handleView}
+                handleOperate={(type) => handleOperate(type, item)}
+                handleView={() => handleView(item)}
               />
             ))
           )}
@@ -148,11 +192,18 @@ export default function Submissions({ list = [] }: SubmissionsProps) {
         }
         confirmText="Confirm"
         showModal={showDialog}
+        isLoading={updateMutation.isPending}
         onClose={handleDialog}
         onConfirm={handleConfirm}
       />
       <Draw open={open} onClose={handleClose} onOpen={handleOpen}>
-        <ViewForm onClose={handleClose} handleOperate={handleOperate} />
+        <ViewForm
+          regAndAccess={regAndAccess}
+          currentApplication={currentApplication}
+          questions={questions}
+          onClose={handleClose}
+          handleOperate={(type) => handleOperate(type, currentApplication!)}
+        />
       </Draw>
     </>
   );

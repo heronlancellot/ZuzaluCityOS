@@ -139,6 +139,12 @@ export interface ApplicationForm {
   id: string;
   answers: string;
   approveStatus: string;
+  eventId: string;
+  profile: {
+    id: string;
+    username: string;
+    avatar: string;
+  };
 }
 
 export interface EventEdge {

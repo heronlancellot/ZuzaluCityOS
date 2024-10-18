@@ -14,3 +14,15 @@ export const updateCheckinPass = async (
     checkinPass,
   });
 };
+
+export const updateApplicationForm = async (
+  eventId: string,
+  id: string,
+  approveStatus: string,
+) => {
+  return await axiosInstance.post('/api/event/applicationForm/update', {
+    id,
+    approveStatus,
+    eventId,
+  });
+};

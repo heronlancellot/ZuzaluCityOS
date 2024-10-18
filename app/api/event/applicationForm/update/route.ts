@@ -12,7 +12,7 @@ dayjs.extend(timezone);
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { eventId, profileId, answers } = body;
+    const { id, approveStatus, eventId } = body;
     const { data, error } = await supabase
       .from('events')
       .select('privateKey')
@@ -29,43 +29,38 @@ export async function POST(req: Request) {
     ceramic.did = did;
     composeClient.setDID(did);
 
-    const update: any = await composeClient.executeQuery(
+    const result: any = await composeClient.executeQuery(
       `
-      mutation CreateZucityApplicationFormMutation($input: CreateZucityApplicationFormInput!) {
-        createZucityApplicationForm(
+      mutation UpdateZucityApplicationFormMutation($input: UpdateZucityApplicationFormInput!) {
+        updateZucityApplicationForm(
           input: $input
         ) {
           document {
             id
-            eventId
-            profileId
-            answers
-            approveStatus
           }
         }
       }
       `,
       {
         input: {
+          id,
           content: {
-            eventId: eventId,
-            profileId: profileId,
-            answers: answers,
-            approveStatus: null,
+            approveStatus,
           },
         },
       },
     );
 
-    const applicationFormId =
-      update.data.createZucityApplicationForm.document.id;
+    if (result?.errors) {
+      console.error('Error updating application form:', result.errors);
+      return new NextResponse('Error updating application form', {
+        status: 500,
+      });
+    }
 
     return NextResponse.json(
       {
-        data: {
-          applicationFormId,
-        },
-        message: 'Your application form has been submitted!',
+        message: 'Submitted!',
       },
       { status: 200 },
     );

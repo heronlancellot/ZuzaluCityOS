@@ -13,11 +13,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Event } from '@/types';
-import {
-  ArrowDownIcon,
-  ArrowDownSquare,
-  RightArrowIcon,
-} from '@/components/icons';
+import { RightArrowIcon } from '@/components/icons';
 import { ArrowDropDownIcon } from '@mui/x-date-pickers';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -52,11 +48,9 @@ const schema = yup.object().shape({
 });
 
 export const ApplicationForm: React.FC<ApplicationFormProps> = ({
-  setIsApplicationStep,
   event,
   handleClose,
   profileId,
-  setIsApplicationSubmitStep,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const {
@@ -66,21 +60,6 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
   } = useForm<FormData>({
     resolver: yupResolver(schema),
   });
-
-  interface JsonDataType {
-    'selected ticket': {
-      type: string;
-      content: string;
-    };
-    'receiving address': {
-      type: string;
-      content: string;
-    };
-    [key: string]: {
-      type: string;
-      content: string;
-    };
-  }
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
@@ -126,18 +105,22 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
   };
 
   return (
-    <Stack
-      padding={2.5}
-      spacing={2.5}
-      border="1px solid #383838"
-      bgcolor="#262626"
-      height="auto"
-    >
+    <Stack padding={2.5} spacing={2.5} bgcolor="#262626" height="auto">
       <Stack spacing={1.25}>
-        <Typography fontSize="20px" fontWeight={700}>
+        <Typography
+          fontSize="20px"
+          fontWeight={700}
+          lineHeight={1.2}
+          sx={{ opacity: 0.7 }}
+        >
           Submit Application
         </Typography>
-        <Typography fontSize="14px" fontWeight={600}>
+        <Typography
+          fontSize="14px"
+          fontWeight={600}
+          lineHeight={1.6}
+          sx={{ opacity: 0.8 }}
+        >
           Fill out the below form to submit to the event for approval
         </Typography>
       </Stack>
@@ -146,19 +129,27 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
           padding={2.5}
           spacing={2.5}
           height="auto"
-          border="1px solid #383838"
+          border="1px solid rgba(255, 255, 255, 0.10)"
           bgcolor="rgba(255, 255, 255, 0.02)"
           borderRadius="10px"
         >
           <Stack spacing={1.25}>
-            <Typography fontSize="16px" fontWeight={700}>
+            <Typography fontSize="16px" fontWeight={700} lineHeight={1.2}>
               You are selecting:
             </Typography>
-            <Accordion sx={{ bgcolor: 'rgba(255, 255, 255, 0.02)' }}>
+            <Accordion
+              sx={{
+                bgcolor: 'rgba(255, 255, 255, 0.02)',
+                mt: '10px !important',
+                mb: '0 !important',
+              }}
+              defaultExpanded
+            >
               <AccordionSummary
                 expandIcon={<ArrowDropDownIcon sx={{ color: 'white' }} />}
                 aria-controls="panel1a-content"
                 id="panel1a-header"
+                sx={{ minHeight: '64px' }}
               >
                 <Typography fontSize="14px" fontWeight={600}>
                   Click to expand to view ticket types
@@ -208,27 +199,19 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
                 }}
               >
                 <Stack spacing={1.25}>
-                  <Typography fontSize={16} fontWeight={700} color="white">
+                  <Typography fontSize={16} fontWeight={700} lineHeight={1.2}>
                     Receiving Address
                   </Typography>
                   <Typography
                     fontSize={14}
                     fontWeight={500}
-                    color="white"
+                    lineHeight={1.2}
                     sx={{ opacity: 0.8 }}
                   >
                     This will be the address to assign tickets to
                   </Typography>
                 </Stack>
                 <Stack spacing={1.25}>
-                  <Typography
-                    fontSize={16}
-                    fontWeight={400}
-                    color="white"
-                    sx={{ opacity: 0.8 }}
-                  >
-                    Enter Address
-                  </Typography>
                   <TextField
                     fullWidth
                     placeholder="Copy and paste your address here"
@@ -236,29 +219,6 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
                     {...register('address')}
                     error={!!errors.address}
                     helperText={errors.address?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        height: 42,
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        borderRadius: 1.25,
-                        '& fieldset': {
-                          borderColor: 'rgba(255, 255, 255, 0.1)',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: 'rgba(255, 255, 255, 0.2)',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'primary.main',
-                        },
-                      },
-                      '& .MuiInputBase-input': {
-                        color: 'white',
-                        '&::placeholder': {
-                          opacity: 0.5,
-                          color: 'white',
-                        },
-                      },
-                    }}
                   />
                 </Stack>
                 <Typography
@@ -273,32 +233,19 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
               </Stack>
             </Stack>
           </Stack>
-          <Stack
-            sx={{
-              maxHeight: '400px',
-              overflowY: 'auto',
-              '&::-webkit-scrollbar': {
-                display: 'none',
-              },
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          >
+          <Stack spacing="20px">
             {JSON.parse(event.regAndAccess.edges[0].node.applicationForm).map(
               (item: QuestionItem, index: number) => (
-                <Stack key={index} spacing={0.5} width="100%" marginBottom={2}>
+                <Stack key={index} spacing="10px" width="100%">
                   <Typography
                     sx={{
-                      color: 'white',
                       fontSize: 16,
                       fontWeight: 700,
-                      lineHeight: '19px',
-                      marginBottom: '4px',
+                      lineHeight: '1.2',
                     }}
                   >
                     {item.question}
                   </Typography>
-
                   <TextField
                     multiline
                     rows={4}
@@ -306,29 +253,6 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
                     placeholder="Enter your answer here"
                     variant="outlined"
                     {...register(`question_${index}`)}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        color: 'white',
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        '& fieldset': {
-                          borderColor: 'rgba(255, 255, 255, 0.1)',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: 'rgba(255, 255, 255, 0.2)',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'white',
-                        },
-                      },
-                      '& .MuiInputBase-input': {
-                        height: '92px !important',
-                        overflow: 'auto',
-                        '&::placeholder': {
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          opacity: 1,
-                        },
-                      },
-                    }}
                   />
                 </Stack>
               ),
