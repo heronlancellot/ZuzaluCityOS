@@ -1,4 +1,4 @@
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import {
   StatusIndicatorPanel,
   TitleWithTag,
@@ -61,12 +61,20 @@ const RegistrationStatus = ({
         />
         <Box mt="20px">
           {!isAvailable ? (
-            <StatusIndicatorPanel
-              name="Unavailable"
-              checked={false}
-              disabled
-              type="registration"
-            />
+            <Box
+              p="10px"
+              bgcolor="rgba(255, 255, 255, 0.05)"
+              borderRadius="10px"
+            >
+              <Typography
+                fontSize={18}
+                fontWeight={700}
+                lineHeight={1.2}
+                sx={{ opacity: 0.8 }}
+              >
+                Unavailable
+              </Typography>
+            </Box>
           ) : (
             <StatusIndicatorPanel
               type="registration"
