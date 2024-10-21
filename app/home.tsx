@@ -73,11 +73,6 @@ const Home: React.FC = () => {
         let fetchedSpaces: Space[] = spaceData.zucitySpaceIndex.edges.map(
           (edge) => edge.node,
         );
-        if (!isDev) {
-          fetchedSpaces = fetchedSpaces.filter((space) =>
-            prodShowSpaceId.includes(space.id),
-          );
-        }
         setSpaces(fetchedSpaces);
       } else {
         console.error('Invalid data structure:', response.data);
