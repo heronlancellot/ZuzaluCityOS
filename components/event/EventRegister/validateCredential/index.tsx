@@ -29,7 +29,7 @@ const ValidateCredential: React.FC<ValidateCredentialProps> = ({
     let timer: ReturnType<typeof setTimeout>;
     if (isValid === true) {
       timer = setTimeout(() => {
-        handleStep(3);
+        handleStep(2);
       }, 2000);
     }
     return () => {

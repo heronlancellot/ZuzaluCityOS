@@ -342,7 +342,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
         </Stack>
       </Stack>
       {currentStep === 0 && <TicketDefault />}
-      {currentStep === 2 && (
+      {currentStep === 1 && (
         <ValidateCredential
           handleStep={handleStep}
           onVerify={handleVerify}
@@ -354,7 +354,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           setIsValidating={setIsValidating}
         />
       )}
-      {currentStep === 3 && (
+      {currentStep === 2 && (
         <LinkAddress
           handleStep={handleStep}
           address={address?.slice(0, 10) + '...'}

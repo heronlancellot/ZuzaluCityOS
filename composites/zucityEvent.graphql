@@ -36,6 +36,8 @@ type ZucityEvent
   members: [DID!] @list(maxLength: 10000)
   superAdmin: [DID!]! @list(maxLength: 1000) @immutable
   zupassHash: [MemberZupass] @list(maxLength: 10000)
+  scrollpassHash: [MemberScrollpass] @list(maxLength: 10000)
+  zulottoHash: [MemberZulotto] @list(maxLength: 10000)
   sessionStorage: String @string(minLength: 1, maxLength: 1000)
   customAttributes: [TBD] @list(maxLength: 10000)
   supportChain: String @string(minLength: 1, maxLength: 1000)
@@ -60,6 +62,12 @@ type OrganizerUpdate {
 }
 type MemberZupass {
   hash: String! @string(maxLength: 1000)
+}
+type MemberScrollpass {
+  hash: String! @string(maxLength: 10000)
+}
+type MemberZulotto {
+  hash: String! @string(maxLength: 10000)
 }
 type TBD {
   tbd: String @string(minLength: 1, maxLength: 10000)

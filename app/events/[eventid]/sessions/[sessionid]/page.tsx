@@ -212,7 +212,6 @@ const Home = () => {
               timezone
               title
               tracks
-              contractID
               members{
               id
               }

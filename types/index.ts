@@ -72,7 +72,6 @@ export interface Event {
       },
     ];
   };
-  zupassInfo: string;
   sessionStorage: string;
   supportChain: string;
   admins?: {
