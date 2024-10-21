@@ -71,7 +71,6 @@ const OverviewHeader = ({ event, setTabName }: PropTypes) => {
         .select('*')
         .eq('eventId', eventId);
       if (data) {
-        console.log(data);
       }
     } catch (err) {
       console.log(err);

@@ -269,7 +269,6 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
       try {
         setLoading(true);
         setBlockClickModal(true);
-        console.log('externalUrl', inputs.externalUrl);
         const eventUpdateInput: UpdateEventRequest = {
           id: event.id,
           name: inputs.name,
@@ -287,7 +286,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
           adminId: adminId,
           person: person,
           locations: locations,
-          externalUrl: inputs.externalUrl,
+          externalUrl: inputs.externalUrl || 'TBD',
           timezone: selectedTimezone
             ? selectedTimezone.value
             : dayjs.tz.guess(),
