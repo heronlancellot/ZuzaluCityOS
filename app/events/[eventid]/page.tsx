@@ -27,6 +27,9 @@ const Home = () => {
           node (id: $id) {
             ...on ZucityEvent {
                   id
+                  scrollpassHash {
+                    hash
+                  }
                   admins {
                     id
                   }
@@ -87,6 +90,7 @@ const Home = () => {
                           name
                           price
                           tokenType
+                          disclaimer
                         }
                         ticketType
                         zuPassInfo {
@@ -111,6 +115,7 @@ const Home = () => {
             id: eventId,
           },
         )) as CeramicResponseType<EventEdge>;
+      console.log(response);
       if (response.data) {
         if (response.data.node) {
           setEventData(response.data.node);
@@ -140,7 +145,6 @@ const Home = () => {
         const superAdminIds = lowerCaseIds(superAdmin);
         const memberIds = lowerCaseIds(members);
 
-        console.log(superAdminIds, adminIds, memberIds, userDID);
         setAnnouncementsEdit(
           superAdminIds.includes(userDID) || adminIds.includes(userDID),
         );

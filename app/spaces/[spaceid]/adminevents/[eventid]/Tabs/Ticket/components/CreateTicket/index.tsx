@@ -714,7 +714,8 @@ export const CreateTicket = ({
             <Typography variant="bodyBB">Add an Agreement Message</Typography>
             <Typography variant="bodyM" sx={{ opacity: 0.8 }}>
               Write an agreement for users to understand and agree before they
-              proceed to purchase this ticket.
+              proceed to purchase this ticket. This message will be displayed in
+              the minting process.
             </Typography>
             <TextField
               required
@@ -819,6 +820,7 @@ export const CreateTicket = ({
               </Typography>
               <Typography variant="bodyS" sx={{ opacity: '0.7' }}>
                 Set the end date and time for when minting for this ticket ends.
+                By default, minting will be open until the event ends.
               </Typography>
             </Stack>
           </Stack>

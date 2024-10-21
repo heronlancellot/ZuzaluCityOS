@@ -20,6 +20,7 @@ import { useAccount, useDisconnect, useEnsName } from 'wagmi';
 import Image from 'next/image';
 import { ZuButton } from '@/components/core';
 import { formatUserName } from '@/utils/format';
+import { useLitContext } from '@/context/LitContext';
 
 export function formatAddressString(str?: string, maxLength: number = 10) {
   if (!str) return;
@@ -38,6 +39,7 @@ const Header = () => {
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   const { isAuthenticated, showAuthPrompt, logout, username, profile } =
     useCeramicContext();
+  const { litDisconnect } = useLitContext();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { disconnect } = useDisconnect();
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -51,6 +53,7 @@ const Header = () => {
   const handleLogout = () => {
     disconnect();
     logout();
+    litDisconnect();
     handleMenuClose();
     window.location.reload();
   };

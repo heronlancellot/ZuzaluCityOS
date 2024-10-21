@@ -23,6 +23,8 @@ export interface ScrollPassDefaultProps {
   onToggle: (anchor: Anchor, open: boolean) => void;
   handleStep: (step: number) => void;
   setApplication: React.Dispatch<React.SetStateAction<boolean>>;
+  checkinOpen: string;
+  registrationOpen: string;
 }
 
 const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
@@ -33,6 +35,8 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
   onToggle,
   handleStep,
   setApplication,
+  checkinOpen,
+  registrationOpen,
 }) => {
   return (
     <Stack
@@ -52,20 +56,21 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
             tokenType={ticket.tokenType}
           />
         ))}
-        <Stack spacing={1}>
-          <Typography
-            sx={{
-              color: 'white',
-              fontSize: '14px',
-              fontFamily: 'Inter, sans-serif',
-              fontWeight: 600,
-              lineHeight: '22.4px',
-              wordWrap: 'break-word',
-            }}
-          >
-            Buy Tickets
-          </Typography>
-          {applyRule === 'Apply to Purchase' && (
+        {applyRule === 'Apply to Purchase' && registrationOpen === '1' && (
+          <Stack spacing={1}>
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '14px',
+                fontFamily: 'Inter, sans-serif',
+                fontWeight: 600,
+                lineHeight: '22.4px',
+                wordWrap: 'break-word',
+              }}
+            >
+              Buy ticket
+            </Typography>
+
             <Typography
               sx={{
                 color: '#FFC77D',
@@ -76,11 +81,11 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
                 wordWrap: 'break-word',
               }}
             >
-              This event requires admin approval
+              This event requires approval from the administrator
             </Typography>
-          )}
-        </Stack>
-        {applyRule === 'Apply to Purchase' && (
+          </Stack>
+        )}
+        {applyRule === 'Apply to Purchase' && registrationOpen === '1' && (
           <ZuButton
             sx={{
               width: '100%',
@@ -105,41 +110,44 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
             Apply to Join
           </ZuButton>
         )}
-        <Typography
-          sx={{
-            color: 'white',
-            fontSize: '14px',
-            fontFamily: 'Inter, sans-serif',
-            fontWeight: 600,
-            lineHeight: '22.4px',
-            wordWrap: 'break-word',
-          }}
-        >
-          Already approved?
-        </Typography>
-        <ZuButton
-          sx={{
-            width: '100%',
-            border: '1px solid rgba(255, 255, 255, 0.10)',
-            marginTop: '10px',
-            color: '#7DFFD1',
-            fontSize: '16px',
-            fontFamily: 'Inter, sans-serif',
-            fontWeight: 700,
-            lineHeight: '19.2px',
-            wordWrap: 'break-word',
-            textTransform: 'none',
-            backgroundColor: 'rgba(125, 255, 209, 0.1)',
-          }}
-          startIcon={<ArrowCircleRightIcon sx={{ color: '#7DFFD1' }} />}
-          onClick={() => {
-            setSponsor(false);
-            setWhitelist(true);
-            onToggle('right', true);
-          }}
-        >
-          Purchase Ticket
-        </ZuButton>
+        {checkinOpen === '1' && (
+          <Stack spacing={2}>
+            <Typography
+              sx={{
+                color: 'white',
+                fontSize: '14px',
+                fontFamily: 'Inter, sans-serif',
+                fontWeight: 600,
+                lineHeight: '22.4px',
+                wordWrap: 'break-word',
+              }}
+            >
+              Already approved?
+            </Typography>
+            <ZuButton
+              sx={{
+                width: '100%',
+                border: '1px solid rgba(255, 255, 255, 0.10)',
+                color: '#7DFFD1',
+                fontSize: '16px',
+                fontFamily: 'Inter, sans-serif',
+                fontWeight: 700,
+                lineHeight: '19.2px',
+                wordWrap: 'break-word',
+                textTransform: 'none',
+                backgroundColor: 'rgba(125, 255, 209, 0.1)',
+              }}
+              startIcon={<ArrowCircleRightIcon sx={{ color: '#7DFFD1' }} />}
+              onClick={() => {
+                setSponsor(false);
+                setWhitelist(true);
+                onToggle('right', true);
+              }}
+            >
+              Mint Ticket
+            </ZuButton>
+          </Stack>
+        )}
       </Stack>
       <VerifyAccess handleStep={handleStep} />
     </Stack>

@@ -47,7 +47,7 @@ import { generateNFTMetadata } from '@/utils/generateNFTMetadata';
 import { createFileFromJSON } from '@/utils/generateNFTMetadata';
 import { fetchEmailJsConfig } from '@/utils/emailService';
 import { send } from '@emailjs/browser';
-import { Contract } from '@/types';
+import { Contract, Event } from '@/types';
 import { formatAddressString } from '@/components/layout/Header';
 import CopyToClipboard from 'react-copy-to-clipboard';
 interface IProps {
@@ -99,6 +99,7 @@ interface ITicketVault {
   tickets: Array<any>;
   refetch?: () => void;
   onClose?: () => void;
+  event?: Event;
 }
 export const WithdrawToken = ({
   tokenSymbol,
@@ -944,6 +945,7 @@ export const Whitelist = ({
   ticketAddresses,
   tickets,
   refetch,
+  event,
   onClose,
 }: ITicketVault) => {
   const [addresses, setAddresses] = useState<string[]>([]);
@@ -964,10 +966,9 @@ export const Whitelist = ({
           serviceId,
           templateId,
           {
-            to_name: 'ZuVillage',
-            from_name: email,
+            to_name: email,
+            from_name: event?.title,
             message: 'Here is your invitation to mint the ticket.',
-            reply_to: email,
           },
           userId,
         );

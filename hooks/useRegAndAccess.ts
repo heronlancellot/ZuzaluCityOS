@@ -85,7 +85,9 @@ const useRegAndAccess = (props: Props) => {
     return false;
   }, [regAndAccess?.applyOption, regAndAccess?.applyRule]);
 
-  const hasConfigedApplicationForm = !!regAndAccess?.applicationForm;
+  const hasConfigedApplicationForm = noApplication
+    ? true
+    : !!regAndAccess?.applicationForm;
 
   const hasCheckin = useMemo(() => {
     return (
@@ -124,7 +126,11 @@ const useRegAndAccess = (props: Props) => {
       return hasWhitelist;
     }
     if (regAndAccess?.ticketType === TicketingMethod.ScrollPass) {
-      return hasWhitelist && hasConfigedApplicationForm && (regAndAccess.scrollPassTickets?.length ?? 0) > 0;
+      return (
+        hasWhitelist &&
+        hasConfigedApplicationForm &&
+        (regAndAccess.scrollPassTickets?.length ?? 0) > 0
+      );
     }
     return hasWhitelist && hasConfigedApplicationForm;
   }, [hasConfigedApplicationForm, noApplication, regAndAccess]);

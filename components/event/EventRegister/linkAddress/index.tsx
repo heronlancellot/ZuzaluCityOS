@@ -79,9 +79,8 @@ const LinkAddress: React.FC<LinkAddressProps> = ({
           fontSize={'13px'}
           sx={{ opacity: '0.7' }}
         >
-          You can optionally choose which address from your wallet you would
-          like to link this ScrollPass Ticlet to for this event.This will
-          generate a new{' '}
+          You can optionally choose another address from your wallet for
+          privacy. This will generate a new{' '}
           <a
             href="https://ceramic.network/"
             target="_blank"

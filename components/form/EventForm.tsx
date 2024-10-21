@@ -51,7 +51,7 @@ const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
   tagline: Yup.string().required('Event tagline is required'),
   description: Yup.string(),
-
+  external_url: Yup.string(),
   startTime: Yup.mixed().dayjs().required('Start date is required'),
   endTime: Yup.mixed().dayjs().required('End date is required'),
   timezone: Yup.object().shape({
@@ -203,6 +203,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           tracks,
           locations,
           imageUrl,
+          external_url,
         } = data;
         setBlockClickModal(true);
         setLoading(true);
@@ -222,6 +223,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           timezone: timezone ? timezone.value! : dayjs.tz.guess(),
           tracks: tracks || [],
           locations: locations || [],
+          external_url: external_url || '',
         };
 
         const response = await createEventKeySupa(eventCreationInput);
@@ -402,16 +404,16 @@ export const EventForm: React.FC<EventFormProps> = ({
                 />
               </Stack>
             </Stack>
-            {/*<Stack spacing="10px" padding="20px">
-              <FormLabel>External URL*</FormLabel>
-             <Controller
+            <Stack spacing="10px" padding="20px">
+              <FormLabel>External Website</FormLabel>
+              <Controller
                 name="external_url"
                 control={control}
                 render={({ field, fieldState: { error } }) => (
                   <>
                     <ZuInput
                       {...field}
-                      placeholder="You can input the external URL "
+                      placeholder="You can input the external URL of your event"
                     />
                     {error && (
                       <FormHelperText error>{error.message}</FormHelperText>
@@ -419,7 +421,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                   </>
                 )}
               />
-            </Stack>*/}
+            </Stack>
             {/*<Stack spacing="10px" padding="20px">
               <FormLabel>Participant*</FormLabel>
               <Controller
