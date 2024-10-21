@@ -22,7 +22,9 @@ import ValidateCredential from './validateCredential';
 import { injected } from 'wagmi/connectors';
 import { checkNFTOwnership } from '@/utils/checkNFTOwnership';
 import LinkAddress from './linkAddress';
-
+import SuccessVerify from './successVerify';
+import { useLitContext } from '@/context/LitContext';
+import { Event } from '@/types';
 interface EventRegisterProps {
   onToggle: (anchor: Anchor, open: boolean) => void;
   setWhitelist?: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -32,6 +34,7 @@ interface EventRegisterProps {
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
   eventRegistration: RegistrationAndAccess;
   setApplication: React.Dispatch<React.SetStateAction<boolean>>;
+  event: Event;
 }
 
 const EventRegister: React.FC<EventRegisterProps> = ({
@@ -43,6 +46,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   setVerify,
   eventRegistration,
   setApplication,
+  event,
 }) => {
   const [isOne, setIsOne] = useState<boolean>(false);
   const [isTwo, setIsTwo] = useState<boolean>(false);
@@ -68,6 +72,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
     setNullifierHash,
   } = useZupassContext();
   const hasProcessedNullifier = useRef(false);
+  const [currentStep, setCurrentStep] = useState<number>(0);
 
   const { disconnect } = useDisconnect();
   const {
@@ -78,6 +83,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
     authenticate,
     logout: CeramicLogout,
   } = useCeramicContext();
+  const { litDisconnect } = useLitContext();
   const handleZupass = () => {
     /*if (!ceramic?.did?.parent) {
       setModalTitle('Please login');
@@ -140,14 +146,27 @@ const EventRegister: React.FC<EventRegisterProps> = ({
       try {
         authenticateCalled.current = true;
         await authenticate();
-        setStage('Signed-in');
+        const userDID = ceramic?.did?.parent.toString().toLowerCase() || '';
+        const { admins = [], superAdmin = [], members = [] } = event || {};
+        const lowerCaseIds = (arr: any[]) =>
+          (arr || []).map((item) => item.id.toLowerCase());
+        const adminIds = lowerCaseIds(admins);
+        const superAdminIds = lowerCaseIds(superAdmin);
+        const memberIds = lowerCaseIds(members);
+        if (
+          superAdminIds.includes(userDID) ||
+          adminIds.includes(userDID) ||
+          memberIds.includes(userDID)
+        ) {
+          setCurrentStep(3);
+        }
       } catch (error) {
         console.error('Authentication failed:', error);
       }
     };
     if (localStorage.getItem('username') && !authenticateCalled.current) {
       if (stage === 'Wallet Link') {
-        setStage('Signed-in');
+        setCurrentStep(3);
       } else {
         authenticateUser(false);
       }
@@ -162,7 +181,6 @@ const EventRegister: React.FC<EventRegisterProps> = ({
     }
   }, [isAuthenticated]);
 
-  const [currentStep, setCurrentStep] = useState<number>(0);
   const handleRegisterAsSponsor = () => {
     setSponsor(true);
     setWhitelist(false);
@@ -177,6 +195,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   const handleLogout = () => {
     disconnect();
     CeramicLogout();
+    litDisconnect();
     window.location.reload();
   };
   const ticketType = eventRegistration.ticketType as keyof typeof componentsMap;
@@ -364,6 +383,9 @@ const EventRegister: React.FC<EventRegisterProps> = ({
             setShowModal(true);
           }}
         />
+      )}
+      {currentStep === 3 && (
+        <SuccessVerify handleStep={handleStep} handleLogout={handleLogout} />
       )}
     </Stack>
   );

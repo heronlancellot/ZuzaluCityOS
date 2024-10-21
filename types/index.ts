@@ -367,6 +367,7 @@ export interface CreateEventRequest {
   person: boolean;
   locations: string[];
   timezone: string;
+  external_url: string;
 }
 
 export interface UpdateEventRequest extends CreateEventRequest {
@@ -389,6 +390,11 @@ export interface AddZupassMemberRequest {
   eventId: string;
   memberDID: string;
   memberZupass: string;
+}
+export interface AddScrollpassMemberRequest {
+  eventId: string;
+  memberDID: string;
+  encryptedMemberScrollpass: string;
 }
 export interface AddMemberRequest {
   eventId: string;

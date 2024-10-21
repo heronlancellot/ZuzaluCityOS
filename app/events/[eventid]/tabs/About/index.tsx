@@ -31,6 +31,7 @@ import {
   Mint,
   Complete,
   Transaction,
+  Tickets,
 } from '@/components/event/Whitelist';
 import {
   SponsorAgree,
@@ -84,6 +85,9 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
   const [ticketMinted, setTicketMinted] = useState<any[]>([]);
   const [mintedContract, setMintedContract] = useState<Contract>();
   const [transactionLog, setTransactionLog] = useState<any>();
+  const [disclaimer, setDisclaimer] = useState<string>('');
+  const [mintTicket, setMintTicket] = useState<any[]>([]);
+  const [isTicket, setIsTicket] = useState<boolean>(false);
   const params = useParams();
   const eventId = params.eventid.toString();
 
@@ -230,19 +234,65 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
     const steps = [
       {
         condition:
-          !isVerify && !isAgree && !isMint && !isTransaction && !isComplete,
+          !isVerify &&
+          !isAgree &&
+          !isMint &&
+          !isTransaction &&
+          !isComplete &&
+          !isTicket,
         Component: Verify,
-        props: { setIsVerify, setFilteredResults, event: eventData },
+        props: {
+          setIsVerify,
+          setFilteredResults,
+          event: eventData,
+          setIsTicket,
+        },
       },
       {
         condition:
-          isVerify && !isAgree && !isMint && !isTransaction && !isComplete,
+          isVerify &&
+          !isAgree &&
+          !isMint &&
+          !isTransaction &&
+          !isComplete &&
+          !isTicket,
+        Component: Tickets,
+        props: {
+          setIsTicket,
+          setIsAgree,
+          setIsVerify,
+          filteredResults: filteredResults,
+          event: eventData,
+          setMintTicket,
+          mintTicket,
+          setDisclaimer,
+        },
+      },
+      {
+        condition:
+          !isVerify &&
+          !isAgree &&
+          !isMint &&
+          !isTransaction &&
+          !isComplete &&
+          isTicket,
         Component: Agree,
-        props: { setIsVerify, setIsAgree, event: eventData },
+        props: {
+          setIsVerify,
+          setIsAgree,
+          event: eventData,
+          disclaimer: disclaimer,
+          setIsTicket,
+        },
       },
       {
         condition:
-          !isVerify && isAgree && !isMint && !isTransaction && !isComplete,
+          !isVerify &&
+          isAgree &&
+          !isMint &&
+          !isTransaction &&
+          !isComplete &&
+          !isTicket,
         Component: Mint,
         props: {
           setIsAgree,
@@ -254,17 +304,29 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
           setIsTransaction,
           setMintedContract,
           setTransactionLog,
+          setDisclaimer,
+          mintTicket,
         },
       },
       {
         condition:
-          !isVerify && !isAgree && isMint && !isTransaction && !isComplete,
+          !isVerify &&
+          !isAgree &&
+          isMint &&
+          !isTransaction &&
+          !isComplete &&
+          !isTicket,
         Component: Transaction,
         props: { setIsMint, setIsTransaction, handleClose, event: eventData },
       },
       {
         condition:
-          !isVerify && !isAgree && !isMint && isTransaction && !isComplete,
+          !isVerify &&
+          !isAgree &&
+          !isMint &&
+          isTransaction &&
+          !isComplete &&
+          !isTicket,
         Component: Complete,
         props: {
           setIsTransaction,
@@ -281,9 +343,6 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
 
     return (
       <>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Typography variant="subtitleSB">Register for Event</Typography>
-        </Stack>
         {steps.map(
           ({ condition, Component, props }, index) =>
             condition && <Component key={index} {...props} />,
@@ -426,6 +485,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                 setVerify={setVerify}
                 eventRegistration={eventData.regAndAccess.edges[0].node}
                 setApplication={setApplication}
+                event={eventData}
               />
             ) : null}
             <EventAbout description={eventData.description} />
@@ -553,6 +613,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                 setVerify={setVerify}
                 eventRegistration={eventData.regAndAccess.edges[0].node}
                 setApplication={setApplication}
+                event={eventData}
               />
             ) : null}
             {/* <Stack spacing="4px">

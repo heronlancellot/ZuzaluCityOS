@@ -286,6 +286,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
           adminId: adminId,
           person: person,
           locations: locations,
+          external_url: inputs.externalUrl,
           timezone: selectedTimezone
             ? selectedTimezone.value
             : dayjs.tz.guess(),

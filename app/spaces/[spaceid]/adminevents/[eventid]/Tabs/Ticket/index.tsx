@@ -61,7 +61,7 @@ const Ticket = ({ event }: PropTypes) => {
   const [isHideWhenSoldOut, setIsHideWhenSoldOut] = useState(false);
   const [selectedToken, setSelectedToken] = useState('USDT');
   const [selectedType, setSelectedType] = useState('Attendee');
-  const [isWhiteList, setIsWhiteList] = useState(false);
+  const [isWhiteList, setIsWhiteList] = useState(true);
   const handleChange = (e: any) => {
     const { name, value } = e.target;
 
@@ -525,6 +525,7 @@ const Ticket = ({ event }: PropTypes) => {
             : []
         }
         onClose={handleClose}
+        event={event as Event}
       />
     </Box>
   );

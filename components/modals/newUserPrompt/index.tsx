@@ -161,7 +161,10 @@ export default function NewUserPromptModal({
                 encryptString,
                 accessControlConditions,
               );
-
+              console.log(
+                'encryptedMemberScrollpass',
+                encryptedMemberScrollpass,
+              );
               const memberDID = ceramic?.did?.parent;
               if (
                 encryptString &&

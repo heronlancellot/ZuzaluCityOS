@@ -87,6 +87,7 @@ const Home = () => {
                           name
                           price
                           tokenType
+                          disclaimer
                         }
                         ticketType
                         zuPassInfo {
