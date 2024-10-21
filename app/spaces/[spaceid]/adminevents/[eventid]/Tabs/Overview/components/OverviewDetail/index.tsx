@@ -43,7 +43,6 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
       eventId: eventId as string,
       userDID: userDID as string,
     };
-    console.log(deleteEventInput);
     try {
       const response = await deleteEvent(deleteEventInput);
     } catch (err) {

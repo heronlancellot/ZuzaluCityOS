@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       person,
       locations,
       timezone,
-      external_url,
+      externalUrl,
     } = body;
 
     const update: any = await composeClient.executeQuery(
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
             tracks: tracks.join(','),
             superAdmin: adminId,
             timezone: timezone,
-            externalUrl: external_url,
+            externalUrl: externalUrl,
           },
         },
       },

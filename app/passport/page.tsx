@@ -113,7 +113,6 @@ const Home = () => {
         const ticketsData = await getTickets();
         if (!ticketsData) return;
         let eventsData = await getEvents();
-        console.log(ticketsData, eventsData);
         if (eventsData) {
           eventsData =
             eventsData.filter((eventDetails) => {
