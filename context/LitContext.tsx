@@ -17,7 +17,7 @@ import * as ethers from 'ethers';
 interface LitContextType {
   client: LitNodeClient | null;
   isConnected: boolean;
-  litConnect: () => Promise<void>;
+  litConnect: () => Promise<boolean>;
   litDisconnect: () => void;
   litEncryptString: (
     text: string,
@@ -38,7 +38,7 @@ interface LitContextType {
 const LitContext = createContext<LitContextType>({
   client: null,
   isConnected: false,
-  litConnect: async () => {},
+  litConnect: async () => false,
   litDisconnect: () => {},
   litEncryptString: async () => ({ ciphertext: '', dataToEncryptHash: '' }),
   litDecryptString: async () => '  ',
@@ -52,18 +52,30 @@ export const LitProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const isDev = process.env.NEXT_PUBLIC_ENV === 'dev';
-    const initClient = new LitNodeClient({
-      litNetwork: isDev ? LitNetwork.DatilDev : LitNetwork.Datil,
-      debug: false,
-    });
-    setClient(initClient);
-  }, []);
+    if (client && isConnected) {
+      console.log('Lit connected', client, isConnected);
+    }
+  }, [client, isConnected]);
 
   const litConnect = async () => {
-    if (client && !isConnected) {
-      await client.connect();
-      setIsConnected(true);
+    try {
+      const isDev = process.env.NEXT_PUBLIC_ENV === 'dev';
+      if (!isConnected) {
+        const litNodeClient = new LitNodeClient({
+          litNetwork: isDev ? LitNetwork.DatilDev : LitNetwork.Datil,
+          debug: true,
+        });
+        await litNodeClient.connect();
+        setIsConnected(true);
+        setClient(litNodeClient);
+        return true;
+      } else {
+        console.log('already connected', { client: !!client, isConnected });
+        return false;
+      }
+    } catch (error) {
+      console.error('Lit error while connecting:', error);
+      return false;
     }
   };
 
@@ -115,7 +127,6 @@ export const LitProvider: React.FC<{ children: React.ReactNode }> = ({
     accessControlConditions: any,
   ): Promise<{ ciphertext: string; dataToEncryptHash: string }> => {
     if (!client || !isConnected) throw new Error('not connected to Lit');
-
     const { ciphertext, dataToEncryptHash } = await encryptString(
       {
         accessControlConditions,

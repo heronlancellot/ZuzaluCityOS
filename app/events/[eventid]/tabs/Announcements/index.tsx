@@ -448,6 +448,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 setVerify={setVerify}
                 eventRegistration={eventData.regAndAccess.edges[0].node}
                 setApplication={setApplication}
+                event={eventData}
               />
             ) : null}
           </Stack>
@@ -475,6 +476,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 setVerify={setVerify}
                 eventRegistration={eventData.regAndAccess.edges[0].node}
                 setApplication={setApplication}
+                event={eventData}
               />
             ) : null}
             <EventDetail

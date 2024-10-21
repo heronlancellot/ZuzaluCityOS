@@ -142,8 +142,10 @@ export default function NewUserPromptModal({
           case 'Scrollpass':
             try {
               await litConnect();
+
               const encryptString =
                 ceramic?.did?.parent?.split(':').pop() || '';
+
               const accessControlConditions = [
                 {
                   contractAddress: '',
@@ -161,23 +163,19 @@ export default function NewUserPromptModal({
                 encryptString,
                 accessControlConditions,
               );
-              console.log(
-                'encryptedMemberScrollpass',
-                encryptedMemberScrollpass,
-              );
-              const memberDID = ceramic?.did?.parent;
+
               if (
                 encryptString &&
                 encryptedMemberScrollpass &&
-                memberDID &&
+                ceramic?.did?.parent &&
                 !hasProcessedNullifier.current
               ) {
                 setStage('Updating');
                 const addScrollpassMemberInput = {
                   eventId: eventId,
-                  memberDID: memberDID,
+                  memberDID: ceramic?.did?.parent,
                   encryptedMemberScrollpass:
-                    encryptedMemberScrollpass.ciphertext,
+                    encryptedMemberScrollpass.dataToEncryptHash,
                 };
 
                 const result = await updateScrollpassMember(
@@ -195,6 +193,7 @@ export default function NewUserPromptModal({
                 }
               }
             } catch (error) {
+              console.error('Lit error:', error);
               const errorMessage =
                 error instanceof Error ? error.message : 'unknown error';
               if (errorMessage === 'You are already whitelisted') {
@@ -217,7 +216,7 @@ export default function NewUserPromptModal({
       }
     };
     connectAndProcess();
-  }, [isAuthenticated, ticketType, eventId, ceramic?.did?.parent, username]);
+  }, [isAuthenticated]);
 
   return (
     <Dialog
@@ -256,7 +255,7 @@ export default function NewUserPromptModal({
         {stage === 'Initial' && 'Welcome to Zuzalu.City'}
         {stage === 'Nickname' && 'Welcome to Zuzalu City'}
         {stage === 'Double Check-in' &&
-          'You have already used this ZuPass to check in'}
+          'You have already used this ticket to check in'}
         {stage === 'Updating' && 'Please wait...'}
         {stage === 'Final' && `Welcome, ${username}`}
       </DialogTitle>
