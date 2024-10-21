@@ -70,9 +70,6 @@ const OverviewHeader = ({ event, setTabName }: PropTypes) => {
         .from('sessions')
         .select('*')
         .eq('eventId', eventId);
-      if (data) {
-        console.log(data);
-      }
     } catch (err) {
       console.log(err);
     }

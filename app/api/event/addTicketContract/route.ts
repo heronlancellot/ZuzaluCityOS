@@ -73,7 +73,6 @@ export async function POST(req: Request) {
         id: eventId,
       },
     );
-    console.log(getEventResponse);
 
     const Update_QUERY = `
       mutation UpdateZucityEventRegistrationAndAccessMutation($input: UpdateZucityEventRegistrationAndAccessInput!) {
