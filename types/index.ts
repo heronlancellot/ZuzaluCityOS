@@ -367,7 +367,7 @@ export interface CreateEventRequest {
   person: boolean;
   locations: string[];
   timezone: string;
-  external_url: string;
+  externalUrl: string;
 }
 
 export interface UpdateEventRequest extends CreateEventRequest {

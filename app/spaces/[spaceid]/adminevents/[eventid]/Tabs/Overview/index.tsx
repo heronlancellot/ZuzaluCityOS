@@ -269,6 +269,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
       try {
         setLoading(true);
         setBlockClickModal(true);
+        console.log('externalUrl', inputs.externalUrl);
         const eventUpdateInput: UpdateEventRequest = {
           id: event.id,
           name: inputs.name,
@@ -286,7 +287,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
           adminId: adminId,
           person: person,
           locations: locations,
-          external_url: inputs.externalUrl,
+          externalUrl: inputs.externalUrl,
           timezone: selectedTimezone
             ? selectedTimezone.value
             : dayjs.tz.guess(),
@@ -539,12 +540,12 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
                 </Stack>
               </Stack>
               <Stack spacing="10px" padding="20px">
-                <FormLabel>External_URL</FormLabel>
+                <FormLabel>externalUrl</FormLabel>
                 <ZuInput
                   value={inputs.externalUrl}
                   onChange={handleInputChange}
                   type="string"
-                  name="external_url"
+                  name="externalUrl"
                   placeholder="You can input the external URL "
                 />
               </Stack>
