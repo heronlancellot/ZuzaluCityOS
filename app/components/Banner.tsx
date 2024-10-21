@@ -68,7 +68,7 @@ const EmblaVerticalCarousel = () => {
               }}
               startIcon={<RightArrowIcon />}
             >
-              Join Alpha Testing
+              Join the Discussion
             </Button>
           </Link>
         </Stack>
