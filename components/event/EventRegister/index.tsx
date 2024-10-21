@@ -258,6 +258,8 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           setWhitelist={setWhitelist}
           handleStep={handleStep}
           setApplication={setApplication}
+          checkinOpen={eventRegistration.checkinOpen}
+          registrationOpen={eventRegistration.registrationOpen}
         />
       );
     }
