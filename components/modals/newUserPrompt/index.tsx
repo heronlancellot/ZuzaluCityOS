@@ -62,7 +62,7 @@ export default function NewUserPromptModal({
   } = useZupassContext();
   const hasProcessedNullifier = useRef(false);
   const { disconnect } = useDisconnect();
-  const { litConnect, litEncryptString } = useLitContext();
+  const { litConnect, litEncryptString, litDecryptString } = useLitContext();
   const handleConinue = async () => {
     await createProfile(nickname);
     setStage('Final');
@@ -141,8 +141,10 @@ export default function NewUserPromptModal({
             break;
           case 'Scrollpass':
             try {
-              await litConnect();
-
+              const litClient = await litConnect();
+              if (!litClient) {
+                throw new Error('Failed to connect to Lit Network');
+              }
               const encryptString =
                 ceramic?.did?.parent?.split(':').pop() || '';
 
@@ -162,8 +164,16 @@ export default function NewUserPromptModal({
               const encryptedMemberScrollpass = await litEncryptString(
                 encryptString,
                 accessControlConditions,
+                litClient,
               );
 
+              /*const decryptedString = await litDecryptString(
+                encryptedMemberScrollpass.ciphertext,
+                encryptedMemberScrollpass.dataToEncryptHash,
+                accessControlConditions,
+                litClient,
+              );
+              console.log('decryptedString', decryptedString);*/
               if (
                 encryptString &&
                 encryptedMemberScrollpass &&
@@ -175,7 +185,7 @@ export default function NewUserPromptModal({
                   eventId: eventId,
                   memberDID: ceramic?.did?.parent,
                   encryptedMemberScrollpass:
-                    encryptedMemberScrollpass.dataToEncryptHash,
+                    encryptedMemberScrollpass.ciphertext,
                 };
 
                 const result = await updateScrollpassMember(

@@ -17,16 +17,18 @@ import * as ethers from 'ethers';
 interface LitContextType {
   client: LitNodeClient | null;
   isConnected: boolean;
-  litConnect: () => Promise<boolean>;
+  litConnect: () => Promise<LitNodeClient | false>;
   litDisconnect: () => void;
   litEncryptString: (
     text: string,
     accessControlConditions: any,
+    client: LitNodeClient,
   ) => Promise<{ ciphertext: string; dataToEncryptHash: string }>;
   litDecryptString: (
     ciphertext: string,
     dataToEncryptHash: string,
     accessControlConditions: any,
+    client: LitNodeClient,
   ) => Promise<string>;
   getSessionSigs: (
     accessControlConditions: any,
@@ -51,12 +53,6 @@ export const LitProvider: React.FC<{ children: React.ReactNode }> = ({
   const [client, setClient] = useState<LitNodeClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
-    if (client && isConnected) {
-      console.log('Lit connected', client, isConnected);
-    }
-  }, [client, isConnected]);
-
   const litConnect = async () => {
     try {
       const isDev = process.env.NEXT_PUBLIC_ENV === 'dev';
@@ -68,7 +64,7 @@ export const LitProvider: React.FC<{ children: React.ReactNode }> = ({
         await litNodeClient.connect();
         setIsConnected(true);
         setClient(litNodeClient);
-        return true;
+        return litNodeClient;
       } else {
         console.log('already connected', { client: !!client, isConnected });
         return false;
@@ -125,8 +121,9 @@ export const LitProvider: React.FC<{ children: React.ReactNode }> = ({
   const litEncryptString = async (
     text: string,
     accessControlConditions: any,
+    client: LitNodeClient,
   ): Promise<{ ciphertext: string; dataToEncryptHash: string }> => {
-    if (!client || !isConnected) throw new Error('not connected to Lit');
+    if (!client) throw new Error('not connected to Lit');
     const { ciphertext, dataToEncryptHash } = await encryptString(
       {
         accessControlConditions,
@@ -150,14 +147,14 @@ export const LitProvider: React.FC<{ children: React.ReactNode }> = ({
     ciphertext: string,
     dataToEncryptHash: string,
     accessControlConditions: any,
+    client: LitNodeClient,
   ): Promise<string> => {
-    if (!client || !isConnected) throw new Error('not connected to Lit');
+    if (!client) throw new Error('not connected to Lit');
 
     const authSig = await checkAndSignAuthMessage({
       chain: 'ethereum',
       nonce: await client.getLatestBlockhash(),
     });
-
     const decryptedString = await decryptToString(
       {
         accessControlConditions,
