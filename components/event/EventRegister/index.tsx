@@ -323,13 +323,15 @@ const EventRegister: React.FC<EventRegisterProps> = ({
         onClose={() => setShowZupassModal(false)}
         onConfirm={() => setShowZupassModal(false)}
       />
-      <NewUserPromptModal
-        showModal={showModal}
-        onClose={() => setShowModal(false)}
-        setVerify={setVerify}
-        eventId={eventId}
-        ticketType={ticketType}
-      />
+      {showModal ? (
+        <NewUserPromptModal
+          showModal={showModal}
+          onClose={() => setShowModal(false)}
+          setVerify={setVerify}
+          eventId={eventId}
+          ticketType={ticketType}
+        />
+      ) : null}
       <Stack
         padding="10px 14px"
         borderBottom="1px solid #383838"

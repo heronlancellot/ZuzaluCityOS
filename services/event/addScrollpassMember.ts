@@ -12,7 +12,7 @@ export const updateScrollpassMember = async (
     return response;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      throw error.response?.data || error.message;
+      throw new Error(error.response?.data || error.message);
     } else {
       throw new Error('An unknown error occurred');
     }

@@ -206,7 +206,7 @@ export default function NewUserPromptModal({
                 }
               } else if (
                 errorMessage ===
-                'You have already use this Scrollpass to whitelist an account, please login with that address'
+                'You have already use this scrollpass ticket to whitelist an account, please login with that address'
               ) {
                 setStage('Double Check-in');
               }
@@ -216,7 +216,6 @@ export default function NewUserPromptModal({
         }
       }
     };
-
     connectAndProcess();
   }, [isAuthenticated, ticketType, eventId, ceramic?.did?.parent, username]);
 
