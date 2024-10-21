@@ -101,18 +101,15 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
           `
         query MyQuery($id: ID!) {
           node (id: $id) {
-            ...on Event {
+            ...on ZucityEvent {
               createdAt
               description
               endTime
-              external_url
+              externalUrl
               gated
               id
-              image_url
-              max_participant
+              imageUrl
               meeting_url
-              min_participant
-              participant_count
               profileId
               spaceId
               startTime
@@ -249,7 +246,10 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
               !isComplete && (
                 <Verify
                   setIsVerify={setIsVerify}
-                  eventContractID={eventData?.contractID}
+                  eventContractID={
+                    eventData?.regAndAccess.edges[0].node
+                      .scrollPassContractFactoryID
+                  }
                   setFilteredResults={setFilteredResults}
                 />
               )}
@@ -397,7 +397,7 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
               eventName={eventData.title}
               location={eventLocation}
               organizer={eventData.profile?.username as string}
-              image_url={eventData.image_url}
+              imageUrl={eventData.imageUrl}
             />
             <EventAbout description={eventData.description} />
             <Stack
@@ -504,14 +504,14 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
               },
             }}
           >
-            <EventRegister
+            {/*<EventRegister
               onToggle={toggleDrawer}
               setWhitelist={setWhitelist}
               setSponsor={setSponsor}
-              external_url={eventData.external_url}
+              externalUrl={eventData.externalUrl}
               eventId={eventData.id}
               setVerify={setVerify}
-            />
+            />*/}
             {/* <Stack spacing="4px">List
                       <Box component="img" src="/sponsor_banner.png" height="200px" borderRadius="10px" width="100%" />
                       <Typography variant="caption" textAlign="right">

@@ -79,7 +79,7 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
           tagline={item.tagline}
         />
       ))}
-      <SpaceComingSoonCard />
+      {/*<SpaceComingSoonCard />*/}
     </Box>
   );
 };

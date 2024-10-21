@@ -20,6 +20,11 @@ export interface Contract {
   description?: string;
   image_url?: string;
   status?: string;
+  checkin?: string;
+  name?: string;
+  price?: number;
+  tokenType?: string;
+  disclaimer?: string;
 }
 export interface Event {
   id: string;
@@ -30,14 +35,14 @@ export interface Event {
   timezone: string;
   status: string;
   tagline?: string;
-  image_url?: string;
-  external_url?: string;
-  meeting_url?: string;
+  imageUrl?: string;
+  externalUrl?: string;
+  meetingUrl?: string;
   profileId?: string;
   spaceId?: string;
-  participant_count: number;
-  min_participant: number;
-  max_participant: number;
+  participantCount: number;
+  minParticipant: number;
+  maxParticipant: number;
   createdAt: string;
   space?: {
     id?: string;
@@ -53,8 +58,22 @@ export interface Event {
   };
   customLinks?: [Link];
   tracks?: string;
-  contractID?: number;
-  contracts?: [Contract];
+  regAndAccess: {
+    edges: [
+      {
+        node: RegistrationAndAccess;
+      },
+    ];
+  };
+  applicationForms: {
+    edges: [
+      {
+        node: ApplicationForm;
+      },
+    ];
+  };
+  sessionStorage: string;
+  supportChain: string;
   admins?: {
     id: string;
   }[];
@@ -66,12 +85,73 @@ export interface Event {
   }[];
 }
 
+export interface RegistrationAndAccess {
+  applyRule: string;
+  applyOption: string;
+  registrationWhitelist: {
+    id: string;
+  }[];
+  registrationAccess: string;
+  ticketType: string;
+  applicationForm: string;
+  id: string;
+  registrationOpen: string;
+  checkinOpen: string;
+  zuPassInfo?: ZuPassInfo[];
+  scrollPassTickets?: ScrollPassTickets[];
+  zuLottoInfo?: ZuLottoInfo[];
+  scrollPassContractFactoryID?: number;
+  scannedList: {
+    id: string;
+  }[];
+}
+
+export interface ScrollPassTickets {
+  type: string;
+  status: string;
+  checkin: string;
+  image_url: string;
+  description: string;
+  contractAddress: string;
+  name: string;
+  price: number;
+  tokenType: string;
+  disclaimer?: string;
+  tbd?: string;
+  eventId: string;
+}
+
+export interface ZuPassInfo {
+  access?: string;
+  eventId: string;
+  eventName: string;
+  registration: string;
+}
+
+export interface ZuLottoInfo {
+  name: string;
+  description: string;
+  contractAddress: string;
+}
+
+export interface ApplicationForm {
+  id: string;
+  answers: string;
+  approveStatus: string;
+  eventId: string;
+  profile: {
+    id: string;
+    username: string;
+    avatar: string;
+  };
+}
+
 export interface EventEdge {
   node: Event;
 }
 
 export interface EventData {
-  eventIndex: {
+  zucityEventIndex: {
     edges: EventEdge[];
   };
 }
@@ -127,7 +207,7 @@ export interface SpaceEdge {
 }
 
 export interface SpaceData {
-  spaceIndex: {
+  zucitySpaceIndex: {
     edges: SpaceEdge[];
   };
 }
@@ -224,7 +304,7 @@ export interface ProfileData {
 }
 
 export interface ProfileEdge {
-  mVPProfileIndex: {
+  zucityProfileIndex: {
     edges: ProfileData[];
   };
 }
@@ -275,14 +355,10 @@ export interface SocialLinks {
 export interface CreateEventRequest {
   name: string;
   tagline: string;
-  participant: number;
-  max_participant: number;
-  min_participant: number;
-  external_url: string;
   strDesc: string;
   spaceId: string;
   profileId: string;
-  avatarURL: string;
+  imageUrl: string;
   startTime: string;
   endTime: string;
   socialLinks: SocialLinks[];
@@ -291,6 +367,7 @@ export interface CreateEventRequest {
   person: boolean;
   locations: string[];
   timezone: string;
+  external_url: string;
 }
 
 export interface UpdateEventRequest extends CreateEventRequest {
@@ -313,6 +390,11 @@ export interface AddZupassMemberRequest {
   eventId: string;
   memberDID: string;
   memberZupass: string;
+}
+export interface AddScrollpassMemberRequest {
+  eventId: string;
+  memberDID: string;
+  encryptedMemberScrollpass: string;
 }
 export interface AddMemberRequest {
   eventId: string;
@@ -355,4 +437,48 @@ export interface FilmOptionType {
   value: string;
   label: string;
   isAdd?: boolean;
+}
+
+export interface Post {
+  id: number;
+  title: string;
+  tags: string;
+  description: string;
+  creator: string;
+  eventId: string;
+  created_at: string;
+}
+
+export interface CreateRegAndAccessRequest {
+  applyRule: string;
+  eventId: string;
+  applyOption: string;
+  registrationWhitelist?: string[];
+  registrationAccess: string;
+  ticketType: string;
+  profileId: string;
+  scrollPassContractFactoryID?: number;
+}
+
+export interface UpdateRegAndAccessRequest
+  extends Partial<CreateRegAndAccessRequest> {
+  type:
+    | 'question'
+    | 'method'
+    | 'switch'
+    | 'whitelist'
+    | 'zuPass'
+    | 'scrollpass'
+    | 'zuLotto'
+    | 'scannedList';
+  id: string;
+  applicationForm?: string;
+  checkinOpen?: string;
+  registrationOpen?: string;
+  zuPassInfo?: ZuPassInfo;
+  scrollPassTickets?: ScrollPassTickets[];
+  zuLottoInfo?: ZuLottoInfo;
+  scannedList?: {
+    id: string;
+  }[];
 }

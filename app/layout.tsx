@@ -14,6 +14,8 @@ import React, { useEffect, useState } from 'react';
 import { ZupassProvider } from '@/context/ZupassContext';
 import '@/utils/yupExtensions';
 import Dialog from '@/app/spaces/components/Modal/Dialog';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { LitProvider } from '@/context/LitContext';
 
 const queryClient = new QueryClient();
 
@@ -28,7 +30,7 @@ function RootLayout({
   children: React.ReactNode;
 }>) {
   const [isClient, setIsClient] = useState(false);
-  const [show, setShow] = useState(true);
+  // const [show, setShow] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
@@ -47,13 +49,15 @@ function RootLayout({
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <QueryClientProvider client={queryClient}>
-              <CeramicProvider>
-                <WalletProvider>
-                  <ZupassProvider>
-                    <AppContextProvider>
-                      <Header />
-                      {isClient && <AuthPrompt />}
-                      {isClient && (
+              <LitProvider>
+                <CeramicProvider>
+                  <WalletProvider>
+                    <ZupassProvider>
+                      <AppContextProvider>
+                        <ReactQueryDevtools initialIsOpen={false} />
+                        <Header />
+                        {isClient && <AuthPrompt />}
+                        {/* {isClient && (
                         <Dialog
                           title="Upgrading Ceramic Node"
                           message="We are currently upgrading our Ceramic node. Some data may be temporarily unavailable or inconsistent. We apologize for any inconvenience."
@@ -61,14 +65,15 @@ function RootLayout({
                           onClose={() => setShow(false)}
                           onConfirm={() => setShow(false)}
                         />
-                      )}
-                      <div style={{ minHeight: `calc(100vh - 50px)` }}>
-                        {children}
-                      </div>
-                    </AppContextProvider>
-                  </ZupassProvider>
-                </WalletProvider>
-              </CeramicProvider>
+                      )} */}
+                        <div style={{ minHeight: `calc(100vh - 50px)` }}>
+                          {children}
+                        </div>
+                      </AppContextProvider>
+                    </ZupassProvider>
+                  </WalletProvider>
+                </CeramicProvider>
+              </LitProvider>
             </QueryClientProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>

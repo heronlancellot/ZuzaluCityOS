@@ -1,28 +1,23 @@
 import * as React from 'react';
-import {
-  Stack,
-  Typography,
-  Box,
-  SwipeableDrawer,
-  useTheme,
-} from '@mui/material';
+import { Stack, Typography, useTheme, Link } from '@mui/material';
 import OverviewButton from './OverviewButton';
 import { Event } from '@/types';
-import { Anchor, Session, SessionData, ProfileEdge, Profile } from '@/types';
-import { PlusCircleIcon } from '@/components/icons';
+import { Anchor, ProfileEdge, Profile } from '@/types';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { useParams } from 'next/navigation';
 import dayjs, { Dayjs } from 'dayjs';
-import { OutputData } from '@editorjs/editorjs';
 import { QRReader } from '@/components/modals/QRScanModal/QRReader';
 import { supabase } from '@/utils/supabase/client';
 
 interface PropTypes {
   event?: Event;
+  setTabName: (value: string | ((prevVar: string) => string)) => void;
 }
 
-const OverviewHeader = ({ event }: PropTypes) => {
+const OverviewHeader = ({ event, setTabName }: PropTypes) => {
   const { composeClient, isAuthenticated, profile } = useCeramicContext();
+
+  const needShow = (event?.regAndAccess?.edges?.length ?? 0) > 0;
 
   const params = useParams();
   const eventId = params.eventid.toString();
@@ -87,7 +82,7 @@ const OverviewHeader = ({ event }: PropTypes) => {
     try {
       const response: any = await composeClient.executeQuery(`
         query MyQuery {
-          mVPProfileIndex(first: 20) {
+          zucityProfileIndex(first: 20) {
             edges {
               node {
                 id
@@ -99,11 +94,10 @@ const OverviewHeader = ({ event }: PropTypes) => {
         }
       `);
 
-      if ('mVPProfileIndex' in response.data) {
+      if ('zucityProfileIndex' in response.data) {
         const profileData: ProfileEdge = response.data as ProfileEdge;
-        const fetchedPeople: Profile[] = profileData.mVPProfileIndex.edges.map(
-          (edge) => edge.node,
-        );
+        const fetchedPeople: Profile[] =
+          profileData.zucityProfileIndex.edges.map((edge) => edge.node);
         setPeople(fetchedPeople);
       } else {
         console.error('Invalid data structure:', response.data);
@@ -283,6 +277,38 @@ const OverviewHeader = ({ event }: PropTypes) => {
           </Typography>
         </Stack>
       </Stack>
+      {!needShow && (
+        <Stack
+          p="20px"
+          spacing="10px"
+          borderRadius="10px"
+          sx={{
+            background:
+              'linear-gradient(182deg, rgba(255, 255, 255, 0.10) 1.74%, rgba(255, 255, 255, 0.03) 98.26%)',
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography fontSize={25} fontWeight={500} lineHeight={1.2}>
+              Welcome to your event!
+            </Typography>
+          </Stack>
+          <Typography fontSize={16} lineHeight={1.6} sx={{ opacity: 0.8 }}>
+            Setup your event&apos;s pass configuration and check-in status in
+            the{' '}
+            <Link
+              onClick={() => setTabName('Registration')}
+              sx={{ cursor: 'pointer' }}
+            >
+              Registration
+            </Link>{' '}
+            tab
+          </Typography>
+        </Stack>
+      )}
       <Stack
         direction="row"
         sx={{

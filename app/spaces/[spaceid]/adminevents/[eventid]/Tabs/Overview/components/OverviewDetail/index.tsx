@@ -15,6 +15,9 @@ import { convertDateStringFormat } from '@/utils';
 import Link from 'next/link';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import dynamic from 'next/dynamic';
+import { deleteEvent } from 'services/event/deleteEvent';
+import { useCeramicContext } from '@/context/CeramicContext';
+import useGetShareLink from '@/hooks/useGetShareLink';
 
 const EditorPreview = dynamic(
   () => import('@/components/editor/EditorPreview'),
@@ -32,8 +35,26 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
   const params = useParams();
   const eventId = params.eventid.toString();
   const { breakpoints } = useTheme();
-
+  const { ceramic, profile, composeClient } = useCeramicContext();
+  const userDID = ceramic?.did?.parent.toString().toLowerCase() || '';
   const [showCopyToast, setShowCopyToast] = React.useState(false);
+  const adminDeleteEvent = async () => {
+    const deleteEventInput = {
+      eventId: eventId as string,
+      userDID: userDID as string,
+    };
+    console.log(deleteEventInput);
+    try {
+      const response = await deleteEvent(deleteEventInput);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const { shareUrl } = useGetShareLink({ id: eventId, name: eventData?.title });
+  const url =
+    shareUrl ||
+    (typeof window !== 'undefined' && `${window.origin}/events/${eventId}`) ||
+    '';
 
   return eventData ? (
     <Stack
@@ -55,7 +76,7 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
     >
       <Stack
         sx={{
-          backgroundImage: `url(${eventData.image_url ? eventData.image_url : '/12.webp'})`,
+          backgroundImage: `url(${eventData.imageUrl ? eventData.imageUrl : '/12.webp'})`,
           width: '100%',
           height: '100%',
           filter: 'blur(10px)',
@@ -67,7 +88,7 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
       ></Stack>
       <Box
         component="img"
-        src={eventData.image_url ? eventData.image_url : '/12.webp'}
+        src={eventData.imageUrl ? eventData.imageUrl : '/12.webp'}
         borderRadius={3}
         height={320}
         width={320}
@@ -100,7 +121,7 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
             </ZuButton>
           </Link>
           <CopyToClipboard
-            text={`${window.origin}/events/${eventId}`}
+            text={url}
             onCopy={() => {
               setShowCopyToast(true);
             }}
@@ -194,28 +215,12 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
                 View Event
               </ZuButton>
             </Link>
-            <CopyToClipboard
-              text={`${window.origin}/events/${eventId}`}
-              onCopy={() => {
-                setShowCopyToast(true);
-              }}
+            <ZuButton
+              sx={{ backgroundColor: 'red', flex: 1 }}
+              onClick={() => adminDeleteEvent()}
             >
-              <ZuButton sx={{ backgroundColor: '#2F4541', flex: 1 }}>
-                Share Event
-                <Snackbar
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  open={showCopyToast}
-                  autoHideDuration={800}
-                  onClose={() => {
-                    setShowCopyToast(false);
-                  }}
-                >
-                  <Alert severity="success" variant="filled">
-                    Copy share link to clipboard
-                  </Alert>
-                </Snackbar>
-              </ZuButton>
-            </CopyToClipboard>
+              Delete Event
+            </ZuButton>
           </Stack>
         </Stack>
       </Stack>

@@ -146,6 +146,7 @@ export default function MiniDashboard({
         onClose={handleShowNewUserModal}
         setVerify={() => {}}
         eventId={dashboardEvent!}
+        ticketType="ZuPass"
       />
       <Stack
         gap={'10px'}

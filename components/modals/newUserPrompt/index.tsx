@@ -2,6 +2,8 @@ import { ZuButton, ZuInput } from '@/components/core';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { useZupassContext } from '@/context/ZupassContext';
 import { updateZupassMember } from '@/services/event/addZupassMember';
+import { updateScrollpassMember } from '@/services/event/addScrollpassMember';
+import { useLitContext } from '@/context/LitContext';
 import {
   Box,
   Checkbox,
@@ -20,6 +22,7 @@ interface NewUserPromprtModalProps {
   onClose: () => void;
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
   eventId: string;
+  ticketType: string;
 }
 
 export default function NewUserPromptModal({
@@ -27,6 +30,7 @@ export default function NewUserPromptModal({
   onClose,
   setVerify,
   eventId,
+  ticketType,
 }: NewUserPromprtModalProps) {
   const [stage, setStage] = useState('Initial');
   const [nickname, setNickName] = useState<string>('');
@@ -58,7 +62,7 @@ export default function NewUserPromptModal({
   } = useZupassContext();
   const hasProcessedNullifier = useRef(false);
   const { disconnect } = useDisconnect();
-
+  const { litConnect, litEncryptString, litDecryptString } = useLitContext();
   const handleConinue = async () => {
     await createProfile(nickname);
     setStage('Final');
@@ -74,6 +78,7 @@ export default function NewUserPromptModal({
     CeramicLogout();
     window.location.reload();
   };
+
   useEffect(() => {
     if (username) {
       setStage('Final');
@@ -84,54 +89,145 @@ export default function NewUserPromptModal({
   }, [showModal]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      if (
-        nullifierHash &&
-        ceramic?.did?.parent &&
-        !hasProcessedNullifier.current
-      ) {
-        setStage('Updating');
-        const addZupassMemberInput = {
-          eventId: eventId,
-          memberDID: ceramic?.did?.parent,
-          memberZupass: nullifierHash,
-        };
-        updateZupassMember(addZupassMemberInput)
-          .then((result) => {
-            hasProcessedNullifier.current = true;
-            if (result.status === 200) {
-              setVerify(true);
-              if (username) {
-                setStage('Final');
-              } else {
-                setStage('Nickname');
-              }
-            }
-          })
-          .catch((error) => {
-            const errorMessage =
-              typeof error === 'string'
-                ? error
-                : error instanceof Error
-                  ? error.message
-                  : 'An unknown error occurred';
-            if (errorMessage === 'You are already whitelisted') {
-              setVerify(true);
-              if (username) {
-                setStage('Final');
-              } else {
-                setStage('Nickname');
-              }
-            } else if (
-              errorMessage ===
-              'You have already use this zupass to whitelist an account, please login with that address'
+    const connectAndProcess = async () => {
+      if (isAuthenticated) {
+        switch (ticketType) {
+          case 'ZuPass':
+            if (
+              nullifierHash &&
+              ceramic?.did?.parent &&
+              !hasProcessedNullifier.current
             ) {
-              setStage('Double Check-in');
+              setStage('Updating');
+              const addZupassMemberInput = {
+                eventId: eventId,
+                memberDID: ceramic?.did?.parent,
+                memberZupass: nullifierHash,
+              };
+              updateZupassMember(addZupassMemberInput)
+                .then((result) => {
+                  hasProcessedNullifier.current = true;
+                  if (result.status === 200) {
+                    setVerify(true);
+                    if (username) {
+                      setStage('Final');
+                    } else {
+                      setStage('Nickname');
+                    }
+                  }
+                })
+                .catch((error) => {
+                  const errorMessage =
+                    typeof error === 'string'
+                      ? error
+                      : error instanceof Error
+                        ? error.message
+                        : 'An unknown error occurred';
+                  if (errorMessage === 'You are already whitelisted') {
+                    setVerify(true);
+                    if (username) {
+                      setStage('Final');
+                    } else {
+                      setStage('Nickname');
+                    }
+                  } else if (
+                    errorMessage ===
+                    'You have already use this zupass to whitelist an account, please login with that address'
+                  ) {
+                    setStage('Double Check-in');
+                  }
+                });
             }
-          });
+            break;
+          case 'Scrollpass':
+            try {
+              const litClient = await litConnect();
+              if (!litClient) {
+                throw new Error('Failed to connect to Lit Network');
+              }
+              const encryptString =
+                ceramic?.did?.parent?.split(':').pop() || '';
+
+              const accessControlConditions = [
+                {
+                  contractAddress: '',
+                  standardContractType: '',
+                  chain: 'ethereum',
+                  method: '',
+                  parameters: [':userAddress'],
+                  returnValueTest: {
+                    comparator: '=',
+                    value: encryptString,
+                  },
+                },
+              ];
+              const encryptedMemberScrollpass = await litEncryptString(
+                encryptString,
+                accessControlConditions,
+                litClient,
+              );
+
+              /*const decryptedString = await litDecryptString(
+                encryptedMemberScrollpass.ciphertext,
+                encryptedMemberScrollpass.dataToEncryptHash,
+                accessControlConditions,
+                litClient,
+              );
+              console.log('decryptedString', decryptedString);*/
+              if (
+                encryptString &&
+                encryptedMemberScrollpass &&
+                ceramic?.did?.parent &&
+                !hasProcessedNullifier.current
+              ) {
+                setStage('Updating');
+                const addScrollpassMemberInput = {
+                  eventId: eventId,
+                  memberDID: ceramic?.did?.parent,
+                  encryptedMemberScrollpass:
+                    encryptedMemberScrollpass.ciphertext,
+                };
+
+                const result = await updateScrollpassMember(
+                  addScrollpassMemberInput,
+                );
+                hasProcessedNullifier.current = true;
+
+                if (result.status === 200) {
+                  setVerify(true);
+                  if (username) {
+                    setStage('Final');
+                  } else {
+                    setStage('Nickname');
+                  }
+                }
+              }
+            } catch (error) {
+              console.error('Lit error:', error);
+              const errorMessage =
+                error instanceof Error ? error.message : 'unknown error';
+              if (errorMessage === 'You are already whitelisted') {
+                setVerify(true);
+                if (username) {
+                  setStage('Final');
+                } else {
+                  setStage('Nickname');
+                }
+              } else if (
+                errorMessage ===
+                'You have already use this scrollpass ticket to whitelist an account, please login with that address'
+              ) {
+                setStage('Double Check-in');
+              }
+              console.error('error:', errorMessage);
+            }
+            break;
+        }
       }
-    }
+    };
+    connectAndProcess();
   }, [isAuthenticated]);
+
   return (
     <Dialog
       open={showModal}
@@ -169,7 +265,7 @@ export default function NewUserPromptModal({
         {stage === 'Initial' && 'Welcome to Zuzalu.City'}
         {stage === 'Nickname' && 'Welcome to Zuzalu City'}
         {stage === 'Double Check-in' &&
-          'You have already used this ZuPass to check in'}
+          'You have already used this ticket to check in'}
         {stage === 'Updating' && 'Please wait...'}
         {stage === 'Final' && `Welcome, ${username}`}
       </DialogTitle>
@@ -182,7 +278,7 @@ export default function NewUserPromptModal({
           {stage === 'Initial' && (
             <>
               <Typography fontSize={'18px'}>
-                Warning - Zuzalu.city is currently in Alpha
+                Warning - Zuzalu.city is currently in Beta
               </Typography>
               <ul>
                 <li>

@@ -12,6 +12,12 @@ import {
   TicketProcessingProgress,
   TicketSetup,
 } from './CreateTicket';
+import { RegistrationPanel } from './Registration';
+import { RegistrationStatus } from './Status';
+import NoTicketList from './NoTicketList';
+import ZupassList from './ZupassList';
+import ScrollPassList from './ScrollPassList';
+import PGFList from './PGF';
 
 export {
   TicketHeader,
@@ -26,4 +32,10 @@ export {
   ProcessingTicket,
   TicketProcessingProgress,
   TicketVault,
+  RegistrationPanel,
+  RegistrationStatus,
+  NoTicketList,
+  ZupassList,
+  ScrollPassList,
+  PGFList,
 };

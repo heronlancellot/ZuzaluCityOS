@@ -26,6 +26,7 @@ import {
   mUSDT_TOKEN,
   isDev,
   SCROLL_EXPLORER,
+  composeClient,
 } from '@/constant';
 import { Address } from 'viem';
 import { TICKET_ABI } from '@/utils/ticket_abi';
@@ -38,9 +39,10 @@ import { ZuButton } from '@/components/core';
 import gaslessFundAndUpload from '@/utils/gaslessFundAndUpload';
 import { generateNFTMetadata } from '@/utils/generateNFTMetadata';
 import { createFileFromJSON } from '@/utils/generateNFTMetadata';
-import { Event, Contract } from '@/types';
+import { Event, Contract, ScrollPassTickets } from '@/types';
 import Dialog from '@/app/spaces/components/Modal/Dialog';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { useCeramicContext } from '@/context/CeramicContext';
 
 interface IProps {
   setIsVerify?: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -61,15 +63,21 @@ interface IProps {
   setMintedContract?: React.Dispatch<React.SetStateAction<Contract>> | any;
   transactionLog?: any;
   setTransactionLog?: React.Dispatch<React.SetStateAction<any>> | any;
+  disclaimer?: string;
+  setDisclaimer?: React.Dispatch<React.SetStateAction<string>> | any;
+  mintTicket?: any;
+  setMintTicket?: React.Dispatch<React.SetStateAction<any>> | any;
+  setIsTicket?: React.Dispatch<React.SetStateAction<boolean>> | any;
 }
 
 export const Verify: React.FC<IProps> = ({
   setIsVerify,
-  eventContractID,
   setFilteredResults,
+  event,
+  setIsTicket,
 }) => {
   const [isConnect, setIsConnect] = useState<boolean>(true);
-  const [validate, setValidate] = useState<boolean>(true);
+  const [validate, setValidate] = useState<boolean>(false);
   const [verifying, setVerifying] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [ticketAddresses, setTicketAddresses] = useState<Array<string>>([]);
@@ -89,11 +97,17 @@ export const Verify: React.FC<IProps> = ({
         address: TICKET_FACTORY_ADDRESS as Address,
         abi: TICKET_FACTORY_ABI as Abi,
         functionName: 'getTickets',
-        args: [eventContractID],
+        args: [event?.regAndAccess.edges[0].node.scrollPassContractFactoryID],
       })) as Array<string>;
       setTicketAddresses(getTicketAddresses);
       if (getTicketAddresses?.length > 0) {
-        let results = [];
+        let results: {
+          whitelist: any[];
+          'non-whitelist': any[];
+        } = {
+          whitelist: [],
+          'non-whitelist': [],
+        };
         let whitelistResults = [];
         for (let i = 0; i < getTicketAddresses.length; i++) {
           const ticketAddress = getTicketAddresses[i] as Address;
@@ -183,19 +197,55 @@ export const Verify: React.FC<IProps> = ({
           const result = await client.multicall({
             contracts: multicallContracts,
           });
-          results.push({ ticketAddress, data: result });
+          if (isWhitelistTicket) {
+            results.whitelist.push({ ticketAddress, data: result });
+          } else {
+            results['non-whitelist'].push({ ticketAddress, data: result });
+          }
         }
-        const filteredResults = results.filter((result) =>
-          whitelistResults.includes(result.ticketAddress),
-        );
+        const filteredResults =
+          whitelistResults.length > 0
+            ? results.whitelist
+                .filter((result) =>
+                  whitelistResults.includes(result.ticketAddress),
+                )
+                .concat(results['non-whitelist'])
+            : results['non-whitelist'];
 
         const transformedResults = filteredResults.map((result) => {
           const newData = [result.ticketAddress, ...result.data];
           return newData;
         });
-        setTickets(transformedResults);
+
+        const filteredTickets = transformedResults
+          .map((ticket) => {
+            const contractAddress = ticket[0].trim().toLowerCase();
+            const matchingContract =
+              event?.regAndAccess?.edges[0]?.node?.scrollPassTickets?.find(
+                (contract) => {
+                  if (!contract?.contractAddress) {
+                    return false;
+                  }
+                  const normalizedContractAddress = contract.contractAddress
+                    .trim()
+                    .toLowerCase();
+                  return (
+                    normalizedContractAddress === contractAddress &&
+                    contract.type === 'Attendee' &&
+                    contract.checkin === '1' &&
+                    contract.status === 'available'
+                  );
+                },
+              ) ?? null;
+            return matchingContract ? { ticket, matchingContract } : null;
+          })
+          .filter(Boolean);
+        setTickets(filteredTickets);
         if (setFilteredResults) {
-          setFilteredResults(transformedResults);
+          setFilteredResults(filteredTickets);
+        }
+        if (filteredTickets.length > 0) {
+          setValidate(true);
         }
       }
     } catch (error) {
@@ -212,6 +262,7 @@ export const Verify: React.FC<IProps> = ({
     await readFromContract();
     setIsConnect(false);
   };
+
   return (
     <Stack>
       <Stack
@@ -226,9 +277,9 @@ export const Verify: React.FC<IProps> = ({
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -285,7 +336,10 @@ export const Verify: React.FC<IProps> = ({
               </Stack>
               <ZuButton
                 startIcon={<RightArrowIcon color="#67DBFF" />}
-                onClick={() => setIsVerify(true)}
+                onClick={() => {
+                  setIsVerify(true);
+                  setIsTicket(false);
+                }}
                 sx={{
                   width: '100%',
                   color: '#67DBFF',
@@ -333,7 +387,183 @@ export const Verify: React.FC<IProps> = ({
   );
 };
 
-export const Agree: React.FC<IProps> = ({ setIsVerify, setIsAgree }) => {
+export const Tickets: React.FC<IProps> = ({
+  setIsAgree,
+  setIsVerify,
+  setIsTicket,
+  filteredResults = [],
+  event,
+  setMintTicket,
+  mintTicket,
+  setDisclaimer,
+}) => {
+  const [awaiting, setAwaiting] = useState<boolean>(false);
+  const { address } = useAccount();
+  const [blockMintClickModal, setBlockMintClickModal] = useState(false);
+  const [blockTokenClickModal, setBlockTokenClickModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
+  const { switchChainAsync } = useSwitchChain();
+  const { composeClient, ceramic } = useCeramicContext();
+  const getDisclaimer = async (item: any) => {
+    const contractAddress = item?.ticket[0].trim().toLowerCase();
+    const matchingContract =
+      event?.regAndAccess?.edges[0]?.node?.scrollPassTickets?.find(
+        (contract) => {
+          if (!contract?.contractAddress) {
+            return false;
+          }
+          const normalizedContractAddress = contract.contractAddress
+            .trim()
+            .toLowerCase();
+          return (
+            normalizedContractAddress === contractAddress &&
+            contract.type === 'Attendee' &&
+            contract.checkin === '1' &&
+            contract.status === 'available'
+          );
+        },
+      ) ?? null;
+    setDisclaimer(matchingContract?.disclaimer);
+  };
+  return (
+    <Stack>
+      <Stack
+        padding="20px"
+        bgcolor="#262626"
+        borderBottom="1px solid #383838"
+        spacing="20px"
+      >
+        <Stack direction="row" spacing="10px" alignItems="center">
+          <Box
+            component="img"
+            height="30px"
+            width="30px"
+            borderRadius="2px"
+            src={event?.imageUrl}
+          />
+          <Typography variant="subtitleLB">{event?.title}</Typography>
+        </Stack>
+        <Typography variant="bodyS" color="#FF9C66">
+          Disclaimer: the ticketing system is in beta, please take caution
+          moving forward
+        </Typography>
+      </Stack>
+      <Stack
+        spacing="10px"
+        padding="20px"
+        height="auto"
+        sx={{ minHeight: '800px' }}
+      >
+        <Stack spacing="20px">
+          <Typography variant="subtitleLB">Your Ticket</Typography>
+          {filteredResults.map((item, index) => {
+            if (!item) return null;
+            const { ticket, matchingContract } = item;
+            return (
+              <Stack key={index} alignItems="center" spacing="20px">
+                <Box
+                  component="img"
+                  width="250px"
+                  height="250px"
+                  borderRadius="20px"
+                  src={matchingContract.image_url}
+                />
+                <Stack
+                  border="1px solid #383838"
+                  borderRadius="20px"
+                  width="600px"
+                  divider={<Divider sx={{ border: '1px solid #383838' }} />}
+                  spacing="10px"
+                  padding="20px"
+                >
+                  {ticket[1] && (
+                    <Stack direction="row" spacing="10px">
+                      <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
+                        Ticket Name:
+                      </Typography>
+                      <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
+                        {ticket[1].result.toString()}
+                      </Typography>
+                    </Stack>
+                  )}
+                  {ticket[4] && (
+                    <Stack direction="row" spacing="10px">
+                      <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
+                        Contributing Amount to Mint:
+                      </Typography>
+                      <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
+                        {(ticket[4].result / BigInt(10 ** 18)).toString()}{' '}
+                        {ticket[3].result.toString() === mUSDT_TOKEN.toString()
+                          ? 'USDT'
+                          : 'USDC'}
+                      </Typography>
+                    </Stack>
+                  )}
+                  {ticket[0] && (
+                    <Stack direction="row" spacing="10px">
+                      <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
+                        Ticket Description:
+                      </Typography>
+                      <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
+                        {matchingContract.description}
+                      </Typography>
+                    </Stack>
+                  )}
+                  <ZuButton
+                    startIcon={
+                      isMinting ? null : <RightArrowIcon color="#67DBFF" />
+                    }
+                    onClick={() => {
+                      console.log('ticket', item);
+                      setMintTicket(item);
+                      getDisclaimer(item);
+                      setIsVerify(false);
+                      setIsTicket(true);
+                    }}
+                    sx={{
+                      width: '100%',
+                      color: '#67DBFF',
+                      backgroundColor: '#67DBFF33',
+                      border: 'border: 1px solid rgba(103, 219, 255, 0.20)',
+                    }}
+                    disabled={isMinting}
+                  >
+                    Mint Ticket
+                  </ZuButton>
+                </Stack>
+              </Stack>
+            );
+          })}
+        </Stack>
+        <Typography
+          variant="bodyS"
+          color="#FF9C66"
+          sx={{ opacity: 0.8 }}
+          textAlign="center"
+        >
+          Make sure to also have native tokens in your wallet to finalize the
+          transaction
+        </Typography>
+        <Stack direction="row" spacing="10px" justifyContent="center">
+          <Typography variant="caption" sx={{ opacity: 0.6 }}>
+            TICKETING PROTOCOL:
+          </Typography>
+          <ScrollIcon />
+        </Stack>
+      </Stack>
+    </Stack>
+  );
+};
+
+export const Agree: React.FC<IProps> = ({
+  setIsVerify,
+  setIsAgree,
+  event,
+  disclaimer,
+  mintTicket,
+  setIsTicket,
+}) => {
   return (
     <Stack height="calc(100vh - 50px)">
       <Stack
@@ -348,9 +578,9 @@ export const Agree: React.FC<IProps> = ({ setIsVerify, setIsAgree }) => {
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -377,61 +607,13 @@ export const Agree: React.FC<IProps> = ({ setIsVerify, setIsAgree }) => {
               height="550px"
               overflow="scroll"
             >
-              By confirming your attendance, you agree to the following points:
-              ZuVillage is an experimental digital community that gathers in
-              real life at a private event. By sending the contributions or by
-              participating in any other way, each individual explicitly agrees
-              to assume full personal liability for their actions within the
-              experiment, both digitally and in the analogue world, and that no
-              entity or individual, other than the participant themselves, may
-              be held accountable for any occurrences or outcomes related to the
-              experiment. In order for participants to invite a guest, the guest
-              also has to agree to this agreement. By inviting a guest,
-              participants explicitly agree to assume full personal liability
-              for the actions of the guest within the experiment, both digitally
-              and in the analogue world, and that no entity or individual, other
-              than the participant or the guest themselves, may be held
-              accountable for any occurrences or outcomes related to the
-              experiment. Privacy: All individuals that participate in the
-              experiment need to agree to our Privacy Policy. Software Use
-              Disclosure: The software, including Zuzalu.city and associated
-              tools utilized in the experiment, is currently in alpha stage and
-              is being tested by select communities. Participants and guests
-              acknowledge that the software may suffer from technical failures.
-              Participants and guests agree to use the software understanding
-              these risks. It will not be required for participants to share
-              personal data with the group on the software. Participants and
-              guests will receive a ZK key, which is a technical necessary to
-              use most of the software. Receiving the key does not legally
-              translate into usage rights to the software or access rights to
-              the venue. ZuVillage may decide to also hand out similar digital
-              goods like additional NFTs. In this case, receiving these digital
-              goods does also not legally translate into usage rights to the
-              software or the right to access the venue. Contributions: All
-              contributions made by participants or guests to the ZuVillage
-              experiment are made solely to support the experiment, on purely
-              voluntary basis and are to be considered non-refundable.
-              Contributors acknowledge that these are donated in order to
-              support the ZuVillage community to facilitate the experimental
-              objectives and accept that all contributions are final. This
-              affects contributions of cryptocurrencies as well as all other
-              forms of active or passive contributions towards ZuVillage. By
-              making contributions that carry intellectual property or
-              potentially lead to the generation of intellectual property, the
-              contribution is seen as limited to allowance for usage. Especially
-              if intellectual property includes personal data, like generated
-              data in scientific experiments that participants opt-in to take
-              part, it is up to the involved individuals and participants to
-              agree over any issues of intellectual property on their own.
-              ZuVillage is not able to own intellectual property of any sort and
-              is not able to participate in any dispute over intellectual
-              property.
+              {disclaimer}
             </Typography>
           </Stack>
           <ZuButton
             startIcon={<RightArrowIcon color="#67DBFF" />}
             onClick={() => {
-              setIsVerify(false);
+              setIsTicket(false);
               setIsAgree(true);
             }}
             sx={{
@@ -459,6 +641,7 @@ export const Mint: React.FC<IProps> = ({
   setIsTransaction,
   setMintedContract,
   setTransactionLog,
+  mintTicket,
 }) => {
   const [awaiting, setAwaiting] = useState<boolean>(false);
   const { address } = useAccount();
@@ -467,35 +650,7 @@ export const Mint: React.FC<IProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
   const { switchChainAsync } = useSwitchChain();
-
-  const filteredTickets = filteredResults
-    .map((ticket) => {
-      const contractAddress = ticket[0].trim().toLowerCase();
-      const matchingContract = event?.contracts?.find((contract) => {
-        if (!contract.contractAddress) {
-          return false;
-        }
-        const normalizedContractAddress = contract.contractAddress
-          .trim()
-          .toLowerCase();
-        return (
-          normalizedContractAddress === contractAddress &&
-          contract.type === 'Attendee'
-        );
-      });
-      return matchingContract ? { ticket, matchingContract } : null;
-    })
-    .filter(Boolean);
-  const findMatchingContract = (
-    contracts: Contract[],
-    ticketAddress: string,
-  ): Contract | undefined => {
-    return contracts.find(
-      (contract) =>
-        contract.contractAddress?.trim().toLowerCase() ===
-        ticketAddress.trim().toLowerCase(),
-    );
-  };
+  const { composeClient, ceramic } = useCeramicContext();
   const handleMintTicket = async (
     ticketAddress: Address,
     tokenAddress: Address,
@@ -565,13 +720,74 @@ export const Mint: React.FC<IProps> = ({
 
         if (MintStatus === 'success') {
           setBlockMintClickModal(false);
-          setShowModal(true);
           if (MintLogs.length > 0) {
             setTokenId(BigInt(MintLogs[3].data).toString());
             setTransactionLog(MintHash);
             setIsAgree(false);
             setIsTransaction(true);
           }
+          try {
+            const GET_Profile_QUERY = `
+            query MyQuery {
+                viewer {
+                    zucityProfile {
+                    id
+                    myScrollPassTickets {
+                        eventId
+                        checkin
+                        contractAddress
+                        description
+                        image_url
+                        name
+                        price
+                        status
+                        tbd
+                        tokenType
+                        type
+                    }
+                    }
+                }
+                }
+        `;
+            const getProfileResponse: any =
+              await composeClient.executeQuery(GET_Profile_QUERY);
+            const currentTickets =
+              getProfileResponse.data?.viewer?.zucityProfile
+                .myScrollPassTickets || [];
+            const updatedTickets = [
+              ...currentTickets,
+              {
+                ...eventContract,
+                eventId: event?.id,
+              },
+            ];
+
+            const query = `
+                mutation UpdateZucityProfile($input: UpdateZucityProfileInput!) {
+                    updateZucityProfile(input: $input) {
+                        document {
+                            id
+                        }
+                    }
+                }
+        `;
+            const variables = {
+              input: {
+                id: getProfileResponse.data?.viewer?.zucityProfile.id,
+                content: {
+                  myScrollPassTickets: updatedTickets,
+                },
+              },
+            };
+
+            const updateResult: any = await composeClient.executeQuery(
+              query,
+              variables,
+            );
+          } catch (err) {
+            console.log(err);
+          }
+          setShowModal(true);
         }
       }
     } catch (error) {
@@ -618,9 +834,9 @@ export const Mint: React.FC<IProps> = ({
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -635,87 +851,86 @@ export const Mint: React.FC<IProps> = ({
       >
         <Stack spacing="20px">
           <Typography variant="subtitleLB">Your Ticket</Typography>
-          {filteredTickets.map((item, index) => {
-            if (!item) return null;
-            const { ticket, matchingContract } = item;
-            return (
-              <Stack key={index} alignItems="center" spacing="20px">
-                <Box
-                  component="img"
-                  width="250px"
-                  height="250px"
-                  borderRadius="20px"
-                  src={matchingContract.image_url}
-                />
-                <Stack
-                  border="1px solid #383838"
-                  borderRadius="20px"
-                  width="600px"
-                  divider={<Divider sx={{ border: '1px solid #383838' }} />}
-                  spacing="10px"
-                  padding="20px"
+          {mintTicket && (
+            <Stack alignItems="center" spacing="20px">
+              <Box
+                component="img"
+                width="250px"
+                height="250px"
+                borderRadius="20px"
+                src={mintTicket.matchingContract.image_url}
+              />
+              <Stack
+                border="1px solid #383838"
+                borderRadius="20px"
+                width="600px"
+                divider={<Divider sx={{ border: '1px solid #383838' }} />}
+                spacing="10px"
+                padding="20px"
+              >
+                {mintTicket.ticket[1] && (
+                  <Stack direction="row" spacing="10px">
+                    <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
+                      Ticket Name:
+                    </Typography>
+                    <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
+                      {mintTicket.ticket[1].result.toString()}
+                    </Typography>
+                  </Stack>
+                )}
+                {mintTicket.ticket[4] && (
+                  <Stack direction="row" spacing="10px">
+                    <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
+                      Contributing Amount to Mint:
+                    </Typography>
+                    <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
+                      {(
+                        mintTicket.ticket[4].result / BigInt(10 ** 18)
+                      ).toString()}{' '}
+                      {mintTicket.ticket[3].result.toString() ===
+                      mUSDT_TOKEN.toString()
+                        ? 'USDT'
+                        : 'USDC'}
+                    </Typography>
+                  </Stack>
+                )}
+                {mintTicket.ticket[0] && (
+                  <Stack direction="row" spacing="10px">
+                    <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
+                      Ticket Description:
+                    </Typography>
+                    <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
+                      {mintTicket.matchingContract.description}
+                    </Typography>
+                  </Stack>
+                )}
+                <ZuButton
+                  startIcon={
+                    isMinting ? null : <RightArrowIcon color="#67DBFF" />
+                  }
+                  onClick={() => {
+                    handleMintTicket(
+                      mintTicket.ticket[0],
+                      mintTicket.ticket[3].result,
+                      Number(mintTicket.ticket[4].result),
+                      mintTicket.matchingContract,
+                    );
+                    setTicketMinted(mintTicket.ticket);
+                    setMintedContract(mintTicket.matchingContract);
+                  }}
+                  sx={{
+                    width: '100%',
+                    color: '#67DBFF',
+                    backgroundColor: '#67DBFF33',
+                    border: 'border: 1px solid rgba(103, 219, 255, 0.20)',
+                  }}
+                  disabled={isMinting}
                 >
-                  {ticket[1] && (
-                    <Stack direction="row" spacing="10px">
-                      <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
-                        Ticket Name:
-                      </Typography>
-                      <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
-                        {ticket[1].result.toString()}
-                      </Typography>
-                    </Stack>
-                  )}
-                  {ticket[4] && (
-                    <Stack direction="row" spacing="10px">
-                      <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
-                        Contributing Amount to Mint:
-                      </Typography>
-                      <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
-                        {(ticket[4].result / BigInt(10 ** 18)).toString()}{' '}
-                        {ticket[3].result.toString() === mUSDT_TOKEN.toString()
-                          ? 'USDT'
-                          : 'USDC'}
-                      </Typography>
-                    </Stack>
-                  )}
-                  {ticket[0] && (
-                    <Stack direction="row" spacing="10px">
-                      <Typography variant="bodyM" sx={{ opacity: 0.6 }}>
-                        Ticket Description:
-                      </Typography>
-                      <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
-                        {matchingContract.description}
-                      </Typography>
-                    </Stack>
-                  )}
-                  <ZuButton
-                    startIcon={
-                      isMinting ? null : <RightArrowIcon color="#67DBFF" />
-                    }
-                    onClick={() => {
-                      handleMintTicket(
-                        ticket[0],
-                        ticket[3].result,
-                        Number(ticket[4].result),
-                        matchingContract,
-                      );
-                      setTicketMinted(ticket);
-                      setMintedContract(matchingContract);
-                    }}
-                    sx={{
-                      width: '100%',
-                      color: '#67DBFF',
-                      backgroundColor: '#67DBFF33',
-                      border: 'border: 1px solid rgba(103, 219, 255, 0.20)',
-                    }}
-                    disabled={isMinting}
-                  >
-                    Mint Ticket
-                  </ZuButton>
-                </Stack>
+                  Mint Ticket
+                </ZuButton>
               </Stack>
-            );
-          })}
+            </Stack>
+          )}
         </Stack>
         <Typography
           variant="bodyS"
@@ -741,6 +956,7 @@ export const Transaction: React.FC<IProps> = ({
   setIsMint,
   setIsTransaction,
   handleClose,
+  event,
 }) => {
   const [isWait, setIsWait] = useState<boolean>(false);
 
@@ -758,9 +974,9 @@ export const Transaction: React.FC<IProps> = ({
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -833,6 +1049,7 @@ export const Complete: React.FC<IProps> = ({
   ticketMinted,
   mintedContract,
   transactionLog,
+  event,
 }) => {
   const [view, setView] = useState<boolean>(true);
   const [showCopyToast, setShowCopyToast] = useState<boolean>(false);
@@ -872,9 +1089,9 @@ export const Complete: React.FC<IProps> = ({
             height="30px"
             width="30px"
             borderRadius="2px"
-            src="/14.webp"
+            src={event?.imageUrl}
           />
-          <Typography variant="subtitleLB">ZuVillage Georgia</Typography>
+          <Typography variant="subtitleLB">{event?.title}</Typography>
         </Stack>
         <Typography variant="bodyS" color="#FF9C66">
           Disclaimer: the ticketing system is in beta, please take caution
@@ -1078,7 +1295,7 @@ export const Complete: React.FC<IProps> = ({
           Donate to the Event
         </Typography>
         <Typography variant="bodyBB">
-          Send your donated tokens to zuvillage.eth
+          Contact the event admin to donate
         </Typography>
       </Stack>
       <Stack direction="row" spacing="10px" justifyContent="center">

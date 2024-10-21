@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
+import Yup from '@/utils/yupExtensions';
 import {
   Box,
   Typography,
@@ -17,7 +17,6 @@ import {
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimezoneSelector } from '@/components/select/TimezoneSelector';
-import SuperEditor from '@/components/editor/SuperEditor';
 import { useEditorStore } from '@/components/editor/useEditorStore';
 import { ZuButton, ZuInput } from 'components/core';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -40,21 +39,25 @@ import FormHeader from './FormHeader';
 import FormatCheckboxGroup from './FormatCheckbox';
 import FormUploader from './FormUploader';
 import { PlusIcon } from '../icons';
+import { covertNameToUrlName } from '@/utils/format';
+import { createUrl } from '@/services/url';
+
+import dynamic from 'next/dynamic';
+const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
+  ssr: false,
+});
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
   tagline: Yup.string().required('Event tagline is required'),
   description: Yup.string(),
-
+  external_url: Yup.string(),
   startTime: Yup.mixed().dayjs().required('Start date is required'),
   endTime: Yup.mixed().dayjs().required('End date is required'),
   timezone: Yup.object().shape({
     value: Yup.string(),
   }),
-  external_url: Yup.string()
-    .url('Must be a valid URL')
-    .required('External URL is required'),
-  avatarURL: Yup.string(),
+  imageUrl: Yup.string(),
   participant: Yup.number()
     .positive()
     .integer()
@@ -197,10 +200,10 @@ export const EventForm: React.FC<EventFormProps> = ({
           socialLinks,
           isPerson,
           timezone,
-          external_url,
           tracks,
           locations,
-          avatarURL,
+          imageUrl,
+          external_url,
         } = data;
         setBlockClickModal(true);
         setLoading(true);
@@ -209,9 +212,8 @@ export const EventForm: React.FC<EventFormProps> = ({
           strDesc: descriptionEditorStore.getValueString(),
           spaceId,
           profileId,
-          external_url: external_url || '',
-          avatarURL:
-            avatarURL ||
+          imageUrl:
+            imageUrl ||
             'https://bafkreifje7spdjm5tqts5ybraurrqp4u6ztabbpefp4kepyzcy5sk2uel4.ipfs.nftstorage.link',
           startTime: startTime.format('YYYY-MM-DDTHH:mm:ss[Z]'),
           endTime: endTime.format('YYYY-MM-DDTHH:mm:ss[Z]'),
@@ -221,10 +223,13 @@ export const EventForm: React.FC<EventFormProps> = ({
           timezone: timezone ? timezone.value! : dayjs.tz.guess(),
           tracks: tracks || [],
           locations: locations || [],
+          external_url: external_url || '',
         };
 
         const response = await createEventKeySupa(eventCreationInput);
         if (response.status === 200) {
+          const urlName = covertNameToUrlName(data.name);
+          await createUrl(urlName, response.data.data.eventId, 'events');
           setShowModal(true);
         }
       } catch (err) {
@@ -262,15 +267,7 @@ export const EventForm: React.FC<EventFormProps> = ({
         title="Creating Event"
         message="Please wait while the event is being created..."
       />
-      <Box
-        sx={{
-          width: '100%',
-          backgroundColor: '#222222',
-        }}
-        role="presentation"
-        zIndex="10"
-        borderLeft="1px solid #383838"
-      >
+      <Box>
         <FormHeader title="Create Event" handleClose={handleClose} />
         <Box display="flex" flexDirection="column" gap="20px" padding={3}>
           <Box bgcolor="#262626" borderRadius="10px">
@@ -350,7 +347,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                 Recommend min of 200x200px (1:1 Ratio)
               </FormLabelDesc>
               <Controller
-                name="avatarURL"
+                name="imageUrl"
                 control={control}
                 render={({ field }) => <FormUploader {...field} />}
               />
@@ -408,7 +405,7 @@ export const EventForm: React.FC<EventFormProps> = ({
               </Stack>
             </Stack>
             <Stack spacing="10px" padding="20px">
-              <FormLabel>External URL*</FormLabel>
+              <FormLabel>External Website</FormLabel>
               <Controller
                 name="external_url"
                 control={control}
@@ -416,7 +413,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                   <>
                     <ZuInput
                       {...field}
-                      placeholder="You can input the external URL "
+                      placeholder="You can input the external URL of your event"
                     />
                     {error && (
                       <FormHelperText error>{error.message}</FormHelperText>
@@ -425,7 +422,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                 )}
               />
             </Stack>
-            <Stack spacing="10px" padding="20px">
+            {/*<Stack spacing="10px" padding="20px">
               <FormLabel>Participant*</FormLabel>
               <Controller
                 name="participant"
@@ -481,7 +478,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                   </>
                 )}
               />
-            </Stack>
+            </Stack>*/}
           </Box>
         </Box>
         <Box display="flex" flexDirection="column" gap="20px" padding={3}>

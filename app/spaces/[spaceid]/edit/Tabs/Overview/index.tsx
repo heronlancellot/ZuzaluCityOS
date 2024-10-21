@@ -14,9 +14,15 @@ import { PreviewFile } from '@/components';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { Space } from '@/types';
 import { useUploaderPreview } from '@/components/PreviewFile/useUploaderPreview';
-import SuperEditor from '@/components/editor/SuperEditor';
 import { useEditorStore } from '@/components/editor/useEditorStore';
 import SaveAsRoundedIcon from '@mui/icons-material/SaveAsRounded';
+import { createUrl, createUrlWhenEdit } from '@/services/url';
+import { covertNameToUrlName } from '@/utils/format';
+
+import dynamic from 'next/dynamic';
+const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
+  ssr: false,
+});
 
 const Overview = () => {
   const theme = useTheme();
@@ -35,9 +41,9 @@ const Overview = () => {
     try {
       const response: any = await composeClient.executeQuery(
         `
-        query GetSpace($id: ID!) {
+        query GetZucitySpace($id: ID!) {
           node(id: $id) {
-            ...on Space {
+            ...on ZucitySpace {
               id
               avatar
               banner
@@ -85,8 +91,8 @@ const Overview = () => {
       const { id, name, tagline, avatar, banner, description } = data;
       try {
         const query = `
-          mutation UpdateSpace($i: UpdateSpaceInput!) {
-            updateSpace(input: $i) {
+          mutation UpdateZucitySpace($i: UpdateZucitySpaceInput!) {
+            updateZucitySpace(input: $i) {
               document {
                 id
               },
@@ -106,11 +112,15 @@ const Overview = () => {
           },
         };
         await composeClient.executeQuery(query, variables);
+        if (name !== space?.name) {
+          const urlName = covertNameToUrlName(name);
+          await createUrlWhenEdit(urlName, id, 'spaces');
+        }
       } catch (error) {
         console.error('Failed to update space:', error);
       }
     },
-    [space],
+    [space?.name],
   );
 
   useEffect(() => {
@@ -139,8 +149,8 @@ const Overview = () => {
   };
   const deleteSpace = async () => {
     try {
-      const enableIndexingSpaceMutation = `mutation enableIndexingSpace($input: EnableIndexingSpaceInput!) {
-      enableIndexingSpace(input: $input) {
+      const enableIndexingSpaceMutation = `mutation enableIndexingZucitySpace($input: EnableIndexingZucitySpaceInput!) {
+      enableIndexingZucitySpace(input: $input) {
         document {
           id
         }

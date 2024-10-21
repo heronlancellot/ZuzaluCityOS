@@ -11,8 +11,20 @@ import { Contract } from '@/types';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { eventId, type, contractAddress, description, image_url, status } =
-      body;
+    const {
+      eventId,
+      id,
+      type,
+      contractAddress,
+      description,
+      image_url,
+      status,
+      checkin,
+      name,
+      price,
+      tokenType,
+      disclaimer,
+    } = body;
     const { data, error } = await supabase
       .from('events')
       .select('privateKey')
@@ -29,16 +41,27 @@ export async function POST(req: Request) {
     ceramic.did = did;
     composeClient.setDID(did);
     const GET_Event_QUERY = `
-    query GetEvent($id: ID!) {
+    query GetZucityEvent($id: ID!) {
       node(id: $id) {
-          ... on Event {
+          ... on ZucityEvent {
             id
-            contracts {
-              contractAddress
-              description
-              image_url
-              status
-              type
+            regAndAccess(first:1) {
+              edges {
+                node {
+                  scrollPassTickets {
+                    type
+                    status
+                    checkin
+                    image_url
+                    description
+                    contractAddress
+                    name
+                    price
+                    tokenType
+                    disclaimer
+                  }
+                }
+              }
             }
           }
         }
@@ -50,20 +73,25 @@ export async function POST(req: Request) {
         id: eventId,
       },
     );
+    console.log(getEventResponse);
 
-    const query = `
-            mutation UpdateEvent($i: UpdateEventInput!) {
-            updateEvent(input: $i) {
-            document {
-                id
-            }
+    const Update_QUERY = `
+      mutation UpdateZucityEventRegistrationAndAccessMutation($input: UpdateZucityEventRegistrationAndAccessInput!) {
+        updateZucityEventRegistrationAndAccess(
+          input: $input
+        ) {
+          document {
+            id
+          }
         }
-    }
-    `;
+      }
+      `;
+    const regAndAccess =
+      getEventResponse.data.node.regAndAccess.edges?.[0]?.node;
     const existingContracts: Contract[] = Array.isArray(
-      getEventResponse.data.node.contracts,
+      regAndAccess.scrollPassTickets,
     )
-      ? getEventResponse.data.node.contracts
+      ? regAndAccess.scrollPassTickets
       : [];
     const newContract: Contract = {
       type,
@@ -71,20 +99,26 @@ export async function POST(req: Request) {
       description,
       image_url,
       status,
+      checkin: checkin ?? '0',
+      name,
+      price,
+      tokenType,
+      disclaimer,
     };
     const updatedContracts: Contract[] = [...existingContracts, newContract];
     const variables = {
-      i: {
-        id: eventId,
+      input: {
+        id,
         content: {
-          contracts: updatedContracts,
+          scrollPassTickets: updatedContracts,
         },
       },
     };
     const updateResult: any = await composeClient.executeQuery(
-      query,
+      Update_QUERY,
       variables,
     );
+    console.log(updateResult);
     return NextResponse.json(
       {
         message: 'Successfully added into member list',

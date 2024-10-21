@@ -23,8 +23,14 @@ import Dialog from '@/app/spaces/components/Modal/Dialog';
 import SelectCategories from '@/components/select/selectCategories';
 import { Uploader3 } from '@lxdao/uploader3';
 import { useUploaderPreview } from '@/components/PreviewFile/useUploaderPreview';
-import SuperEditor from '@/components/editor/SuperEditor';
 import { useEditorStore } from '@/components/editor/useEditorStore';
+import { covertNameToUrlName } from '@/utils/format';
+import { createUrl } from '@/services/url';
+
+import dynamic from 'next/dynamic';
+const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
+  ssr: false,
+});
 
 const validationSchema = yup.object({
   name: yup
@@ -142,8 +148,8 @@ const Create = () => {
       });
       const result = await composeClient.executeQuery(
         `
-      mutation CreateSpaceMutation($input: CreateSpaceInput!) {
-        createSpace(
+      mutation createZucitySpaceMutation($input: CreateZucitySpaceInput!) {
+        createZucitySpace(
           input: $input
         ) {
           document {
@@ -180,8 +186,19 @@ const Create = () => {
         },
       );
       if (result.errors?.length) {
-        throw new Error('Error creating space.');
+        console.error('Detailed error info:', result.errors);
+        throw new Error(
+          `Error creating space: ${JSON.stringify(result.errors)}`,
+        );
       }
+      const urlName = covertNameToUrlName(name);
+      // @ts-ignore
+      await createUrl(
+        urlName,
+        // @ts-ignore
+        result.data?.createZucitySpace?.document?.id,
+        'spaces',
+      );
       setShowModal(true);
     } catch (err: any) {
       console.log(err);

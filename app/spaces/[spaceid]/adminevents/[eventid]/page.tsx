@@ -2,26 +2,52 @@
 import * as React from 'react';
 import { Box, Stack, useMediaQuery } from '@mui/material';
 
-import { Ticket, Overview, Sessions, Venue } from './Tabs';
+import { Ticket, Overview, Venue, Announcements } from './Tabs';
 import { Tabbar, Navbar } from 'components/layout';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCeramicContext } from '@/context/CeramicContext';
-import { Event } from '@/types';
+import { Space } from '@/types';
+import { useQuery } from '@tanstack/react-query';
+import { getSpacesQuery } from '@/services/space';
+import { EventProvider, useEventContext } from './EventContext';
+import {
+  StatusProvider,
+  useStatusContext,
+} from './Tabs/Ticket/components/Common';
 
-const Home: React.FC = () => {
+const EventContent: React.FC = () => {
   const [tabName, setTabName] = React.useState<string>('Overview');
-  const [event, setEvent] = React.useState<Event>();
+  const { event, setEvent } = useEventContext();
+  const { setStatus } = useStatusContext();
 
-  const { composeClient } = useCeramicContext();
+  const { composeClient, ceramic } = useCeramicContext();
 
   const pathname = useParams();
+  const params = useParams();
+  const router = useRouter();
+  const spaceId = params.spaceid.toString();
+
+  const { data: spaceData } = useQuery({
+    queryKey: ['getSpaceByID', spaceId],
+    queryFn: () => {
+      return composeClient.executeQuery(getSpacesQuery, {
+        id: spaceId,
+      });
+    },
+    select: (data) => {
+      return data?.data?.node as Space;
+    },
+  });
 
   const fetchEventById = async (id: string) => {
     const query = `
       query FetchEvent($id: ID!) {
         node(id: $id) {
-          ...on Event {
+          ...on ZucityEvent {
             title
+            author {
+              id
+            }
             description
             status
             endTime
@@ -29,18 +55,15 @@ const Home: React.FC = () => {
             tagline
             timezone
             createdAt
-            image_url
+            imageUrl
             profile {
               avatar
               username
             }
             startTime
             description
-            meeting_url
-            external_url
-            min_participant
-            max_participant
-            participant_count
+            meetingUrl
+            externalUrl
             tracks
             customLinks {
               title
@@ -50,14 +73,63 @@ const Home: React.FC = () => {
               name
               gated
             }
-            contractID
             id
-            contracts {
-              contractAddress
-              description
-              image_url
-              status
-              type
+            applicationForms(first:1000) {
+              edges {
+                node {
+                  id
+                  answers
+                  approveStatus
+                  profile {
+                    avatar
+                    username
+                  }
+                }
+              }
+            }
+            regAndAccess(first:1) {
+              edges {
+                node {
+                  id
+                  profileId
+                  registrationAccess
+                  registrationOpen
+                  registrationWhitelist {
+                    id
+                  }
+                  ticketType
+                  checkinOpen
+                  applyRule
+                  applyOption
+                  applicationForm
+                  eventId
+                  applicationForm
+                  zuPassInfo {
+                    access
+                    eventId
+                    eventName
+                    registration
+                  }
+                  scrollPassContractFactoryID
+                  scrollPassTickets {
+                    type
+                    status
+                    checkin
+                    image_url
+                    description
+                    contractAddress
+                    tokenType
+                    name
+                    price
+                    disclaimer
+                  }
+                  zuLottoInfo {
+                    name
+                    description
+                    contractAddress
+                  }
+                }
+              }
             }
           }
         }
@@ -70,9 +142,15 @@ const Home: React.FC = () => {
 
     try {
       const result: any = await composeClient.executeQuery(query, variable);
+      console.log('RESULT: ', result);
       if (result.data) {
         if (result.data.node) {
           setEvent(result.data.node);
+          const regAndAccess = result.data.node.regAndAccess.edges[0].node;
+          setStatus({
+            checkinOpen: regAndAccess?.checkinOpen === '1',
+            registrationOpen: regAndAccess?.registrationOpen === '1',
+          });
         }
       }
     } catch (err) {
@@ -82,48 +160,79 @@ const Home: React.FC = () => {
 
   const isMobile = useMediaQuery('(max-width:768px)');
 
+  const { refetch } = useQuery({
+    queryKey: ['fetchEventById', pathname.eventid],
+    queryFn: () => fetchEventById(pathname.eventid as string),
+    enabled: !!pathname.eventid,
+  });
+
   const refetchData = () => {
-    pathname.eventid && fetchEventById(pathname.eventid as string);
+    pathname.eventid && refetch();
   };
 
   const renderPage = () => {
     switch (tabName) {
       case 'Overview':
-        return <Overview event={event} refetch={refetchData} />;
-      case 'Tickets':
+        return (
+          <Overview
+            event={event}
+            refetch={refetchData}
+            setTabName={setTabName}
+          />
+        );
+      case 'Announcements':
+        return <Announcements event={event} />;
+      case 'Registration':
         return <Ticket event={event} />;
       /*case 'Event Sessions':
         return <Sessions />;*/
       case 'Venue':
         return <Venue event={event} />;
       default:
-        return <Overview />;
+        return <Overview setTabName={setTabName} />;
     }
   };
 
   React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (pathname.eventid) {
-          fetchEventById(pathname.eventid as string);
-        }
-      } catch (error) {
-        console.error('An error occurred:', error);
+    if (spaceData) {
+      const superAdmins =
+        spaceData?.superAdmin?.map((superAdmin) =>
+          superAdmin.id.toLowerCase(),
+        ) || [];
+      const admins =
+        spaceData?.admins?.map((admin) => admin.id.toLowerCase()) || [];
+      const userDID = ceramic?.did?.parent.toString().toLowerCase() || '';
+      if (!admins.includes(userDID) && !superAdmins.includes(userDID)) {
+        router.push('/');
       }
-    };
-    fetchData();
-  }, []);
+    }
+  }, [ceramic?.did?.parent, router, spaceData]);
 
   return (
-    <Stack width="100%">
+    <Stack width="100%" id="111122">
       <Navbar spaceName={event?.space?.name} />
-      <Tabbar tabName={tabName} setTabName={setTabName} />
+      <Tabbar tabName={tabName} setTabName={setTabName} event={event} />
       <Stack direction="row" justifyContent="center">
-        <Box width={isMobile ? '100%' : '860px'} marginTop={3}>
+        <Box
+          width={isMobile ? '100%' : '860px'}
+          marginTop={3}
+          sx={{ position: 'relative' }}
+        >
+          {/* {tabName === 'Registration' && <Navigation event={event} />} */}
           {renderPage()}
         </Box>
       </Stack>
     </Stack>
+  );
+};
+
+const Home: React.FC = () => {
+  return (
+    <EventProvider>
+      <StatusProvider>
+        <EventContent />
+      </StatusProvider>
+    </EventProvider>
   );
 };
 

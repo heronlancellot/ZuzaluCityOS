@@ -31,11 +31,11 @@ const Sidebar: React.FC<SidebarProps> = ({ selected }) => {
       setIsLoading(true);
       const response: any = await composeClient.executeQuery(`
       query {
-        eventIndex(first: 100) {
+        zucityEventIndex(first: 100) {
           edges {
             node {
               id
-              image_url
+              imageUrl
               title
               members{
               id
@@ -61,9 +61,9 @@ const Sidebar: React.FC<SidebarProps> = ({ selected }) => {
       }
     `);
 
-      if (response && response.data && 'eventIndex' in response.data) {
+      if (response && response.data && 'zucityEventIndex' in response.data) {
         const eventData: EventData = response.data as EventData;
-        return eventData.eventIndex.edges.map((edge) => edge.node);
+        return eventData.zucityEventIndex.edges.map((edge) => edge.node);
       } else {
         console.error('Invalid data structure:', response.data);
       }
@@ -117,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selected }) => {
       url: '/',
     },
     {
-      content: 'Spaces',
+      content: 'Communities',
       icon: <SpaceIcon />,
       function: () => router.push('/spaces'),
       url: '/spaces',
@@ -164,6 +164,7 @@ const Sidebar: React.FC<SidebarProps> = ({ selected }) => {
         display: 'flex',
         flexDirection: 'column',
       }}
+      borderRight="1px solid #383838"
     >
       <Box
         display="flex"
@@ -251,13 +252,17 @@ const Sidebar: React.FC<SidebarProps> = ({ selected }) => {
                           padding: '6px 10px',
                           opacity: 0.7,
                           cursor: 'pointer',
+                          '&:hover': {
+                            bgcolor: 'rgba(255, 255, 255, 0.05)',
+                          },
+                          borderRadius: '4px',
                         }}
                         onClick={() => {
                           router.push(`/events/${event.id}`);
                         }}
                       >
                         <Image
-                          src={event.image_url!}
+                          src={event.imageUrl!}
                           alt={event.title}
                           width={20}
                           height={20}

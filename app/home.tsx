@@ -14,7 +14,6 @@ import { Event, EventData, Space, SpaceData } from '@/types';
 import { Dayjs, dayjs } from '@/utils/dayjs';
 import {
   Box,
-  Button,
   Skeleton,
   Typography,
   useMediaQuery,
@@ -23,20 +22,15 @@ import {
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import Carousel from 'components/Carousel';
-import {
-  EventIcon,
-  RightArrowCircleIcon,
-  RightArrowIcon,
-  SpaceIcon,
-} from 'components/icons';
+import { EventIcon, RightArrowCircleIcon, SpaceIcon } from 'components/icons';
 import { Sidebar } from 'components/layout';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { Fragment, useEffect, useMemo, useState } from 'react';
 import MiniDashboard from './components/MiniDashboard';
 import { EventComingSoonCard } from '@/components/cards/ComingSoonCard';
-
-const doclink = process.env.NEXT_PUBLIC_LEARN_DOC_V2_URL || '';
+import { getSpacesQuery } from '@/services/space';
+import Banner from './components/Banner';
 
 const Home: React.FC = () => {
   const theme = useTheme();
@@ -73,52 +67,10 @@ const Home: React.FC = () => {
 
   const getSpaces = async () => {
     try {
-      const response: any = await composeClient.executeQuery(`
-        query MyQuery {
-          spaceIndex(first: 20) {
-            edges {
-              node {
-                id
-                admins {
-                  id
-                }
-                superAdmin {
-                  id
-                }
-                avatar
-                banner
-                description
-                name
-                profileId
-                tagline
-                website
-                twitter
-                telegram
-                nostr
-                lens
-                github
-                discord
-                ens
-                category
-                members{
-                  id
-                }
-                events(first: 1) {
-                  edges {
-                    node {
-                      startTime
-                      endTime
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      `);
-      if ('spaceIndex' in response.data) {
+      const response: any = await composeClient.executeQuery(getSpacesQuery);
+      if ('zucitySpaceIndex' in response.data) {
         const spaceData: SpaceData = response.data as SpaceData;
-        let fetchedSpaces: Space[] = spaceData.spaceIndex.edges.map(
+        let fetchedSpaces: Space[] = spaceData.zucitySpaceIndex.edges.map(
           (edge) => edge.node,
         );
         if (!isDev) {
@@ -140,20 +92,17 @@ const Home: React.FC = () => {
       setIsEventsLoading(true);
       const response: any = await composeClient.executeQuery(`
       query {
-        eventIndex(first: 20) {
+        zucityEventIndex(first: 20, sorting: { createdAt: DESC }) {
           edges {
             node {
               createdAt
               description
               endTime
-              external_url
+              externalUrl
               gated
               id
-              image_url
-              max_participant
-              meeting_url
-              min_participant
-              participant_count
+              imageUrl
+              meetingUrl
               profileId
               spaceId
               startTime
@@ -185,9 +134,9 @@ const Home: React.FC = () => {
       }
     `);
 
-      if (response && response.data && 'eventIndex' in response.data) {
+      if (response && response.data && 'zucityEventIndex' in response.data) {
         const eventData: EventData = response.data as EventData;
-        const fetchedEvents: Event[] = eventData.eventIndex.edges.map(
+        const fetchedEvents: Event[] = eventData.zucityEventIndex.edges.map(
           (edge) => edge.node,
         );
         setEvents(fetchedEvents);
@@ -229,21 +178,18 @@ const Home: React.FC = () => {
       // TODO: clean selectedDate
       if (selectedDate) {
         const getEventsByDate_QUERY = `
-          query ($input:EventFiltersInput!) {
-          eventIndex(filters:$input, first: 20){
+          query ($input:ZucityEventFiltersInput!) {
+          zucityEventIndex(filters:$input, first: 20){
             edges {
               node {
                 createdAt
                 description
                 endTime
-                external_url
+                externalUrl
                 gated
                 id
-                image_url
-                max_participant
-                meeting_url
-                min_participant
-                participant_count
+                imageUrl
+                meetingUrl
                 profileId
                 spaceId
                 startTime
@@ -274,9 +220,9 @@ const Home: React.FC = () => {
             },
           },
         );
-        if (response && response.data && 'eventIndex' in response.data) {
+        if (response && response.data && 'zucityEventIndex' in response.data) {
           const eventData: EventData = response.data as EventData;
-          const fetchedEvents: Event[] = eventData.eventIndex.edges.map(
+          const fetchedEvents: Event[] = eventData.zucityEventIndex.edges.map(
             (edge) => edge.node,
           );
           setEvents(fetchedEvents);
@@ -293,18 +239,15 @@ const Home: React.FC = () => {
 
   const getEventsInMonth = async () => {
     const getEventsByDate_QUERY = `
-        query ($input:EventFiltersInput!) {
-        eventIndex(filters:$input, first: 20){
+        query ($input:ZucityEventFiltersInput!) {
+        zucityEventIndex(filters:$input, first: 20){
           edges {
             node {
               description
-              external_url
+              externalUrl
               gated
-              image_url
-              max_participant
-              meeting_url
-              min_participant
-              participant_count
+              imageUrl
+              meetingUrl
               profileId
               spaceId
               status
@@ -342,9 +285,9 @@ const Home: React.FC = () => {
         },
       },
     );
-    if (response && response.data && 'eventIndex' in response.data) {
+    if (response && response.data && 'zucityEventIndex' in response.data) {
       const eventData: EventData = response.data as EventData;
-      const fetchedEvents: Event[] = eventData.eventIndex.edges.map(
+      const fetchedEvents: Event[] = eventData.zucityEventIndex.edges.map(
         (edge) => edge.node,
       );
       setEventsForCalendar(fetchedEvents);
@@ -406,7 +349,6 @@ const Home: React.FC = () => {
         >
           {!isTablet && <Sidebar selected="Home" />}
           <Box
-            borderLeft="1px solid #383838"
             flex={1}
             padding={isMobile ? '10px' : '30px'}
             width={isTablet ? '100vw' : 'calc(100vw - 260px)'}
@@ -414,11 +356,13 @@ const Home: React.FC = () => {
             sx={{
               overflowY: 'auto',
               overflowX: 'hidden',
+              maxWidth: '1160px',
+              margin: '0 auto',
             }}
           >
             {targetEvent && (
               <MiniDashboard
-                imageUrl={targetEvent.image_url}
+                imageUrl={targetEvent.imageUrl}
                 spaceName={targetEvent.title}
                 startTime={dayjs(targetEvent.startTime).format('MMMM DD')}
                 endTime={dayjs(targetEvent.endTime).format('MMMM DD')}
@@ -434,43 +378,7 @@ const Home: React.FC = () => {
                 loggedIn={ceramic && targetEventView}
               />
             )}
-            <Box
-              display="flex"
-              flexDirection="column"
-              borderRadius="10px"
-              padding="40px 40px"
-              sx={{
-                backgroundImage: 'url("/27.jpg")',
-                backgroundPosition: 'center center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: 'cover',
-                marginTop: '20px',
-              }}
-            >
-              <Typography
-                color={theme.palette.text.primary}
-                variant={isMobile ? 'h1' : 'hB'}
-              >
-                Zuzalu City
-              </Typography>
-              <Typography color="white" variant="bodyB" marginBottom="20px">
-                Welcome to the new Zuzalu City
-              </Typography>
-              <Link href={doclink}>
-                <Button
-                  variant="contained"
-                  sx={{
-                    backgroundColor: '#383838',
-                    color: 'white',
-                    width: isMobile ? '100%' : '200px',
-                    borderRadius: '10px',
-                  }}
-                  startIcon={<RightArrowIcon />}
-                >
-                  Join Alpha Testing
-                </Button>
-              </Link>
-            </Box>
+            <Banner />
             <Box marginTop="30px">
               <Box
                 display="flex"
@@ -490,7 +398,7 @@ const Home: React.FC = () => {
                     variant={isMobile ? 'subtitleMB' : 'subtitleLB'}
                     color="white"
                   >
-                    Explore Spaces
+                    Communities
                   </Typography>
                 </Box>
                 <Box
@@ -506,9 +414,13 @@ const Home: React.FC = () => {
                   <RightArrowCircleIcon />
                 </Box>
               </Box>
-              <Box marginY="20px">
-                <Typography color="white" variant="bodyM">
-                  Most Active Spaces
+              <Box margin="0 0 20px">
+                <Typography
+                  color="white"
+                  variant="bodyM"
+                  sx={{ opacity: '0.5', fontSize: '12px' }}
+                >
+                  Newest Spaces
                 </Typography>
               </Box>
               {spaces.length > 0 ? (
@@ -603,7 +515,7 @@ const Home: React.FC = () => {
                         </Fragment>
                       );
                     })}
-                    <EventComingSoonCard />
+                    {/*<EventComingSoonCard />*/}
                   </>
                 )}
               </Box>

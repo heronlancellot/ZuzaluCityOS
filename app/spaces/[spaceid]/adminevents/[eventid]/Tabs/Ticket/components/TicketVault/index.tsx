@@ -14,12 +14,15 @@ import { shortenAddress } from '@/utils/format';
 import { client } from '@/context/WalletContext';
 import { Address, GetEnsNameReturnType } from 'viem';
 import { ERC20_ABI } from '@/utils/erc20_abi';
-import { Contract } from '@/types';
+import { Contract, Event } from '@/types';
 interface ITicketVault {
   vaultIndex: number;
   ticketAddresses: Array<string>;
   tickets: Array<any>;
   eventContracts: Contract[];
+  refetch: () => void;
+  onClose: () => void;
+  event: Event;
 }
 
 const TicketVault = ({
@@ -27,6 +30,9 @@ const TicketVault = ({
   ticketAddresses,
   tickets,
   eventContracts,
+  refetch,
+  onClose,
+  event,
 }: ITicketVault) => {
   const isMobile = useMediaQuery('(max-width:500px)');
   const [action, setAction] = React.useState('Withdraw');
@@ -505,6 +511,7 @@ const TicketVault = ({
 
         {action === 'Withdraw' ? (
           <WithdrawToken
+            refetch={refetch}
             tokenSymbol={ticket[2]?.result}
             balance={balance}
             ticketAddress={ticketAddress}
@@ -519,9 +526,12 @@ const TicketVault = ({
           />
         ) : ticket[9]?.result ? (
           <Whitelist
+            refetch={refetch}
             vaultIndex={vaultIndex}
             ticketAddresses={ticketAddresses}
             tickets={tickets}
+            onClose={onClose}
+            event={event}
           />
         ) : null}
 

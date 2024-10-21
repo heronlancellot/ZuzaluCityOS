@@ -88,7 +88,6 @@ import { authenticate } from '@pcd/zuauth/server';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import SidebarButton from 'components/layout/Sidebar/SidebarButton';
 import SelectCategories from '@/components/select/selectCategories';
-import SuperEditor from '@/components/editor/SuperEditor';
 import {
   useEditorStore,
   decodeOutputData,
@@ -103,6 +102,7 @@ import SelectSearchUser from '@/components/select/selectSearchUser';
 import { OutputData } from '@editorjs/editorjs';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
+import { formatUserName } from '@/utils/format';
 
 const EditorPreview = dynamic(
   () => import('@/components/editor/EditorPreview'),
@@ -110,6 +110,10 @@ const EditorPreview = dynamic(
     ssr: false,
   },
 );
+
+const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
+  ssr: false,
+});
 
 const Home = () => {
   const theme = useTheme();
@@ -225,14 +229,11 @@ const Home = () => {
               createdAt
               description
               endTime
-              external_url
+              externalUrl
               gated
               id
-              image_url
-              max_participant
-              meeting_url
-              min_participant
-              participant_count
+              imageUrl
+              meetingUrl
               profileId
               spaceId
               startTime
@@ -555,7 +556,7 @@ const Home = () => {
     try {
       const response: any = await composeClient.executeQuery(`
         query MyQuery {
-          mVPProfileIndex(first: 1000) {
+          zucityProfileIndex(first: 1000) {
             edges {
               node {
                 id
@@ -570,11 +571,10 @@ const Home = () => {
         }
       `);
 
-      if ('mVPProfileIndex' in response.data) {
+      if ('zucityProfileIndex' in response.data) {
         const profileData: ProfileEdge = response.data as ProfileEdge;
-        const fetchedPeople: Profile[] = profileData.mVPProfileIndex.edges.map(
-          (edge) => edge.node,
-        );
+        const fetchedPeople: Profile[] =
+          profileData.zucityProfileIndex.edges.map((edge) => edge.node);
         setPeople(fetchedPeople);
       } else {
         console.error('Invalid data structure:', response.data);
@@ -2106,7 +2106,7 @@ const Home = () => {
                                 src={speaker.avatar || '/user/avatar_p.png'}
                               />
                               <Typography variant="bodyB">
-                                {speaker.username}
+                                {formatUserName(speaker.username)}
                               </Typography>
                             </Stack>
                           ),
@@ -2118,7 +2118,9 @@ const Home = () => {
                         By:
                       </Typography>
                       <Typography variant="bodyS" sx={{ opacity: 0.8 }}>
-                        {JSON.parse(session.organizers)[0].username}
+                        {formatUserName(
+                          JSON.parse(session.organizers)[0].username,
+                        )}
                       </Typography>
                     </Stack>
                     <Stack spacing="10px">
@@ -2202,7 +2204,9 @@ const Home = () => {
                           Last Edited By:
                         </Typography>
                         <Typography variant="bodyS">
-                          {JSON.parse(session.organizers)[0].username}
+                          {formatUserName(
+                            JSON.parse(session.organizers)[0].username,
+                          )}
                         </Typography>
                         <Typography variant="bodyS" sx={{ opacity: 0.5 }}>
                           {formatDateAgo(session.createdAt)}
@@ -2213,7 +2217,9 @@ const Home = () => {
                           Edited By:
                         </Typography>
                         <Typography variant="bodyS">
-                          {JSON.parse(session.organizers)[0].username}
+                          {formatUserName(
+                            JSON.parse(session.organizers)[0].username,
+                          )}
                         </Typography>
                         <Typography variant="bodyS" sx={{ opacity: 0.5 }}>
                           {formatDateAgo(session.createdAt)}
@@ -2291,7 +2297,7 @@ const Home = () => {
                                 src={organizer.avatar || '/user/avatar_p.png'}
                               />
                               <Typography variant="bodyS">
-                                {organizer.username}
+                                {formatUserName(organizer.username)}
                               </Typography>
                             </Stack>
                           ),
@@ -2322,7 +2328,7 @@ const Home = () => {
                                 src={speaker.avatar || '/user/avatar_p.png'}
                               />
                               <Typography variant="bodyS">
-                                {speaker.username}
+                                {formatUserName(speaker.username)}
                               </Typography>
                             </Stack>
                           ),

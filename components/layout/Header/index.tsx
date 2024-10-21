@@ -18,6 +18,9 @@ import SidebarDrawer from '../Sidebar/SidebarDrawer';
 import { useAppContext } from '@/context/AppContext';
 import { useAccount, useDisconnect, useEnsName } from 'wagmi';
 import Image from 'next/image';
+import { ZuButton } from '@/components/core';
+import { formatUserName } from '@/utils/format';
+import { useLitContext } from '@/context/LitContext';
 
 export function formatAddressString(str?: string, maxLength: number = 10) {
   if (!str) return;
@@ -34,13 +37,10 @@ const Header = () => {
   const pathName = usePathname();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  const { isAuthenticated, showAuthPrompt, logout, username } =
+  const { isAuthenticated, showAuthPrompt, logout, username, profile } =
     useCeramicContext();
+  const { litDisconnect } = useLitContext();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { address } = useAccount();
-  const ensNameData = useEnsName({
-    address,
-  });
   const { disconnect } = useDisconnect();
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -53,6 +53,7 @@ const Header = () => {
   const handleLogout = () => {
     disconnect();
     logout();
+    litDisconnect();
     handleMenuClose();
     window.location.reload();
   };
@@ -61,14 +62,21 @@ const Header = () => {
     handleMenuClose();
   };
 
-  const userName = useMemo(() => {
-    if (address) {
-      return (
-        formatAddressString(ensNameData.data?.toString(), 16) ||
-        formatAddressString(address)
-      );
+  const handlePassport = () => {
+    handleMenuClose();
+    router.push('/passport');
+  };
+
+  const address = useMemo(() => {
+    if (profile) {
+      const id = profile.author?.id.split(':');
+      return formatAddressString(id?.[id?.length - 1]);
     }
-  }, [address, ensNameData.data]);
+  }, [profile]);
+
+  const formattedName = useMemo(() => {
+    return formatUserName(username);
+  }, [username]);
 
   return (
     <Box
@@ -120,7 +128,7 @@ const Header = () => {
             opacity: 0.8,
           }}
         >
-          alpha
+          beta
         </Typography>
       </Box>
       {isAuthenticated ? (
@@ -149,7 +157,7 @@ const Header = () => {
               height={24}
               width={24}
             />
-            {username}
+            {formattedName}
           </Button>
           <Menu
             anchorEl={anchorEl}
@@ -190,15 +198,14 @@ const Header = () => {
                   spacing="4px"
                   flexDirection="column"
                 >
-                  <Typography variant="bodyBB">{userName}</Typography>
+                  <Typography variant="bodyBB">{address}</Typography>
                   <Typography variant="bodyM" color="text.secondary">
                     Wallet Connected
                   </Typography>
                 </Stack>
               </Stack>
               <Stack
-                flexDirection="row"
-                alignItems="center"
+                flexDirection="column"
                 sx={{
                   gap: '10px',
                   padding: '8px 10px',
@@ -212,20 +219,27 @@ const Header = () => {
                 }}
                 onClick={handleProfile}
               >
-                <Image
-                  src="/user/profile.png"
-                  alt="profile"
-                  height={24}
-                  width={24}
-                />
-                <Typography
-                  sx={{
-                    fontSize: '15px',
-                    fontWeight: 500,
-                  }}
+                <Stack
+                  flexDirection="row"
+                  alignItems="center"
+                  sx={{ gap: '10px' }}
                 >
-                  My Profile
-                </Typography>
+                  <Image
+                    src="/user/profile.png"
+                    alt="profile"
+                    height={24}
+                    width={24}
+                  />
+                  <Typography
+                    sx={{
+                      fontSize: '15px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    My Profile
+                  </Typography>
+                </Stack>
+                <Typography variant="caption">Profile Coming soon</Typography>
               </Stack>
               <Stack
                 flexDirection="column"
@@ -240,6 +254,7 @@ const Header = () => {
                     borderRadius: '10px',
                   },
                 }}
+                onClick={handlePassport}
               >
                 <Stack
                   flexDirection="row"
@@ -261,7 +276,6 @@ const Header = () => {
                     My Passport
                   </Typography>
                 </Stack>
-                <Typography variant="caption">Passport Coming soon</Typography>
               </Stack>
               <Stack
                 flexDirection="row"
@@ -299,7 +313,7 @@ const Header = () => {
           </Menu>
         </>
       ) : (
-        /*<Button
+        <ZuButton
           sx={{
             textAlign: 'center',
             color: 'white',
@@ -320,8 +334,7 @@ const Header = () => {
         >
           <Image src="/user/wallet.png" alt="wallet" height={24} width={24} />
           Connect
-        </Button>*/
-        <Image src="/user/avatar_p.png" alt="avatar" height={30} width={30} />
+        </ZuButton>
       )}
       <SidebarDrawer
         selected={'Home'}

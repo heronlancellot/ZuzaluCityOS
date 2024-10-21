@@ -1,7 +1,7 @@
-export const getSpaceQuery = (eventCount: number = 10) => `
-      query GetSpace($id: ID!) {
+export const getSpaceEventsQuery = (eventCount: number = 10) => `
+      query GetSpaceEvents($id: ID!) {
         node(id: $id) {
-          ...on Space {
+          ...on ZucitySpace {
             avatar
             banner
             description
@@ -28,14 +28,14 @@ export const getSpaceQuery = (eventCount: number = 10) => `
                   createdAt
                   description
                   endTime
-                  external_url
+                  externalUrl
                   gated
                   id
-                  image_url
-                  max_participant
-                  meeting_url
-                  min_participant
-                  participant_count
+                  imageUrl
+                  maxParticipant
+                  meetingUrl
+                  minParticipant
+                  participantCount
                   profileId
                   spaceId
                   startTime
@@ -43,8 +43,45 @@ export const getSpaceQuery = (eventCount: number = 10) => `
                   tagline
                   timezone
                   title
+                  space {
+                    name
+                    avatar
+                  }
                 }
               }
+            }
+          }
+        }
+      }
+      `;
+
+export const getSpacesQuery = `
+      query GetSpaces {
+        zucitySpaceIndex(first: 30) {
+          edges {
+            node {
+              admins {
+                id
+              }
+              avatar
+              banner
+              category
+              description
+              discord
+              ens
+              gated
+              github
+              id
+              lens
+              name
+              nostr
+              superAdmin {
+                id
+              }
+              tagline
+              telegram
+              twitter
+              website
             }
           }
         }

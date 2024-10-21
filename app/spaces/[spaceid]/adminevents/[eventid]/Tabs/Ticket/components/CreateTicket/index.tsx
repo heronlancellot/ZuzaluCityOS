@@ -470,29 +470,23 @@ export const TicketType = ({
               )}
             </Stack>
             <Stack
-              onClick={() => setSelectedType('Sponsor')}
               direction="row"
               justifyContent="space-between"
               padding="10px 20px"
               alignItems="center"
-              bgcolor={
-                selectedType === 'Sponsor'
-                  ? 'rgba(125, 255, 209, 0.10)'
-                  : 'rgba(255, 255, 255, 0.05)'
-              }
+              bgcolor="rgba(255, 255, 255, 0.05)"
               borderRadius="10px"
+              sx={{ opacity: 0.5, cursor: 'not-allowed' }}
             >
               <Stack spacing="10px">
-                <Typography variant="bodyMB">Sponsor Package</Typography>
+                <Typography variant="bodyMB">
+                  Sponsor Package (Coming Soon)
+                </Typography>
                 <Typography variant="bodyS" sx={{ opacity: 0.8 }}>
                   These are packages for those who will sponsor this event
                 </Typography>
               </Stack>
-              {selectedType === 'Sponsor' ? (
-                <CheckCircleIcon />
-              ) : (
-                <UncheckCircleIcon />
-              )}
+              <UncheckCircleIcon />
             </Stack>
           </Stack>
           {/*<Typography variant="bodyB" sx={{ opacity: 0.6 }}>
@@ -706,22 +700,22 @@ export const CreateTicket = ({
               }}
               placeholder="Provide a captivating description of your event"
             />
-            <Typography
+            {/*<Typography
               variant="caption"
               display={'flex'}
               justifyContent={'end'}
               textTransform={'uppercase'}
               sx={{ opacity: '0.7' }}
             >
-              100 Characters left
-            </Typography>
+            </Typography>*/}
           </Stack>
 
           <Stack spacing="10px">
             <Typography variant="bodyBB">Add an Agreement Message</Typography>
             <Typography variant="bodyM" sx={{ opacity: 0.8 }}>
               Write an agreement for users to understand and agree before they
-              proceed to purchase this ticket.
+              proceed to purchase this ticket. This message will be displayed in
+              the minting process.
             </Typography>
             <TextField
               required
@@ -826,6 +820,7 @@ export const CreateTicket = ({
               </Typography>
               <Typography variant="bodyS" sx={{ opacity: '0.7' }}>
                 Set the end date and time for when minting for this ticket ends.
+                By default, minting will be open until the event ends.
               </Typography>
             </Stack>
           </Stack>
@@ -1012,8 +1007,10 @@ export const CreateTicket = ({
 
           <Button
             onClick={() => {
-              setTicketImageURL(avatarUploader.getUrl());
-              setIsConfirm(false), setGoToSummary(true);
+              const newImageURL = avatarUploader.getUrl();
+              setTicketImageURL(newImageURL);
+              setIsConfirm(false);
+              setGoToSummary(true);
             }}
             sx={{
               backgroundColor: '#2f474e',
@@ -1053,6 +1050,7 @@ export const TicketCreationSummary = ({
   setGoToSummary,
   setPurchasingTicket,
   handleSubmit,
+  ticketImageURL,
 }: IProps) => {
   const isMobile = useMediaQuery('(max-width:500px)');
   return (
@@ -1149,7 +1147,12 @@ export const TicketCreationSummary = ({
         </Box>
 
         <Stack marginTop={'16px'} direction={{ xs: 'column', sm: 'row' }}>
-          <Image alt={'23.webp'} src={'/23.webp'} width={200} height={200} />
+          <Image
+            alt={ticketImageURL || '/23.webp'}
+            src={ticketImageURL || '/23.webp'}
+            width={200}
+            height={200}
+          />
           <Stack
             direction="column"
             spacing={1}

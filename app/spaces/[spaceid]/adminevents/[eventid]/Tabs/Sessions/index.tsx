@@ -56,13 +56,17 @@ import SelectCategories from '@/components/select/selectCategories';
 import ZuAutoCompleteInput from '@/components/input/ZuAutocompleteInput';
 import SelectSearchUser from '@/components/select/selectSearchUser';
 import { supaCreateSession } from '@/services/session';
-import SuperEditor from '@/components/editor/SuperEditor';
 import { useEditorStore } from '@/components/editor/useEditorStore';
 import { v4 as uuidv4 } from 'uuid';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(isBetween);
+
+import dynamic from 'next/dynamic';
+const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
+  ssr: false,
+});
 
 const Sessions = () => {
   const params = useParams();
@@ -180,7 +184,7 @@ const Sessions = () => {
     // try {
     const response: any = await composeClient.executeQuery(`
         query MyQuery {
-          mVPProfileIndex(first: 20) {
+          zucityProfileIndex(first: 20) {
             edges {
               node {
                 id
@@ -195,9 +199,9 @@ const Sessions = () => {
         }
       `);
 
-    if ('mVPProfileIndex' in response.data) {
+    if ('zucityProfileIndex' in response.data) {
       const profileData: ProfileEdge = response.data as ProfileEdge;
-      const fetchedPeople: Profile[] = profileData.mVPProfileIndex.edges.map(
+      const fetchedPeople: Profile[] = profileData.zucityProfileIndex.edges.map(
         (edge) => edge.node,
       );
 
@@ -299,18 +303,15 @@ const Sessions = () => {
           `
         query MyQuery($id: ID!) {
           node (id: $id) {
-            ...on Event {
+            ...on zucityEvent {
               createdAt
               description
               endTime
-              external_url
+              externalUrl
               gated
               id
-              image_url
-              max_participant
-              meeting_url
-              min_participant
-              participant_count
+              imageUrl
+              meetingUrl
               profileId
               spaceId
               startTime
@@ -1310,7 +1311,7 @@ const Sessions = () => {
   };
 
   return (
-    <Stack direction={'column'} gap={6} padding={'30px'}>
+    <Stack direction={'column'} gap={6} padding="0 30px 30px">
       <SessionHeader onToggle={toggleDrawer} />
       <SessionList
         sessions={sessions}

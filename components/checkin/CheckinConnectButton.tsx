@@ -7,10 +7,10 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import React from 'react';
 
 interface IProps {
-  handleConfirm: () => void;
+  address: string;
 }
 
-export default function CheckinConnectButton({ handleConfirm }: IProps) {
+export default function CheckinConnectButton({ address }: IProps) {
   return (
     <ConnectButton.Custom>
       {({
@@ -53,15 +53,6 @@ export default function CheckinConnectButton({ handleConfirm }: IProps) {
                     alignItems={'center'}
                     justifyContent={'center'}
                   >
-                    <Typography
-                      fontSize={'14px'}
-                      textAlign={'center'}
-                      sx={{ opacity: '0.7' }}
-                    >
-                      Choose the wallet to be used to sign in to this specific
-                      event, if you need to change it contact the event
-                      organizer
-                    </Typography>
                     <ZuButton
                       startIcon={<ArrowCircleRightIcon />}
                       sx={{
@@ -70,18 +61,10 @@ export default function CheckinConnectButton({ handleConfirm }: IProps) {
                         backgroundColor: 'rgba(215, 255, 196, 0.10)',
                         color: '#D7FFC4',
                       }}
-                      onClick={() => {
-                        openConnectModal();
-                      }}
+                      onClick={openConnectModal}
                     >
-                      Link Your Wallet
+                      Connect Wallet
                     </ZuButton>
-                    <Image
-                      src="/ceramic.png?v=1"
-                      alt="wallet"
-                      width={78}
-                      height={15.5}
-                    />
                   </Stack>
                 );
               }
@@ -96,7 +79,7 @@ export default function CheckinConnectButton({ handleConfirm }: IProps) {
                     }}
                     onClick={openChainModal}
                   >
-                    Wrong network
+                    Wrong Network
                   </ZuButton>
                 );
               }
@@ -119,7 +102,6 @@ export default function CheckinConnectButton({ handleConfirm }: IProps) {
                           width={24}
                         />
                       }
-                      endIcon={<KeyboardArrowDownIcon />}
                       sx={{
                         width: '100%',
                         border: '1px solid rgba(255, 255, 255, 0.10)',
@@ -129,48 +111,8 @@ export default function CheckinConnectButton({ handleConfirm }: IProps) {
                         openAccountModal();
                       }}
                     >
-                      {account.address.slice(0, 10) + '...'}
+                      {address}
                     </ZuButton>
-                    <Typography
-                      textAlign={'center'}
-                      fontSize={'14px'}
-                      sx={{ opacity: '0.7' }}
-                    >
-                      This wallet is going to be used to sign in to this event
-                      with a{' '}
-                      <a
-                        href="https://ceramic.network/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          color: 'inherit',
-                          textDecoration: 'none',
-                          borderBottom: '1px solid',
-                        }}
-                      >
-                        <u>Ceramic DID</u>
-                      </a>
-                      . <br></br>If you need to change it in the future contact
-                      the event organizer
-                    </Typography>
-                    <ZuButton
-                      startIcon={<ArrowCircleRightIcon />}
-                      sx={{
-                        width: '100%',
-                        color: '#D7FFC4',
-                        border: '1px solid rgba(215, 255, 196, 0.20)',
-                        backgroundColor: 'rgba(215, 255, 196, 0.10)',
-                      }}
-                      onClick={handleConfirm}
-                    >
-                      Confirm This Wallet
-                    </ZuButton>
-                    <Image
-                      src="/ceramic.png?v=1"
-                      alt="wallet"
-                      width={78}
-                      height={15.5}
-                    />
                   </Stack>
                 );
               }
