@@ -25,6 +25,6 @@ export const getUserRole = async (
     return data;
   } catch (error) {
     console.error('Error fetching getUserRole:', error);
-    return undefined;
+    throw new Error('Error fetching getUserRole');
   }
 };
