@@ -23,6 +23,7 @@ import { useTheme } from '@mui/material/styles';
 import { useRouter, usePathname } from 'next/navigation';
 
 import styles from './SubSidebar.module.css';
+import { TrustfulIcon } from '@/components/icons/Trustful';
 
 interface SubSidebarProps {
   spaceId: string;
@@ -242,6 +243,15 @@ const SubSidebar: React.FC<SubSidebarProps> = ({
             content="Events"
             isActive={pathname === `/spaces/${spaceId}/events`}
           />
+          {spaceId ==
+            'kjzl6kcym7w8y7drgmopt1aufcut7p9cbwyoaa0ht9vl8sgs5q39blhgsbeyb83' && (
+            <SidebarButton
+              icon={<TrustfulIcon />}
+              onClick={() => router.push(`/spaces/${spaceId}/trustful`)}
+              content="Reputation Badge"
+              isActive={pathname === `/spaces/${spaceId}/trustful`}
+            />
+          )}
           {/*<SidebarButton*/}
           {/*  icon={<AnnouncementsIcon />}*/}
           {/*  content="Announcements"*/}
