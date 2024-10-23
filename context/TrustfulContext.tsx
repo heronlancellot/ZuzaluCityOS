@@ -14,7 +14,12 @@ export enum Role {
   ROOT = 'ROOT_ROLE',
   MANAGER = 'MANAGER_ROLE',
   VILLAGER = 'VILLAGER_ROLE',
+  NO_ROLE = 'NO_ROLE',
 }
+
+/** ID of the space enabled for Trustful to appear so far. */
+export const CypherHouseSpaceId =
+  'kjzl6kcym7w8y5ye1nxcz2o08c8pk9nd57bwqqax6wlfaimn5qsf6s3306jgj34';
 
 interface User {
   address: Address;
