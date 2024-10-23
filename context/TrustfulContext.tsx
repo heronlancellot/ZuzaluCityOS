@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, {
   createContext,
   useContext,
@@ -10,9 +11,9 @@ import React, {
 import { Address } from 'viem';
 
 export enum Role {
-  ROOT = 'ROOT',
-  MANAGER = 'MANAGER',
-  VILLAGER = 'VILLAGER',
+  ROOT = 'ROOT_ROLE',
+  MANAGER = 'MANAGER_ROLE',
+  VILLAGER = 'VILLAGER_ROLE',
 }
 
 interface User {

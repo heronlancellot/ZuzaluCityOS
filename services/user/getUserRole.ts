@@ -1,0 +1,30 @@
+import { Role } from '@/context/TrustfulContext';
+import { Address } from 'viem';
+
+interface UserRoleResponse {
+  role: Role;
+}
+
+export const getUserRole = async (
+  userAddress: Address,
+): Promise<UserRoleResponse | undefined> => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/users/role?address=${userAddress}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data: UserRoleResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching getUserRole:', error);
+    return undefined;
+  }
+};
