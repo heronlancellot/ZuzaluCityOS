@@ -141,7 +141,7 @@ const TrustfulPage = () => {
       }
     };
     fetchUserRole();
-  }, []);
+  }, [address]);
 
   return (
     <Stack direction="row" height="calc(100vh - 50px)" width="100%">
