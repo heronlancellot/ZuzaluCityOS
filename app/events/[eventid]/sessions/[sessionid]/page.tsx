@@ -1972,23 +1972,42 @@ const Home = () => {
                   >
                     You created this session
                   </Typography>
-                  <ZuButton
-                    startIcon={<EditIcon size={5} />}
-                    sx={{
-                      padding: '6px 10px',
-                      backgroundColor: 'rgba(255, 199, 125, 0.05)',
-                      gap: '10px',
-                      '& > span': {
-                        margin: '0px',
-                      },
-                      color: 'rgba(255, 199, 125, 1)',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                    }}
-                    onClick={() => toggleDrawer('right', true)}
-                  >
-                    Edit
-                  </ZuButton>
+                  <Stack>
+                    <ZuButton
+                      startIcon={<EditIcon size={5} />}
+                      sx={{
+                        padding: '6px 10px',
+                        backgroundColor: 'rgba(255, 199, 125, 0.05)',
+                        gap: '10px',
+                        '& > span': {
+                          margin: '0px',
+                        },
+                        color: 'rgba(255, 199, 125, 1)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                      }}
+                      onClick={() => toggleDrawer('right', true)}
+                    >
+                      Edit
+                    </ZuButton>
+                    <ZuButton
+                      startIcon={<EditIcon size={5} />}
+                      sx={{
+                        padding: '6px 10px',
+                        backgroundColor: 'rgba(255, 199, 125, 0.05)',
+                        gap: '10px',
+                        '& > span': {
+                          margin: '0px',
+                        },
+                        color: 'rgba(255, 199, 125, 1)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                      }}
+                      onClick={() => toggleDrawer('right', true)}
+                    >
+                      Open to Public
+                    </ZuButton>
+                  </Stack>
                 </Stack>
               )}
 
