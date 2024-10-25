@@ -11,6 +11,7 @@ import { getUserRole } from '@/services/user/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
 import { capitalizeFirstLetter } from '@/utils/format';
 import { Address } from 'viem';
+import { DynamicUserRoleActionSelector } from './components/DynamicUserRoleActionSelector';
 
 const TrustfulPage = () => {
   const params = useParams();
@@ -21,9 +22,7 @@ const TrustfulPage = () => {
   const [isEventsLoading, setIsEventsLoading] = useState<boolean>(true);
   const { composeClient, ceramic } = useCeramicContext();
   const { setUserRole, userRole } = useTrustful();
-
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
   const { username, profile } = useCeramicContext();
 
   const getSpaceByID = async () => {
@@ -175,6 +174,7 @@ const TrustfulPage = () => {
                 ? username
                 : address}
           </Typography>
+          {userRole && <DynamicUserRoleActionSelector role={userRole.role} />}
         </Box>
       </Stack>
     </Stack>
