@@ -37,6 +37,7 @@ import {
   PlusIcon,
   MinusIcon,
   ShareIcon,
+  ArrowUpTrayIcon,
 } from '@/components/icons';
 import BpCheckbox from '@/components/event/Checkbox';
 import {
@@ -179,10 +180,12 @@ const Home = () => {
   const [passingTitle, setPassingTitle] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  // const [showModal, setShowMakePrivate] = useState<boolean>(false);
   const toggleDrawer = (anchor: Anchor, open: boolean) => {
     setState({ ...state, [anchor]: open });
   };
+
+  const showMakePrivate = () => {};
 
   const handleChange = (val: string[]) => {
     setSessionTags(val);
@@ -1972,7 +1975,7 @@ const Home = () => {
                   >
                     You created this session
                   </Typography>
-                  <Stack>
+                  <Stack direction="row" spacing="10px">
                     <ZuButton
                       startIcon={<EditIcon size={5} />}
                       sx={{
@@ -1991,7 +1994,7 @@ const Home = () => {
                       Edit
                     </ZuButton>
                     <ZuButton
-                      startIcon={<EditIcon size={5} />}
+                      startIcon={<ArrowUpTrayIcon size={5} />}
                       sx={{
                         padding: '6px 10px',
                         backgroundColor: 'rgba(255, 199, 125, 0.05)',
@@ -2005,7 +2008,7 @@ const Home = () => {
                       }}
                       onClick={() => toggleDrawer('right', true)}
                     >
-                      Open to Public
+                      {session.isPublic ? 'Make Private' : 'Open to Public'}
                     </ZuButton>
                   </Stack>
                 </Stack>
