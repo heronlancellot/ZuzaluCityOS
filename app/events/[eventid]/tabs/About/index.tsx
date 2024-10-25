@@ -475,7 +475,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
               imageUrl={eventData.imageUrl}
               status={eventData.status}
             />
-            {isMobile ? (
+            {isMobile && eventData.regAndAccess.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
@@ -603,7 +603,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
               },
             }}
           >
-            {!isMobile ? (
+            {!isMobile && eventData.regAndAccess.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
