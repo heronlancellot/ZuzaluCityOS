@@ -11,21 +11,15 @@ import {
 import {
   EventName,
   EventAbout,
-  EventRegister,
   EventDetail,
-  Initial,
-  Disclaimer,
-  Email,
-  Payment,
 } from '@/components/event';
 import { ZuButton } from '@/components/core';
-import { XMarkIcon, LockIcon } from '@/components/icons';
+import { XMarkIcon } from '@/components/icons';
 import {
   CeramicResponseType,
   Event,
   EventEdge,
   Anchor,
-  Coordinates,
   Contract,
 } from '@/types';
 import { useCeramicContext } from '@/context/CeramicContext';
