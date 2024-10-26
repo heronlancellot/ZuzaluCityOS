@@ -11,6 +11,7 @@ import React, {
 import { Zuconfig } from '@/constant';
 import { zuAuthPopup } from '@pcd/zuauth/client';
 import { authenticate } from '@pcd/zuauth/server';
+import { ZupassConfig } from '@/types';
 
 type ZuAuthState =
   | 'logged out'
@@ -25,7 +26,7 @@ interface ZuAuthContextType {
   authState: ZuAuthState;
   log: string;
   user: Record<string, string> | undefined;
-  auth: () => void;
+  auth: (zuConfig: ZupassConfig) => void;
   logout: () => void;
   setNullifierHash: React.Dispatch<React.SetStateAction<string>>;
 }
@@ -41,7 +42,11 @@ const ZupassContext = createContext<ZuAuthContextType>({
   setNullifierHash: () => {},
 });
 
-export const ZupassProvider = ({ children }: any) => {
+interface ZupassProviderProps {
+  children: React.ReactNode;
+}
+
+export const ZupassProvider: React.FC<ZupassProviderProps> = ({ children }) => {
   const [pcdStr, setPcdStr] = useState<string>('');
   const [nullifierHash, setNullifierHash] = useState<string>('');
   const [authState, setAuthState] = useState<ZuAuthState>('logged out');
@@ -49,17 +54,20 @@ export const ZupassProvider = ({ children }: any) => {
     return `${currentLog}${currentLog === '' ? '' : '\n'}${toAdd}`;
   }, '');
   const [user, setUser] = useState<Record<string, string> | undefined>();
+  const [currentZuConfig, setCurrentZuConfig] = useState<ZupassConfig | null>(
+    null,
+  );
 
   useEffect(() => {
     (async () => {
-      if (authState === 'auth-start') {
+      if (authState === 'auth-start' && currentZuConfig) {
         addLog('Fetching watermark');
-        //const watermark = (await (await fetch('/api/watermark')).json()).watermark;
         const bigIntValue = 12345n;
         const watermark = bigIntValue.toString();
         addLog('Got watermark');
         addLog('Opening popup window');
         setAuthState('authenticating');
+        console.log('currentZuConfig', currentZuConfig);
         const result = await zuAuthPopup({
           zupassUrl: process.env.NEXT_PUBLIC_ZUPASS_SERVER_URL as string,
           fieldsToReveal: {
@@ -69,8 +77,9 @@ export const ZupassProvider = ({ children }: any) => {
             revealProductId: true,
           },
           watermark,
-          config: Zuconfig,
+          config: currentZuConfig,
         });
+        console.log('result', result);
         if (result.type === 'pcd') {
           addLog('Received PCD');
           setPcdStr(result.pcdStr);
@@ -84,15 +93,16 @@ export const ZupassProvider = ({ children }: any) => {
           setUser((await loginResult.json()).user);*/
           const pcd = await authenticate(result.pcdStr, {
             watermark: watermark,
-            config: Zuconfig,
+            config: currentZuConfig,
             fieldsToReveal: {
               revealAttendeeEmail: false,
               revealAttendeeName: false,
               revealEventId: true,
               revealProductId: true,
             },
-            externalNullifier: undefined,
+            externalNullifier: watermark,
           });
+          console.log('pcd', pcd);
           setNullifierHash(pcd.claim.nullifierHash as string);
           addLog('Authenticated successfully');
           setAuthState('authenticated');
@@ -110,12 +120,16 @@ export const ZupassProvider = ({ children }: any) => {
     })();
   }, [authState]);
 
-  const auth = useCallback(() => {
-    if (authState === 'logged out' || authState === 'error') {
-      addLog('Beginning authentication');
-      setAuthState('auth-start');
-    }
-  }, [authState]);
+  const auth = useCallback(
+    (zuConfig: ZupassConfig) => {
+      if (authState === 'logged out' || authState === 'error') {
+        addLog('Beginning authentication');
+        setCurrentZuConfig(zuConfig);
+        setAuthState('auth-start');
+      }
+    },
+    [authState, addLog, setAuthState],
+  );
 
   const logout = useCallback(() => {
     setUser(undefined);

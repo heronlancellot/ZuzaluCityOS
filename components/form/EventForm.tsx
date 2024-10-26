@@ -492,7 +492,12 @@ export const EventForm: React.FC<EventFormProps> = ({
               gap="20px"
               padding="20px"
             >
-              <Box display="flex" justifyContent="space-between" gap="20px">
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                gap="20px"
+                width={'100%'}
+              >
                 <FormatCheckboxGroup
                   checked={!!isPerson}
                   handleChange={() => {
