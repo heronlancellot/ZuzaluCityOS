@@ -10,11 +10,6 @@ export function GlobalDialog() {
     hideDialog();
   }, [dialogConfig, hideDialog]);
 
-  const handleConfirm = useCallback(() => {
-    dialogConfig?.onConfirm?.();
-    hideDialog();
-  }, [dialogConfig, hideDialog]);
-
   if (!dialogConfig) return null;
 
   return (
@@ -23,8 +18,11 @@ export function GlobalDialog() {
       message={dialogConfig.message}
       showModal={isOpen}
       showActions={dialogConfig.showActions ?? true}
+      confirmText={dialogConfig.confirmText}
+      actions={dialogConfig.actions}
+      isLoading={dialogConfig.isLoading}
       onClose={handleClose}
-      onConfirm={handleConfirm}
+      onConfirm={dialogConfig?.onConfirm}
     />
   );
 }

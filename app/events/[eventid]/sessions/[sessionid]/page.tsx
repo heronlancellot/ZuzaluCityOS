@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   Stack,
@@ -69,9 +69,10 @@ import {
 import { Thumbnail } from '../../components';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { formatUserName } from '@/utils/format';
+import { useDialog } from '@/components/dialog/DialogContext';
 
 const EditorPreview = dynamic(
   () => import('@/components/editor/EditorPreview'),
@@ -88,6 +89,8 @@ const Home = () => {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { showDialog } = useDialog();
+
   const [tabName, setTabName] = useState('Sessions');
   const params = useParams();
   const [eventData, setEventData] = useState<Event>();
@@ -180,12 +183,37 @@ const Home = () => {
   const [passingTitle, setPassingTitle] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  // const [showModal, setShowMakePrivate] = useState<boolean>(false);
+
+  const updateSessionPublic = useMutation({
+    mutationFn: async ({ isPublic }: { isPublic: boolean }) => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update({ isPublic })
+        .eq('id', session?.id);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      setSessionUpdated((prevState) => !prevState);
+    },
+  });
+
   const toggleDrawer = (anchor: Anchor, open: boolean) => {
     setState({ ...state, [anchor]: open });
   };
 
-  const showMakePrivate = () => {};
+  const toggleOpenPublic = useCallback(() => {
+    const isPublic = !session?.isPublic;
+    showDialog({
+      title: isPublic ? 'Open to Public' : 'Make Private',
+      message: isPublic
+        ? `You will list this session to the “Public Sessions” Tab. Once shared to this event's Public Sessions, this session will be viewable by all users.`
+        : `You will hide this session from the “Public Sessions” Tab. This session will no longer be viewable by all users.`,
+      confirmText: 'Share',
+      onConfirm: () => updateSessionPublic.mutateAsync({ isPublic }),
+    });
+  }, [session?.isPublic, showDialog, updateSessionPublic]);
 
   const handleChange = (val: string[]) => {
     setSessionTags(val);
@@ -2006,7 +2034,7 @@ const Home = () => {
                         fontSize: '14px',
                         fontWeight: 600,
                       }}
-                      onClick={() => toggleDrawer('right', true)}
+                      onClick={toggleOpenPublic}
                     >
                       {session.isPublic ? 'Make Private' : 'Open to Public'}
                     </ZuButton>

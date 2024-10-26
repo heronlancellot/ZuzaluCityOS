@@ -4,7 +4,10 @@ interface DialogConfig {
   title: string;
   message: string;
   showActions?: boolean;
-  onConfirm?: () => void;
+  confirmText?: string;
+  isLoading?: boolean;
+  actions?: React.ReactNode;
+  onConfirm?: () => void | Promise<any>;
   onClose?: () => void;
 }
 
