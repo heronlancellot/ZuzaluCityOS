@@ -23,7 +23,6 @@ interface NewUserPromptModalProps {
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
   eventId: string;
   ticketType: string;
-  handleStep: (step: number) => void;
 }
 
 export default function NewUserPromptModal({
@@ -32,7 +31,6 @@ export default function NewUserPromptModal({
   setVerify,
   eventId,
   ticketType,
-  handleStep,
 }: NewUserPromptModalProps) {
   const [stage, setStage] = useState('Initial');
   const [nickname, setNickName] = useState<string>('');
@@ -114,7 +112,6 @@ export default function NewUserPromptModal({
                     setVerify(true);
                     if (username) {
                       setStage('Final');
-                      handleStep(3);
                     } else {
                       setStage('Nickname');
                     }
@@ -131,7 +128,6 @@ export default function NewUserPromptModal({
                     setVerify(true);
                     if (username) {
                       setStage('Final');
-                      handleStep(3);
                     } else {
                       setStage('Nickname');
                     }
@@ -202,7 +198,6 @@ export default function NewUserPromptModal({
                   setVerify(true);
                   if (username) {
                     setStage('Final');
-                    handleStep(3);
                   } else {
                     setStage('Nickname');
                   }

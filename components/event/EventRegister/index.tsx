@@ -217,8 +217,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
     litDisconnect();
     window.location.reload();
   };
-  const ticketType =
-    eventRegistration?.ticketType as keyof typeof componentsMap;
+  const ticketType = eventRegistration.ticketType as keyof typeof componentsMap;
 
   const componentsMap = {
     Scrollpass: {
@@ -248,7 +247,6 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   type TicketType = keyof typeof componentsMap;
 
   const TicketIcon = () => {
-    if (!ticketType) return null;
     const { icon: TicketIcon } = componentsMap[ticketType as TicketType];
     return (
       <Box
@@ -266,7 +264,6 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   };
 
   const TicketDefault = () => {
-    if (!ticketType) return null;
     const { component: TicketComponent } =
       componentsMap[ticketType as TicketType];
 
@@ -323,7 +320,6 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           }
         }
       } else if (ticketType === 'Zupass') {
-        console.log('Zupass');
         const zuPassInfo = event.regAndAccess.edges[0]?.node.zuPassInfo;
         const zuPassConfig =
           zuPassInfo && zuPassInfo.length > 0
@@ -337,7 +333,6 @@ const EventRegister: React.FC<EventRegisterProps> = ({
                 eventName: zuPassInfo?.[0]?.eventName,
               }
             : null;
-        console.log('zuPassConfig', zuPassConfig);
         if (zuPassConfig) {
           await auth([zuPassConfig]);
         }
