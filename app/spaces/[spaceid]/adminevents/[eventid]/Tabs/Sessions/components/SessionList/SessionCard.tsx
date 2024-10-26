@@ -24,6 +24,7 @@ interface SessionCardProps {
   spaceId?: string;
   userDID?: string;
   isLive?: boolean;
+  isPublic?: boolean;
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({
@@ -32,6 +33,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
   spaceId,
   userDID,
   isLive,
+  isPublic,
 }) => {
   const [hover, setHover] = useState<boolean>(false);
   const [isRSVP, setIsRSVP] = useState<boolean>(false);
@@ -44,7 +46,11 @@ const SessionCard: React.FC<SessionCardProps> = ({
         `/spaces/${spaceId}/events/${eventId}/sessions/${session.uuid}`,
       );
     } else {
-      router.push(`/events/${eventId}/sessions/${session.uuid}`);
+      router.push(
+        `/events/${eventId}/sessions/${session.uuid}${
+          isPublic ? '?public=1' : ''
+        }`,
+      );
     }
   };
   const getRSVPNB = async (sessionID: number) => {

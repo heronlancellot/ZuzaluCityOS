@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Stack } from '@mui/material';
 import { Thumbnail, Subbar } from './components';
-import { About, Sessions, Announcements } from './tabs';
+import { About, Sessions, Announcements, PublicSessions } from './tabs';
 import { CeramicResponseType, EventEdge, Event } from '@/types';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { useParams } from 'next/navigation';
@@ -181,6 +181,9 @@ const Home = () => {
       )}
       {tabName === 'Sessions' && (
         <Sessions eventData={eventData} option={urlOption} />
+      )}
+      {tabName === 'Public Sessions' && (
+        <PublicSessions eventData={eventData} option={urlOption} />
       )}
       {tabName === 'Announcements' && (
         <Announcements

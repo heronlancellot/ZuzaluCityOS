@@ -74,6 +74,25 @@ const Subbar: React.FC<SubbarProps> = ({
           spacing={1}
           alignItems="center"
           borderBottom={
+            tabName === 'Public Sessions' ? '1px solid white' : 'none'
+          }
+          sx={{ cursor: 'pointer', padding: '0 14px' }}
+        >
+          <SessionIcon />
+          <Typography
+            onClick={() => setTabName('Public Sessions')}
+            color="white"
+            variant="bodyMB"
+            sx={{ cursor: 'pointer' }}
+          >
+            Public Sessions
+          </Typography>
+        </Stack>
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          borderBottom={
             tabName === 'Announcements' ? '1px solid white' : 'none'
           }
           sx={{ cursor: 'pointer', padding: '0 14px' }}

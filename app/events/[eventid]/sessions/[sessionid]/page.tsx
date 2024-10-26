@@ -1,6 +1,11 @@
 'use client';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import {
+  useRouter,
+  useParams,
+  usePathname,
+  useSearchParams,
+} from 'next/navigation';
 import {
   Stack,
   Typography,
@@ -93,12 +98,14 @@ const Home = () => {
 
   const [tabName, setTabName] = useState('Sessions');
   const params = useParams();
+  const searchParams = useSearchParams();
   const [eventData, setEventData] = useState<Event>();
   const { authenticate, composeClient, ceramic, isAuthenticated, profile } =
     useCeramicContext();
   const [sessionView, setSessionView] = useState<boolean>(false);
   const [verify, setVerify] = useState<boolean>(false);
   const eventId = params.eventid.toString();
+  const isPublic = searchParams.get('public') === '1';
   const [urlOption, setUrlOption] = useState<string>('');
   const [session, setSession] = useState<Session>();
   const [isRsvped, setIsRsvped] = useState<boolean>(false);
@@ -124,22 +131,12 @@ const Home = () => {
   const [directions, setDirections] = useState<string>('');
   const [customLocation, setCustomLocation] = useState<string>('');
   const [isDirections, setIsDirections] = useState<boolean>(false);
-  const [isRSVPFiltered, setIsRSVPFiltered] = useState(false);
-  const [isManagedFiltered, setIsManagedFiltered] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Venue>();
-  const [selectedSession, setSelectedSession] = useState<Session>();
-  const [dateForCalendar, setDateForCalendar] = useState<Dayjs>(
-    dayjs(new Date()),
-  );
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
-  const [sessionsByDate, setSessionsByDate] =
-    useState<Record<string, Session[]>>();
   const [bookedSessionsForDay, setBookedSessionsForDay] = useState<Session[]>(
     [],
   );
   const [availableTimeSlots, setAvailableTimeSlots] = useState<any[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
-  const [sessions, setSessions] = useState<Session[]>([]);
   const [people, setPeople] = useState<Profile[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
   const [person, setPerson] = useState(true);
@@ -175,9 +172,7 @@ const Home = () => {
   const [sessionRecordingLink, setSessionRecordingLink] = useState<string>('');
   const [blockClickModal, setBlockClickModal] = useState(false);
   const [hiddenOrganizer, setHiddenOrganizer] = useState(false);
-  const [refreshFlag, setRefreshFlag] = useState(0);
   const [bookedSessions, setBookedSessions] = useState<Session[]>([]);
-  const [descriptiontext, setDescriptionText] = useState('');
   const [sessionUpdated, setSessionUpdated] = useState<boolean>(false);
   const [tagsChanged, setTagsChanged] = useState<boolean>(false);
   const [passingTitle, setPassingTitle] = useState<boolean>(false);
@@ -1909,7 +1904,10 @@ const Home = () => {
           name={passingTitle ? eventData?.title : 'View Session'}
           imageUrl={eventData?.imageUrl}
           backFun={() => {
-            sessionStorage.setItem('tab', 'Sessions');
+            sessionStorage.setItem(
+              'tab',
+              isPublic ? 'Public Sessions' : 'Sessions',
+            );
             router.push(`/events/${eventId}`);
           }}
         />
