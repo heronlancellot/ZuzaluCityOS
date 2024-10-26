@@ -14,6 +14,7 @@ interface IProps {
   api?: string;
   multiple?: boolean;
   value?: string;
+  previewStyle?: React.CSSProperties;
   onChange: (url: string | undefined) => void;
 }
 
@@ -23,6 +24,7 @@ export default function FormUploader({
   multiple = false,
   value,
   onChange,
+  previewStyle,
 }: IProps) {
   const avatarUploader = useUploaderPreview();
   const url = avatarUploader.getUrl();
@@ -62,7 +64,7 @@ export default function FormUploader({
         api={api}
         multiple={multiple}
         crop={{
-          size: { width: 400, height: 400 },
+          size: { width: 200, height: 200 },
           aspectRatio: 1,
         }}
         onUpload={handleAvatarUpload}
@@ -85,6 +87,7 @@ export default function FormUploader({
           width: '200px',
           height: '200px',
           borderRadius: '10px',
+          ...previewStyle,
         }}
         src={avatarUploader.getUrl()}
         errorMessage={avatarUploader.errorMessage()}

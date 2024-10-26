@@ -39,7 +39,7 @@ export const PreviewFile = (props: {
   src?: string;
   isLoading?: boolean;
   errorMessage?: string;
-  sx?: { [key: string]: string };
+  sx?: React.CSSProperties;
 }) => {
   const { src = tempSrc, isLoading, errorMessage, sx } = props;
   return (
