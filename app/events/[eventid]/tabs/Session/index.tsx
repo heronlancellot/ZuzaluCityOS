@@ -2235,6 +2235,7 @@ const Sessions: React.FC<ISessions> = ({ eventData, option }) => {
                             session={session}
                             userDID={adminId}
                             eventId={eventId}
+                            people={people}
                             isLive={
                               dayjs(new Date())
                                 .tz(eventData?.timezone)

@@ -904,6 +904,7 @@ const PublicSessions: React.FC<ISessions> = ({ eventData, option }) => {
                             userDID={adminId}
                             eventId={eventId}
                             isPublic={true}
+                            people={people}
                             isLive={
                               dayjs(new Date())
                                 .tz(eventData?.timezone)

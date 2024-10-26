@@ -2188,7 +2188,12 @@ const Home = () => {
                               height={24}
                               width={24}
                               borderRadius={12}
-                              src={speaker.avatar || '/user/avatar_p.png'}
+                              src={
+                                people.find(
+                                  (item: any) =>
+                                    item.author?.id === speaker.author.id,
+                                )?.avatar || '/user/avatar_p.png'
+                              }
                             />
                             <Typography variant="bodyB">
                               {formatUserName(speaker.username)}
@@ -2448,7 +2453,12 @@ const Home = () => {
                             height={20}
                             width={20}
                             borderRadius={10}
-                            src={organizer.avatar || '/user/avatar_p.png'}
+                            src={
+                              people.find(
+                                (item: any) =>
+                                  item.author?.id === organizer.author.id,
+                              )?.avatar || '/user/avatar_p.png'
+                            }
                           />
                           <Typography variant="bodyS">
                             {formatUserName(organizer.username)}
@@ -2479,7 +2489,12 @@ const Home = () => {
                             height={20}
                             width={20}
                             borderRadius={10}
-                            src={speaker.avatar || '/user/avatar_p.png'}
+                            src={
+                              people.find(
+                                (item: any) =>
+                                  item.author?.id === speaker.author.id,
+                              )?.avatar || '/user/avatar_p.png'
+                            }
                           />
                           <Typography variant="bodyS">
                             {formatUserName(speaker.username)}

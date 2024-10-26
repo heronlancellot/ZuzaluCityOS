@@ -26,6 +26,7 @@ export default function ConfimButton({
         fontWeight: 600,
         color: '#67DBFF',
         lineHeight: 1.6,
+        height: '38px',
         '&.Mui-disabled': {
           color: '#67DBFF',
         },

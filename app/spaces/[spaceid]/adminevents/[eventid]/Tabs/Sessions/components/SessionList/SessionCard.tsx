@@ -13,7 +13,7 @@ import {
   SessionIcon,
   UserCircleIcon,
 } from 'components/icons';
-import { Session } from '@/types';
+import { Profile, Session } from '@/types';
 import { supabase } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -25,6 +25,7 @@ interface SessionCardProps {
   userDID?: string;
   isLive?: boolean;
   isPublic?: boolean;
+  people: Profile[];
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({
@@ -34,6 +35,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
   userDID,
   isLive,
   isPublic,
+  people,
 }) => {
   const [hover, setHover] = useState<boolean>(false);
   const [isRSVP, setIsRSVP] = useState<boolean>(false);
@@ -264,7 +266,11 @@ const SessionCard: React.FC<SessionCardProps> = ({
                       height={20}
                       width={20}
                       borderRadius={10}
-                      src={speaker.avatar || '/user/avatar_p.png'}
+                      src={
+                        people.find(
+                          (item: any) => item.author?.id === speaker.author.id,
+                        )?.avatar || '/user/avatar_p.png'
+                      }
                     />
                     <Typography variant="bodyS">
                       {formatUserName(speaker.username)}
