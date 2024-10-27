@@ -458,20 +458,8 @@ const Ticket = ({ event }: PropTypes) => {
       }}
       role="presentation"
       zIndex="100"
-      borderLeft="1px solid #383838"
     >
-      <Box
-        display="flex"
-        alignItems="center"
-        height="50px"
-        borderBottom="1px solid #383838"
-        paddingX={3}
-      >
-        <ZuButton onClick={handleClose}>Close</ZuButton>
-        <Typography marginLeft={'14px'} fontSize="18px" fontWeight="bold">
-          Create Ticket
-        </Typography>
-      </Box>
+      <FormHeader handleClose={handleClose} title="Edit Ticket" />
       <TicketVault
         vaultIndex={vaultIndex}
         ticketAddresses={ticketAddresses}
