@@ -2134,6 +2134,7 @@ const Sessions: React.FC<ISessions> = ({ eventData, option }) => {
                       {dateSessions && dateSessions.length > 0 ? (
                         dateSessions.map((session, index) => (
                           <SessionCard
+                            people={people}
                             key={`SessionCard-${index}`}
                             session={session}
                             userDID={adminId}
