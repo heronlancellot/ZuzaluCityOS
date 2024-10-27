@@ -1,6 +1,11 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  useRouter,
+  useParams,
+  usePathname,
+  useSearchParams,
+} from 'next/navigation';
 import {
   Stack,
   Typography,
@@ -37,6 +42,7 @@ import {
   PlusIcon,
   MinusIcon,
   ShareIcon,
+  ArrowUpTrayIcon,
 } from '@/components/icons';
 import BpCheckbox from '@/components/event/Checkbox';
 import {
@@ -68,9 +74,10 @@ import {
 import { Thumbnail } from '../../components';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { formatUserName } from '@/utils/format';
+import { useDialog } from '@/components/dialog/DialogContext';
 
 const EditorPreview = dynamic(
   () => import('@/components/editor/EditorPreview'),
@@ -87,14 +94,18 @@ const Home = () => {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { showDialog } = useDialog();
+
   const [tabName, setTabName] = useState('Sessions');
   const params = useParams();
+  const searchParams = useSearchParams();
   const [eventData, setEventData] = useState<Event>();
   const { authenticate, composeClient, ceramic, isAuthenticated, profile } =
     useCeramicContext();
   const [sessionView, setSessionView] = useState<boolean>(false);
   const [verify, setVerify] = useState<boolean>(false);
   const eventId = params.eventid.toString();
+  const isPublic = searchParams.get('public') === '1';
   const [urlOption, setUrlOption] = useState<string>('');
   const [session, setSession] = useState<Session>();
   const [isRsvped, setIsRsvped] = useState<boolean>(false);
@@ -120,22 +131,12 @@ const Home = () => {
   const [directions, setDirections] = useState<string>('');
   const [customLocation, setCustomLocation] = useState<string>('');
   const [isDirections, setIsDirections] = useState<boolean>(false);
-  const [isRSVPFiltered, setIsRSVPFiltered] = useState(false);
-  const [isManagedFiltered, setIsManagedFiltered] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Venue>();
-  const [selectedSession, setSelectedSession] = useState<Session>();
-  const [dateForCalendar, setDateForCalendar] = useState<Dayjs>(
-    dayjs(new Date()),
-  );
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
-  const [sessionsByDate, setSessionsByDate] =
-    useState<Record<string, Session[]>>();
   const [bookedSessionsForDay, setBookedSessionsForDay] = useState<Session[]>(
     [],
   );
   const [availableTimeSlots, setAvailableTimeSlots] = useState<any[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
-  const [sessions, setSessions] = useState<Session[]>([]);
   const [people, setPeople] = useState<Profile[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
   const [person, setPerson] = useState(true);
@@ -171,18 +172,43 @@ const Home = () => {
   const [sessionRecordingLink, setSessionRecordingLink] = useState<string>('');
   const [blockClickModal, setBlockClickModal] = useState(false);
   const [hiddenOrganizer, setHiddenOrganizer] = useState(false);
-  const [refreshFlag, setRefreshFlag] = useState(0);
   const [bookedSessions, setBookedSessions] = useState<Session[]>([]);
-  const [descriptiontext, setDescriptionText] = useState('');
   const [sessionUpdated, setSessionUpdated] = useState<boolean>(false);
   const [tagsChanged, setTagsChanged] = useState<boolean>(false);
   const [passingTitle, setPassingTitle] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const updateSessionPublic = useMutation({
+    mutationFn: async ({ isPublic }: { isPublic: boolean }) => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update({ isPublic })
+        .eq('id', session?.id);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      setSessionUpdated((prevState) => !prevState);
+    },
+  });
+
   const toggleDrawer = (anchor: Anchor, open: boolean) => {
     setState({ ...state, [anchor]: open });
   };
+
+  const toggleOpenPublic = useCallback(() => {
+    const isPublic = !session?.isPublic;
+    showDialog({
+      title: isPublic ? 'Open to Public' : 'Make Private',
+      message: isPublic
+        ? `You will list this session to the “Public Sessions” Tab. Once shared to this event's Public Sessions, this session will be viewable by all users.`
+        : `You will hide this session from the “Public Sessions” Tab. This session will no longer be viewable by all users.`,
+      confirmText: 'Share',
+      onConfirm: () => updateSessionPublic.mutateAsync({ isPublic }),
+    });
+  }, [session?.isPublic, showDialog, updateSessionPublic]);
 
   const handleChange = (val: string[]) => {
     setSessionTags(val);
@@ -1878,7 +1904,10 @@ const Home = () => {
           name={passingTitle ? eventData?.title : 'View Session'}
           imageUrl={eventData?.imageUrl}
           backFun={() => {
-            sessionStorage.setItem('tab', 'Sessions');
+            sessionStorage.setItem(
+              'tab',
+              isPublic ? 'Public Sessions' : 'Sessions',
+            );
             router.push(`/events/${eventId}`);
           }}
         />
@@ -1972,23 +2001,42 @@ const Home = () => {
                   >
                     You created this session
                   </Typography>
-                  <ZuButton
-                    startIcon={<EditIcon size={5} />}
-                    sx={{
-                      padding: '6px 10px',
-                      backgroundColor: 'rgba(255, 199, 125, 0.05)',
-                      gap: '10px',
-                      '& > span': {
-                        margin: '0px',
-                      },
-                      color: 'rgba(255, 199, 125, 1)',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                    }}
-                    onClick={() => toggleDrawer('right', true)}
-                  >
-                    Edit
-                  </ZuButton>
+                  <Stack direction="row" spacing="10px">
+                    <ZuButton
+                      startIcon={<EditIcon size={5} />}
+                      sx={{
+                        padding: '6px 10px',
+                        backgroundColor: 'rgba(255, 199, 125, 0.05)',
+                        gap: '10px',
+                        '& > span': {
+                          margin: '0px',
+                        },
+                        color: 'rgba(255, 199, 125, 1)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                      }}
+                      onClick={() => toggleDrawer('right', true)}
+                    >
+                      Edit
+                    </ZuButton>
+                    <ZuButton
+                      startIcon={<ArrowUpTrayIcon size={5} />}
+                      sx={{
+                        padding: '6px 10px',
+                        backgroundColor: 'rgba(255, 199, 125, 0.05)',
+                        gap: '10px',
+                        '& > span': {
+                          margin: '0px',
+                        },
+                        color: 'rgba(255, 199, 125, 1)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                      }}
+                      onClick={toggleOpenPublic}
+                    >
+                      {session.isPublic ? 'Make Private' : 'Open to Public'}
+                    </ZuButton>
+                  </Stack>
                 </Stack>
               )}
 
@@ -2140,7 +2188,12 @@ const Home = () => {
                               height={24}
                               width={24}
                               borderRadius={12}
-                              src={speaker.avatar || '/user/avatar_p.png'}
+                              src={
+                                people.find(
+                                  (item: any) =>
+                                    item.author?.id === speaker.author.id,
+                                )?.avatar || '/user/avatar_p.png'
+                              }
                             />
                             <Typography variant="bodyB">
                               {formatUserName(speaker.username)}
@@ -2400,7 +2453,12 @@ const Home = () => {
                             height={20}
                             width={20}
                             borderRadius={10}
-                            src={organizer.avatar || '/user/avatar_p.png'}
+                            src={
+                              people.find(
+                                (item: any) =>
+                                  item.author?.id === organizer.author.id,
+                              )?.avatar || '/user/avatar_p.png'
+                            }
                           />
                           <Typography variant="bodyS">
                             {formatUserName(organizer.username)}
@@ -2431,7 +2489,12 @@ const Home = () => {
                             height={20}
                             width={20}
                             borderRadius={10}
-                            src={speaker.avatar || '/user/avatar_p.png'}
+                            src={
+                              people.find(
+                                (item: any) =>
+                                  item.author?.id === speaker.author.id,
+                              )?.avatar || '/user/avatar_p.png'
+                            }
                           />
                           <Typography variant="bodyS">
                             {formatUserName(speaker.username)}

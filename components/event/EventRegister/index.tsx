@@ -217,7 +217,8 @@ const EventRegister: React.FC<EventRegisterProps> = ({
     litDisconnect();
     window.location.reload();
   };
-  const ticketType = eventRegistration.ticketType as keyof typeof componentsMap;
+  const ticketType =
+    eventRegistration?.ticketType as keyof typeof componentsMap;
 
   const componentsMap = {
     Scrollpass: {
@@ -253,6 +254,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   type TicketType = keyof typeof componentsMap;
 
   const TicketIcon = () => {
+    if (!ticketType) return null;
     const { icon: TicketIcon } = componentsMap[ticketType as TicketType];
     return (
       <Box
@@ -270,6 +272,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   };
 
   const TicketDefault = () => {
+    if (!ticketType) return null;
     const { component: TicketComponent } =
       componentsMap[ticketType as TicketType];
 

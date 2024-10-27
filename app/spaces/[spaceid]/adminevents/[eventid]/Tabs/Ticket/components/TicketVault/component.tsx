@@ -56,6 +56,7 @@ import * as yup from 'yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ButtonGroup } from '../Common';
+import { useToast } from '@/components/toast/ToastContext';
 interface IProps {
   amount?: string;
   recipient?: string;
@@ -965,6 +966,7 @@ export const Whitelist = ({
   const [openWhitelist, setOpenWhitelist] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const { showToast } = useToast();
   const {
     control,
     handleSubmit,
@@ -1030,6 +1032,9 @@ export const Whitelist = ({
       });
 
       if (appendStatus === 'success') {
+        showToast({
+          message: 'Addresses added to whitelist',
+        });
         refetch?.();
         reset();
         if (emails.length > 0) {
@@ -1062,7 +1067,7 @@ export const Whitelist = ({
     reader.onload = function () {
       const text = reader.result as string;
       const lines = text.split('\n').map((line) => line.trim());
-      const newAddress = [...addresses];
+      const newAddress = [...addressesFields.map((field) => field.address)];
       const isAddress = (add: string) => {
         if (add.length !== 42) return false;
         return /^0x[a-fA-F0-9]{40}$/.test(add);
