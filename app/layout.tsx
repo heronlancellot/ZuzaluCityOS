@@ -18,6 +18,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { LitProvider } from '@/context/LitContext';
 import { DialogProvider } from '@/components/dialog/DialogContext';
 import { GlobalDialog } from '@/components/dialog/GlobalDialog';
+import { ToastProvider } from '@/components/toast/ToastContext';
 
 const queryClient = new QueryClient();
 
@@ -50,18 +51,19 @@ function RootLayout({
       <body>
         <AppRouterCacheProvider>
           <DialogProvider>
-            <ThemeProvider theme={theme}>
-              <QueryClientProvider client={queryClient}>
-                <LitProvider>
-                  <CeramicProvider>
-                    <WalletProvider>
-                      <ZupassProvider>
-                        <AppContextProvider>
-                          <ReactQueryDevtools initialIsOpen={false} />
-                          <Header />
-                          {isClient && <AuthPrompt />}
-                          <GlobalDialog />
-                          {/* {isClient && (
+            <ToastProvider>
+              <ThemeProvider theme={theme}>
+                <QueryClientProvider client={queryClient}>
+                  <LitProvider>
+                    <CeramicProvider>
+                      <WalletProvider>
+                        <ZupassProvider>
+                          <AppContextProvider>
+                            <ReactQueryDevtools initialIsOpen={false} />
+                            <Header />
+                            {isClient && <AuthPrompt />}
+                            <GlobalDialog />
+                            {/* {isClient && (
                         <Dialog
                           title="Upgrading Ceramic Node"
                           message="We are currently upgrading our Ceramic node. Some data may be temporarily unavailable or inconsistent. We apologize for any inconvenience."
@@ -70,16 +72,17 @@ function RootLayout({
                           onConfirm={() => setShow(false)}
                         />
                       )} */}
-                          <div style={{ minHeight: `calc(100vh - 50px)` }}>
-                            {children}
-                          </div>
-                        </AppContextProvider>
-                      </ZupassProvider>
-                    </WalletProvider>
-                  </CeramicProvider>
-                </LitProvider>
-              </QueryClientProvider>
-            </ThemeProvider>
+                            <div style={{ minHeight: `calc(100vh - 50px)` }}>
+                              {children}
+                            </div>
+                          </AppContextProvider>
+                        </ZupassProvider>
+                      </WalletProvider>
+                    </CeramicProvider>
+                  </LitProvider>
+                </QueryClientProvider>
+              </ThemeProvider>
+            </ToastProvider>
           </DialogProvider>
         </AppRouterCacheProvider>
       </body>
