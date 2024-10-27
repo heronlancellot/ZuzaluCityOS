@@ -1067,7 +1067,7 @@ export const Whitelist = ({
     reader.onload = function () {
       const text = reader.result as string;
       const lines = text.split('\n').map((line) => line.trim());
-      const newAddress = [...addresses];
+      const newAddress = [...addressesFields.map((field) => field.address)];
       const isAddress = (add: string) => {
         if (add.length !== 42) return false;
         return /^0x[a-fA-F0-9]{40}$/.test(add);
