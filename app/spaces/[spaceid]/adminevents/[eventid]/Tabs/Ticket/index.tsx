@@ -42,6 +42,7 @@ import useOpenDraw from '@/hooks/useOpenDraw';
 import Drawer from '@/components/drawer';
 import { TicketingMethod } from './components/types';
 import { useQueryClient } from '@tanstack/react-query';
+import FormHeader from '@/components/form/FormHeader';
 
 interface PropTypes {
   event?: Event;
@@ -74,6 +75,7 @@ const Ticket = ({ event }: PropTypes) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [isNext, setIsNext] = useState(false);
   const [isTicket, setIsTicket] = useState(false);
+  const [createTicketStep, setCreateTicketStep] = useState(0);
   const [goToSummary, setGoToSummary] = useState(false);
   const [purchasingTicket, setPurchasingTicket] = useState(false);
   const [toggleAction, setToggleAction] = useState('CreateTicket');
@@ -354,6 +356,15 @@ const Ticket = ({ event }: PropTypes) => {
     readFromContract();
   }, []);
 
+  const handleCreateTicketFormClose = () => {
+    handleClose();
+    setCreateTicketStep(0);
+  };
+
+  const handleCreateTicketFormNext = () => {
+    setCreateTicketStep((prev) => prev + 1);
+  };
+
   const list = () => (
     <Box
       sx={{
@@ -362,64 +373,31 @@ const Ticket = ({ event }: PropTypes) => {
       }}
       role="presentation"
       zIndex="100"
-      borderLeft="1px solid #383838"
     >
-      <Box
-        display="flex"
-        alignItems="center"
-        height="50px"
-        borderBottom="1px solid #383838"
-        paddingX={3}
-      >
-        <ZuButton
-          onClick={() => {
-            handleClose();
-            setIsConfirm(false);
-            setGoToSummary(false);
-            setPurchasingTicket(false);
-            setIsNext(false);
-          }}
-        >
-          Close
-        </ZuButton>
-        <Typography marginLeft={'14px'} fontSize="18px" fontWeight="bold">
-          Create Ticket
-        </Typography>
-      </Box>
+      <FormHeader
+        handleClose={handleCreateTicketFormClose}
+        title="Create Ticket"
+      />
 
-      {!goToSummary &&
-        !isConfirm &&
-        !purchasingTicket &&
-        !isNext &&
-        !isTicket && <InitialSetup setIsNext={setIsNext} />}
-      {!goToSummary &&
-        !isConfirm &&
-        !purchasingTicket &&
-        isNext &&
-        !isTicket && (
-          <TicketSetup
-            setIsNext={setIsNext}
-            setIsConfirm={setIsConfirm}
-            setSelectedToken={setSelectedToken}
-            selectedToken={selectedToken}
-            setIsTicket={setIsTicket}
-          />
-        )}
-      {!goToSummary &&
-        !isConfirm &&
-        !purchasingTicket &&
-        !isNext &&
-        isTicket && (
-          <TicketType
-            setIsTicket={setIsTicket}
-            setIsNext={setIsNext}
-            setIsConfirm={setIsConfirm}
-            setSelectedToken={setSelectedToken}
-            selectedToken={selectedToken}
-            selectedType={selectedType}
-            setSelectedType={setSelectedType}
-          />
-        )}
+      {createTicketStep === 0 && (
+        <TicketSetup
+          handleClose={handleCreateTicketFormClose}
+          handleNext={handleCreateTicketFormNext}
+          setSelectedToken={setSelectedToken}
+          selectedToken={selectedToken}
+        />
+      )}
+      {createTicketStep === 1 && (
+        <TicketType
+          setIsTicket={setIsTicket}
+          setIsNext={setIsNext}
+          setIsConfirm={setIsConfirm}
+          setSelectedToken={setSelectedToken}
+          selectedToken={selectedToken}
+          selectedType={selectedType}
+          setSelectedType={setSelectedType}
+        />
+      )}
       {isConfirm &&
         !purchasingTicket &&
         !goToSummary &&
