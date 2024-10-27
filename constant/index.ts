@@ -154,6 +154,10 @@ export const SOCIAL_TYPES: {
     key: 'nostr',
     value: 'Nostr',
   },
+  {
+    key: 'externalUrl',
+    value: 'External URL',
+  },
 ];
 
 export const STARTING_STATUS: {

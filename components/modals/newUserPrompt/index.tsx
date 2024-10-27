@@ -17,7 +17,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { useDisconnect } from 'wagmi';
 
-interface NewUserPromprtModalProps {
+interface NewUserPromptModalProps {
   showModal: boolean;
   onClose: () => void;
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -31,7 +31,7 @@ export default function NewUserPromptModal({
   setVerify,
   eventId,
   ticketType,
-}: NewUserPromprtModalProps) {
+}: NewUserPromptModalProps) {
   const [stage, setStage] = useState('Initial');
   const [nickname, setNickName] = useState<string>('');
   const [haveRead, setHaveRead] = useState<boolean>(false);
@@ -92,12 +92,13 @@ export default function NewUserPromptModal({
     const connectAndProcess = async () => {
       if (isAuthenticated) {
         switch (ticketType) {
-          case 'ZuPass':
+          case 'Zupass':
             if (
               nullifierHash &&
               ceramic?.did?.parent &&
               !hasProcessedNullifier.current
             ) {
+              console.log('nullifierHash', nullifierHash);
               setStage('Updating');
               const addZupassMemberInput = {
                 eventId: eventId,
@@ -431,7 +432,9 @@ export default function NewUserPromptModal({
               width: '100%',
               fontSize: '18px',
             }}
-            onClick={onClose}
+            onClick={() => {
+              onClose();
+            }}
           >
             Finish
           </ZuButton>

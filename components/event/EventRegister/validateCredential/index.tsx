@@ -8,7 +8,7 @@ interface ValidateCredentialProps {
   handleStep: (step: number) => void;
   onVerify: () => void;
   verifyButtonText?: string;
-  verifyButtonIcon?: string;
+  verifyButtonIcon?: string | React.ReactNode;
   isValidating: boolean;
   isValid: boolean | undefined;
   setIsValid: Dispatch<SetStateAction<boolean | undefined>>;
@@ -137,7 +137,16 @@ const ValidateCredential: React.FC<ValidateCredentialProps> = ({
       >
         <ZuButton
           startIcon={
-            <Image src={verifyButtonIcon} alt="wallet" height={24} width={24} />
+            typeof verifyButtonIcon === 'string' ? (
+              <Image
+                src={verifyButtonIcon}
+                alt="wallet"
+                height={24}
+                width={24}
+              />
+            ) : React.isValidElement(verifyButtonIcon) ? (
+              verifyButtonIcon
+            ) : null
           }
           onClick={onVerify}
           sx={{

@@ -74,14 +74,16 @@ const schema = Yup.object().shape({
   locations: Yup.array()
     .of(Yup.string().required('Location is required'))
     .min(1, 'At least one location is required'),
-  socialLinks: Yup.array().of(
-    Yup.object().shape({
-      title: Yup.string().required('Social media type is required'),
-      links: Yup.string()
-        .url('Must be a valid URL')
-        .required('URL is required'),
-    }),
-  ),
+  socialLinks: Yup.array()
+    .of(
+      Yup.object().shape({
+        title: Yup.string().required('Social media type is required'),
+        links: Yup.string()
+          .url('Must be a valid URL')
+          .required('URL is required'),
+      }),
+    )
+    .min(1, 'At least one social media is required'),
   tracks: Yup.array(Yup.string().required('Track is required')).min(
     1,
     'At least one track is required',
@@ -492,7 +494,12 @@ export const EventForm: React.FC<EventFormProps> = ({
               gap="20px"
               padding="20px"
             >
-              <Box display="flex" justifyContent="space-between" gap="20px">
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                gap="20px"
+                width={'100%'}
+              >
                 <FormatCheckboxGroup
                   checked={!!isPerson}
                   handleChange={() => {
@@ -539,10 +546,10 @@ export const EventForm: React.FC<EventFormProps> = ({
               <FormTitle>Links</FormTitle>
             </Box>
             <Box
-              padding={'20px'}
+              padding={'0 20px 20px'}
               display={'flex'}
               flexDirection={'column'}
-              gap={'30px'}
+              gap={'20px'}
             >
               {fields.map((item, index) => {
                 return (
@@ -649,8 +656,12 @@ export const EventForm: React.FC<EventFormProps> = ({
                         display={'flex'}
                         flexDirection={'column'}
                         justifyContent={'flex-start'}
-                        sx={{ cursor: 'pointer' }}
-                        onClick={() => remove(index)}
+                        sx={{
+                          cursor:
+                            fields.length === 1 ? 'not-allowed' : 'pointer',
+                          opacity: fields.length === 1 ? 0.5 : 1,
+                        }}
+                        onClick={() => fields.length > 1 && remove(index)}
                       >
                         <Box
                           sx={{

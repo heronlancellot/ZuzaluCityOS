@@ -385,10 +385,10 @@ const stepThreeItemObject: Record<string, ItemType[]> = {
       id: ApplyRule.RequireApplication,
       name: 'Require Application Form',
       description: (
-        <>
+        <Typography>
           Zupass requires <b>email address</b> to issue Zupasses. Application
           form will have a required field for email address.
-        </>
+        </Typography>
       ),
       icon: <ZuPassIcon size={5} />,
     },

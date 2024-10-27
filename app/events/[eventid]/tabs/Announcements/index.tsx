@@ -438,7 +438,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                     return <PostCard post={post} key={post.id} />;
                   })}
             </Stack>
-            {isMobile ? (
+            {isMobile && eventData.regAndAccess.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
@@ -466,7 +466,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
               },
             }}
           >
-            {!isMobile ? (
+            {!isMobile && eventData.regAndAccess.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}

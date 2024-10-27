@@ -27,7 +27,6 @@ import { Sidebar } from 'components/layout';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { Fragment, useEffect, useMemo, useState } from 'react';
-import MiniDashboard from './components/MiniDashboard';
 import { EventComingSoonCard } from '@/components/cards/ComingSoonCard';
 import { getSpacesQuery } from '@/services/space';
 import Banner from './components/Banner';
@@ -355,24 +354,6 @@ const Home: React.FC = () => {
               margin: '0 auto',
             }}
           >
-            {targetEvent && (
-              <MiniDashboard
-                imageUrl={targetEvent.imageUrl}
-                spaceName={targetEvent.title}
-                startTime={dayjs(targetEvent.startTime).format('MMMM DD')}
-                endTime={dayjs(targetEvent.endTime).format('MMMM DD')}
-                showManage={
-                  targetEvent.superAdmin
-                    ?.map((ad) => ad.id.toLowerCase())
-                    .includes(
-                      ceramic.did?.parent.toString().toLowerCase() || '',
-                    ) ?? false
-                }
-                eventId={targetEvent.id}
-                spaceId={targetEvent.spaceId as string}
-                loggedIn={ceramic && targetEventView}
-              />
-            )}
             <Banner />
             <Box marginTop="30px">
               <Box

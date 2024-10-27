@@ -8,8 +8,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateRegAndAccess } from '@/services/event/regAndAccess';
-import { RegistrationAndAccess } from '@/types';
+import { RegistrationAndAccess, ZuPassInfo } from '@/types';
 import { useParams } from 'next/navigation';
+import { EdDSAPublicKey } from '@pcd/eddsa-pcd';
 
 interface FormProps {
   regAndAccess?: RegistrationAndAccess;
@@ -66,7 +67,7 @@ export default function Form({ onClose, regAndAccess }: FormProps) {
             .join(','),
           eventId: data.eventId,
           eventName: data.eventName,
-        },
+        } as ZuPassInfo,
       });
     },
     [eventId, regAndAccess?.id, updateMutation],
@@ -167,7 +168,7 @@ export default function Form({ onClose, regAndAccess }: FormProps) {
                   <TextField
                     {...field}
                     fullWidth
-                    placeholder="e.g. ZuVillage Georgia"
+                    placeholder="e.g. Example Event Name"
                     error={!!errors.eventName}
                     helperText={errors.eventName?.message}
                   />

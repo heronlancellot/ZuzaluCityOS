@@ -44,7 +44,12 @@ export default function FormatCheckboxGroup({
   handleChange,
 }: Omit<IProps, 'title' | 'desc'>) {
   return (
-    <Box display="flex" justifyContent="space-between" gap="20px">
+    <Box
+      display="flex"
+      justifyContent="space-between"
+      gap="20px"
+      width={'100%'}
+    >
       <FormatCheckbox
         checked={checked}
         title="In-Person"
