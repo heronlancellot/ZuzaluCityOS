@@ -234,8 +234,7 @@ const Ticket = ({ event }: PropTypes) => {
             selectedToken,
             ticketInfo?.message,
           );
-          setPurchasingTicket(true);
-          setGoToSummary(false);
+          setCreateTicketStep(3);
         }
       }
       queryClient.invalidateQueries({
@@ -361,8 +360,8 @@ const Ticket = ({ event }: PropTypes) => {
     setCreateTicketStep(0);
   };
 
-  const handleCreateTicketFormNext = () => {
-    setCreateTicketStep((prev) => prev + 1);
+  const handleCreateTicketFormNext = (isNext: boolean) => {
+    setCreateTicketStep((prev) => (isNext ? prev + 1 : prev - 1));
   };
 
   const list = () => (
@@ -382,92 +381,73 @@ const Ticket = ({ event }: PropTypes) => {
       {createTicketStep === 0 && (
         <TicketSetup
           handleClose={handleCreateTicketFormClose}
-          handleNext={handleCreateTicketFormNext}
+          handleNext={() => handleCreateTicketFormNext(true)}
           setSelectedToken={setSelectedToken}
           selectedToken={selectedToken}
         />
       )}
       {createTicketStep === 1 && (
-        <TicketType
-          setIsTicket={setIsTicket}
-          setIsNext={setIsNext}
-          setIsConfirm={setIsConfirm}
-          setSelectedToken={setSelectedToken}
+        <CreateTicket
           selectedToken={selectedToken}
-          selectedType={selectedType}
-          setSelectedType={setSelectedType}
+          isTicketFree={isTicketFree}
+          setIsTicketFree={setIsTicketFree}
+          isShowQtyRemaining={isShowQtyRemaining}
+          setIsShowQtyRemaining={setIsShowQtyRemaining}
+          isHideUntilSetDate={isHideUntilSetDate}
+          setIsHideUntilSetDate={setIsHideUntilSetDate}
+          isHideAfterSetDate={isHideAfterSetDate}
+          setIsHideAfterSetDate={setIsHideAfterSetDate}
+          isHideWhenSoldOut={isHideWhenSoldOut}
+          setIsHideWhenSoldOut={setIsHideWhenSoldOut}
+          isWhiteList={isWhiteList}
+          setIsWhiteList={setIsWhiteList}
+          handleChange={handleChange}
+          setIsConfirm={setIsConfirm}
+          setGoToSummary={setGoToSummary}
+          selectedFile={selectedFile}
+          setSelectedFile={setSelectedFile}
+          previewImage={previewImage}
+          setPreviewImage={setPreviewImage}
+          handleFileChange={handleFileChange}
+          ticketMintDeadline={ticketMintDeadline}
+          setTicketMintDeadline={setTicketMintDeadline}
+          isMintCloseTime={isMintCloseTime}
+          setIsMintCloseTime={setIsMintCloseTime}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          endTime={endTime}
+          setEndTime={setEndTime}
+          ticketImage={ticketImage}
+          setTicketImage={setTicketImage}
+          ticketImageURL={ticketImageURL}
+          setTicketImageURL={setTicketImageURL}
+          handleNext={() => handleCreateTicketFormNext(true)}
+          handleBack={() => handleCreateTicketFormNext(false)}
         />
       )}
-      {isConfirm &&
-        !purchasingTicket &&
-        !goToSummary &&
-        !isNext &&
-        !isTicket && (
-          <CreateTicket
-            selectedToken={selectedToken}
-            isTicketFree={isTicketFree}
-            setIsTicketFree={setIsTicketFree}
-            isShowQtyRemaining={isShowQtyRemaining}
-            setIsShowQtyRemaining={setIsShowQtyRemaining}
-            isHideUntilSetDate={isHideUntilSetDate}
-            setIsHideUntilSetDate={setIsHideUntilSetDate}
-            isHideAfterSetDate={isHideAfterSetDate}
-            setIsHideAfterSetDate={setIsHideAfterSetDate}
-            isHideWhenSoldOut={isHideWhenSoldOut}
-            setIsHideWhenSoldOut={setIsHideWhenSoldOut}
-            isWhiteList={isWhiteList}
-            setIsWhiteList={setIsWhiteList}
-            handleChange={handleChange}
-            setIsConfirm={setIsConfirm}
-            setGoToSummary={setGoToSummary}
-            selectedFile={selectedFile}
-            setSelectedFile={setSelectedFile}
-            previewImage={previewImage}
-            setPreviewImage={setPreviewImage}
-            handleFileChange={handleFileChange}
-            ticketMintDeadline={ticketMintDeadline}
-            setTicketMintDeadline={setTicketMintDeadline}
-            isMintCloseTime={isMintCloseTime}
-            setIsMintCloseTime={setIsMintCloseTime}
-            endDate={endDate}
-            setEndDate={setEndDate}
-            endTime={endTime}
-            setEndTime={setEndTime}
-            ticketImage={ticketImage}
-            setTicketImage={setTicketImage}
-            ticketImageURL={ticketImageURL}
-            setTicketImageURL={setTicketImageURL}
-          />
-        )}
-      {!purchasingTicket &&
-        !isConfirm &&
-        goToSummary &&
-        !isNext &&
-        !isTicket && (
-          <TicketCreationSummary
-            handleSubmit={handleSubmit}
-            isTicketFree={isTicketFree}
-            selectedToken={selectedToken}
-            isWhiteList={isWhiteList}
-            ticketInfo={ticketInfo}
-            setIsConfirm={setIsConfirm}
-            ticketImageURL={ticketImageURL}
-            setPurchasingTicket={setPurchasingTicket}
-            setGoToSummary={setGoToSummary}
-          />
-        )}
-      {purchasingTicket &&
-        !goToSummary &&
-        !isConfirm &&
-        !isNext &&
-        !isTicket && (
-          <ProcessingTicket
-            setPurchasingTicket={setPurchasingTicket}
-            toggleDrawer={handleClose}
-            isSubmitLoading={isSubmitLoading}
-            txnHash={txnHash}
-          />
-        )}
+      {createTicketStep === 2 && (
+        <TicketCreationSummary
+          handleSubmit={handleSubmit}
+          isTicketFree={isTicketFree}
+          selectedToken={selectedToken}
+          isWhiteList={isWhiteList}
+          ticketInfo={ticketInfo}
+          setIsConfirm={setIsConfirm}
+          ticketImageURL={ticketImageURL}
+          setPurchasingTicket={setPurchasingTicket}
+          setGoToSummary={setGoToSummary}
+          isSubmitLoading={isSubmitLoading}
+          handleBack={() => handleCreateTicketFormNext(false)}
+        />
+      )}
+      {createTicketStep === 3 && (
+        <ProcessingTicket
+          setPurchasingTicket={setPurchasingTicket}
+          toggleDrawer={handleCreateTicketFormClose}
+          isSubmitLoading={isSubmitLoading}
+          txnHash={txnHash}
+        />
+      )}
     </Box>
   );
   const vault = () => (

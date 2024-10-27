@@ -95,6 +95,7 @@ interface IProps {
   setTicketImageURL?: React.Dispatch<React.SetStateAction<string>> | any;
   handleClose?: () => void;
   handleNext?: () => void;
+  handleBack?: () => void;
 }
 
 export const InitialSetup = ({ setIsNext }: IProps) => {
@@ -270,7 +271,7 @@ export const TicketSetup = ({
             <Stack direction={'row'} alignItems="center" spacing={'10px'}>
               {[
                 { token: 'USDT', icon: <USDTIcon /> },
-                { token: 'USDC', icon: <USDCIcon /> }
+                { token: 'USDC', icon: <USDCIcon /> },
               ].map(({ token, icon }) => (
                 <Stack
                   key={token}
@@ -290,7 +291,11 @@ export const TicketSetup = ({
                 >
                   <Stack direction="row" alignItems="center" gap="10px">
                     {icon}
-                    <Typography fontSize="14px" fontWeight={600} lineHeight={1.6}>
+                    <Typography
+                      fontSize="14px"
+                      fontWeight={600}
+                      lineHeight={1.6}
+                    >
                       {token}
                     </Typography>
                   </Stack>
@@ -327,10 +332,10 @@ export const TicketSetup = ({
 };
 
 export const TicketType = ({
-  setIsTicket,
-  setIsConfirm,
   selectedType,
   setSelectedType,
+  handleNext,
+  handleBack,
 }: IProps) => {
   const isMobile = useMediaQuery('(max-width:500px)');
 
@@ -405,55 +410,13 @@ export const TicketType = ({
               <UncheckCircleIcon />
             </Stack>
           </Stack>
-          {/*<Typography variant="bodyB" sx={{ opacity: 0.6 }}>
-            description - let the user know that the proceeds of this ticket purchases are held in the contract
-          </Typography>*/}
         </Stack>
-        <Box>
-          <Box
-            display={'flex'}
-            justifyContent={'space-between'}
-            alignItems={'center'}
-            gap={'20px'}
-          >
-            <Button
-              onClick={() => {
-                setIsTicket(false);
-              }}
-              sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
-                width: '100%',
-                borderRadius: '10px',
-                fontSize: '18px',
-                fontWeight: 600,
-                fontFamily: 'Inter',
-                textTransform: 'capitalize',
-              }}
-              startIcon={<LeftArrowIcon />}
-            >
-              Back
-            </Button>
-            <Button
-              onClick={() => {
-                setIsTicket(false), setIsConfirm(true);
-              }}
-              sx={{
-                backgroundColor: '#2f474e',
-                color: '#67DAFF',
-                width: '100%',
-                borderRadius: '10px',
-                fontSize: '18px',
-                fontWeight: 600,
-                fontFamily: 'Inter',
-                textTransform: 'capitalize',
-              }}
-              startIcon={<RightArrowIcon color="#67DAFF" />}
-            >
-              Confirm
-            </Button>
-          </Box>
-        </Box>
+        <ButtonGroup
+          isBackButton
+          isConfirmButton={false}
+          handleNext={handleNext!}
+          handleBack={handleBack!}
+        />
         <Box
           display="flex"
           justifyContent={'center'}
@@ -470,31 +433,18 @@ export const TicketType = ({
 
 export const CreateTicket = ({
   handleChange,
-  setIsConfirm,
-  setGoToSummary,
   isTicketFree,
   setIsTicketFree,
-  isShowQtyRemaining,
-  setIsShowQtyRemaining,
   isWhiteList,
   setIsWhiteList,
-  isHideAfterSetDate,
-  setIsHideAfterSetDate,
-  isHideWhenSoldOut,
-  setIsHideWhenSoldOut,
   selectedToken,
-  ticketMintDeadline,
-  setTicketMintDeadline,
   isMintCloseTime,
   setIsMintCloseTime,
-  endDate,
   setEndDate,
-  endTime,
   setEndTime,
-  ticketImage,
-  setTicketImage,
-  ticketImageURL,
   setTicketImageURL,
+  handleBack,
+  handleNext,
 }: IProps) => {
   const avatarUploader = useUploaderPreview();
 
@@ -507,7 +457,9 @@ export const CreateTicket = ({
           bgcolor="rgba(255, 255, 255, 0.02)"
           borderRadius="10px"
         >
-          <Typography variant="subtitleSB">Ticket Basics</Typography>
+          <Typography variant="subtitleSB" sx={{ opacity: '0.7' }}>
+            Ticket Basics
+          </Typography>
           <Stack spacing="10px">
             <Typography variant="bodyBB">Name*</Typography>
             <ZuInput
@@ -525,7 +477,7 @@ export const CreateTicket = ({
                   required
                   name="ticketPrice"
                   onChange={handleChange}
-                  placeholder="00.00"
+                  placeholder="0.0"
                 />
 
                 <Box
@@ -580,19 +532,6 @@ export const CreateTicket = ({
             </Box>
           </Box>
 
-          {/*<Stack spacing="10px">
-            <Typography variant="bodyBB">Quantity*</Typography>
-            <ZuInput
-              required
-              type="number"
-              name="ticketQuantity"
-              placeholder="00"
-            />
-            <Typography variant="caption" sx={{ opacity: 0.7 }}>
-              Requires a minimum of 1
-            </Typography>
-          </Stack>*/}
-
           <Stack spacing="10px">
             <Typography variant="bodyBB">Description*</Typography>
             <TextField
@@ -604,7 +543,6 @@ export const CreateTicket = ({
               sx={{
                 backgroundColor: '#2d2d2d',
                 borderRadius: '8px',
-                height: '200px',
                 width: '100%',
                 '& .MuiOutlinedInput-notchedOutline': {
                   border: 'none',
@@ -616,14 +554,6 @@ export const CreateTicket = ({
               }}
               placeholder="Provide a captivating description of your event"
             />
-            {/*<Typography
-              variant="caption"
-              display={'flex'}
-              justifyContent={'end'}
-              textTransform={'uppercase'}
-              sx={{ opacity: '0.7' }}
-            >
-            </Typography>*/}
           </Stack>
 
           <Stack spacing="10px">
@@ -642,7 +572,6 @@ export const CreateTicket = ({
               sx={{
                 backgroundColor: '#2d2d2d',
                 borderRadius: '8px',
-                height: '200px',
                 width: '100%',
                 '& .MuiOutlinedInput-notchedOutline': {
                   border: 'none',
@@ -896,53 +825,14 @@ export const CreateTicket = ({
             </Stack>
           </Stack>
         </Stack>*/}
-
-        <Box
-          padding={'20px'}
-          display="flex"
-          gap={'10px'}
-          justifyContent={'space-between'}
-          alignItems={'center'}
-        >
-          <Button
-            onClick={() => setIsConfirm(false)}
-            sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              color: 'white',
-              width: '100%',
-              borderRadius: '10px',
-              fontSize: '14px',
-              fontWeight: 600,
-              fontFamily: 'Inter',
-              textTransform: 'capitalize',
-            }}
-            startIcon={<LeftArrowIcon />}
-          >
-            Back
-          </Button>
-
-          <Button
-            onClick={() => {
-              const newImageURL = avatarUploader.getUrl();
-              setTicketImageURL(newImageURL);
-              setIsConfirm(false);
-              setGoToSummary(true);
-            }}
-            sx={{
-              backgroundColor: '#2f474e',
-              color: '#67DAFF',
-              width: '100%',
-              borderRadius: '10px',
-              fontSize: '14px',
-              fontWeight: 600,
-              fontFamily: 'Inter',
-              textTransform: 'capitalize',
-            }}
-            startIcon={<RightArrowIcon color="#67DAFF" />}
-          >
-            Save Ticket
-          </Button>
-        </Box>
+        <ButtonGroup
+          handleBack={handleBack!}
+          handleNext={() => {
+            const newImageURL = avatarUploader.getUrl();
+            setTicketImageURL(newImageURL);
+            handleNext?.();
+          }}
+        />
 
         <Box
           display="flex"
@@ -962,11 +852,10 @@ export const TicketCreationSummary = ({
   isTicketFree,
   selectedToken,
   ticketInfo,
-  setIsConfirm,
-  setGoToSummary,
-  setPurchasingTicket,
   handleSubmit,
   ticketImageURL,
+  handleBack,
+  isSubmitLoading,
 }: IProps) => {
   const isMobile = useMediaQuery('(max-width:500px)');
   return (
@@ -1005,33 +894,6 @@ export const TicketCreationSummary = ({
             <Typography variant="bodyBB" sx={{ opacity: '0.8' }}>
               Combine Tickets in Contract Deployed on Scroll
             </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 0px 14px',
-            }}
-            borderTop={'1px solid rgba(255, 255, 255, 0.10)'}
-          >
-            <Typography variant="bodyB" sx={{ opacity: '0.8' }}>
-              Protocol:
-            </Typography>
-            <Box
-              padding={'4px 10px'}
-              borderRadius="10px"
-              sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <EthereumIcon />
-              <Typography variant="bodyM" marginLeft="8px">
-                Ethereum Chain
-              </Typography>
-            </Box>
           </Box>
           <Box
             sx={{
@@ -1111,49 +973,12 @@ export const TicketCreationSummary = ({
         </Stack>
       </Box>
 
-      <Box
-        display={'flex'}
-        gap={'14px'}
-        justifyContent={'space-between'}
-        alignItems={'center'}
-        paddingX={3}
-        marginTop={'10px'}
-      >
-        <Button
-          onClick={() => {
-            setIsConfirm(true), setGoToSummary(false);
-          }}
-          sx={{
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            color: 'white',
-            width: '100%',
-            borderRadius: '10px',
-            fontSize: '18px',
-            fontWeight: 600,
-            fontFamily: 'Inter',
-            textTransform: 'capitalize',
-          }}
-          startIcon={isMobile ? undefined : <LeftArrowIcon />}
-        >
-          Back
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          sx={{
-            backgroundColor: '#2f474e',
-            color: '#67DAFF',
-            width: '100%',
-            borderRadius: '10px',
-            fontSize: '18px',
-            fontWeight: 600,
-            fontFamily: 'Inter',
-            textTransform: 'capitalize',
-          }}
-          startIcon={isMobile ? undefined : <SignCreateIcon />}
-        >
-          Sign & Create
-        </Button>
-      </Box>
+      <ButtonGroup
+        handleBack={handleBack!}
+        handleNext={handleSubmit}
+        isConfirmButton
+        isLoading={isSubmitLoading}
+      />
       <Box
         display="flex"
         justifyContent={'center'}
@@ -1174,7 +999,6 @@ export const ProcessingTicket = ({
   txnHash,
 }: IProps) => {
   let status = false;
-  const isMobile = useMediaQuery('(max-width:500px)');
 
   return (
     <Stack
@@ -1280,18 +1104,6 @@ export const TicketProcessingProgress = ({ txnHash }: any) => {
     },
   ];
   const [activeStep, setActiveStep] = React.useState(0);
-
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-  };
 
   return (
     <Box>
