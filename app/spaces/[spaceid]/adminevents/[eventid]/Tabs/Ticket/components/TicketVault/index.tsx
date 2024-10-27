@@ -82,7 +82,8 @@ const TicketVault = ({
       <Box
         sx={{
           background: 'rgba(255, 255, 255, 0.02)',
-          padding: '10px 10px 20px',
+          padding: '20px',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.10)',
         }}
       >
         <Stack
@@ -99,7 +100,7 @@ const TicketVault = ({
             objectFit="cover"
             style={{
               width: isMobile ? '100%' : undefined,
-              height: isMobile ? '100%' : undefined,
+              height: isMobile ? '100%' : '100px',
             }}
           />
           <Stack direction="column" spacing={0.9}>
@@ -261,7 +262,7 @@ const TicketVault = ({
       </Box>
 
       <Stack padding={'20px'}>
-        <Box marginBottom={'20px'}>
+        <Box>
           <Box
             sx={{
               display: 'flex',
@@ -465,14 +466,11 @@ const TicketVault = ({
               onClick={() => setAction('Whitelist')}
               textAlign={'center'}
               width={'100%'}
-              paddingY={'8px'}
+              paddingY={'6px'}
               sx={{
                 cursor: 'pointer',
-
                 borderRadius: `${action === 'Whitelist' ? '8px' : null}`,
-
                 border: `${action === 'Whitelist' ? '1px solid rgba(255, 255, 255, 0.10)' : null}`,
-
                 background: `${action === 'Whitelist' ? 'rgba(255, 255, 255, 0.10)' : null}`,
               }}
             >
@@ -482,7 +480,7 @@ const TicketVault = ({
           <Typography
             onClick={() => setAction('Withdraw')}
             textAlign={'center'}
-            paddingY={'8px'}
+            paddingY={'6px'}
             width={'100%'}
             sx={{
               cursor: 'pointer',
@@ -497,7 +495,7 @@ const TicketVault = ({
             onClick={() => setAction('SendTicket')}
             textAlign={'center'}
             width={'100%'}
-            paddingY={'8px'}
+            paddingY={'6px'}
             sx={{
               cursor: 'pointer',
               borderRadius: `${action === 'SendTicket' ? '8px' : null}`,

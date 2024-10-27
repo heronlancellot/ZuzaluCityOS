@@ -10,7 +10,6 @@ const ExternalTicketingDefault: React.FC = () => {
   return (
     <Stack
       padding={'24px 20px'}
-      border={'1px solid rgba(255, 255, 255, 0.10)'}
       borderRadius={'0px 0px 10px 10px'}
       margin={'0px !important'}
     >

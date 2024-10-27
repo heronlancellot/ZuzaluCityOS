@@ -241,6 +241,12 @@ const EventRegister: React.FC<EventRegisterProps> = ({
       verifyButtonText: undefined,
       verifyButtonIcon: undefined,
     },
+    'No Ticketing Required': {
+      component: null,
+      icon: null,
+      verifyButtonText: undefined,
+      verifyButtonIcon: undefined,
+    },
   };
   const { verifyButtonText, verifyButtonIcon } =
     componentsMap[ticketType] || componentsMap.Scrollpass;
@@ -282,9 +288,9 @@ const EventRegister: React.FC<EventRegisterProps> = ({
       tickets: eventRegistration.scrollPassTickets ?? [],
     };
 
-    if (ticketType === 'Scrollpass') {
+    if (ticketType === 'Scrollpass' && TicketComponent) {
       return <TicketComponent {...commonProps} />;
-    } else if (ticketType === 'Zupass') {
+    } else if (ticketType === 'Zupass' && TicketComponent) {
       return <TicketComponent {...commonProps} />;
     } else if (ticketType === 'ExternalTicketing') {
       return <ExternalTicketingDefault />;
