@@ -51,15 +51,15 @@ export async function POST(req: Request) {
         superAdmin.id.toLowerCase(),
       ) || [];
     if (superAdmins.includes(userDID)) {
-      const enableIndexingSpaceMutation = `mutation enableIndexingZucitySpace($input: EnableIndexingZucitySpaceInput!) {
-        enableIndexingZucitySpace(input: $input) {
+      const enableIndexingEventMutation = `mutation enableIndexingZucityEvent($input: EnableIndexingZucityEventInput!) {
+        enableIndexingZucityEvent(input: $input) {
           document {
             id
           }
         }
       }`;
       const response = await composeClient.executeQuery(
-        enableIndexingSpaceMutation,
+        enableIndexingEventMutation,
         {
           input: {
             id: eventId,
@@ -69,6 +69,7 @@ export async function POST(req: Request) {
       );
       return NextResponse.json(
         {
+          response,
           message: 'Successfully deleted event',
         },
         { status: 200 },

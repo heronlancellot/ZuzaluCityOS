@@ -133,7 +133,7 @@ const TicketVault = ({
                   opacity: '0.8',
                 }}
               >
-                Available: To All
+                Available: To whitelisted addresses
               </Typography>
             </Box>
 

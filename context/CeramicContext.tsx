@@ -75,6 +75,7 @@ export const CeramicProvider = ({ children }: any) => {
     setIsAuthenticated(false);
     setNewUser(false);
   };
+
   const getProfile = async () => {
     if (ceramic.did !== undefined) {
       const profile: any = await composeClient.executeQuery(`

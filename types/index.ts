@@ -1,6 +1,9 @@
 import { SwipeableDrawerProps } from '@mui/material';
 import { CSSProperties, Dispatch, SetStateAction } from 'react';
 import { ITimezoneOption } from 'react-timezone-select';
+import { EdDSAPublicKey } from '@pcd/eddsa-pcd';
+import { EdDSATicketPCDTypeName } from '@pcd/eddsa-ticket-pcd';
+import { PipelineEdDSATicketZuAuthConfig } from '@pcd/passport-interface';
 
 export type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
@@ -121,7 +124,7 @@ export interface ScrollPassTickets {
   eventId: string;
 }
 
-export interface ZuPassInfo {
+export interface ZuPassInfo extends PipelineEdDSATicketZuAuthConfig {
   access?: string;
   eventId: string;
   eventName: string;
@@ -482,4 +485,13 @@ export interface UpdateRegAndAccessRequest
   scannedList?: {
     id: string;
   }[];
+}
+
+export type ZupassConfig = PipelineEdDSATicketZuAuthConfig[];
+
+export interface ZupassConfigItem {
+  pcdType: typeof EdDSATicketPCDTypeName;
+  publicKey: EdDSAPublicKey;
+  eventId: string;
+  eventName: string;
 }
