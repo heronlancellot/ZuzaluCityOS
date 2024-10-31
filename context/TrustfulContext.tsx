@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { GiveBadgeStepAddress } from '@/app/spaces/[spaceid]/trustful/components/GiveBadge';
-import { useNotify } from '@/app/spaces/[spaceid]/trustful/utils/useNotify';
 import React, {
   createContext,
   useContext,
@@ -20,6 +19,7 @@ import {
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { getAllAttestationTitles } from '@/app/spaces/[spaceid]/trustful/service';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
+import toast from 'react-hot-toast';
 
 interface User {
   address: Address;
@@ -142,7 +142,6 @@ export const TrustfulContextProvider: React.FC<
 
   const { switchChain } = useSwitchChain();
   const { chainId, address } = useAccount();
-  const { notifyError } = useNotify();
 
   useEffect(() => {
     if (address) {
@@ -152,18 +151,14 @@ export const TrustfulContextProvider: React.FC<
 
   const handleBadgeDropdown = async () => {
     if (!address) {
-      notifyError({
-        title: 'No account connected',
-        message: 'Please connect your wallet.',
-      });
+      toast.error('No account connected. Please connect your wallet.');
       return;
     }
 
     if (chainId !== scroll.id) {
-      notifyError({
-        title: 'Unsupported network',
-        message: 'Please switch to the Scroll network to use this application.',
-      });
+      toast.error(
+        'Please switch to the Scroll network to use this application.',
+      );
       switchChain({ chainId: scroll.id });
       return;
     }
@@ -172,10 +167,9 @@ export const TrustfulContextProvider: React.FC<
 
     console.log('filteredBadges', filteredBadges);
     if (filteredBadges instanceof Error || !filteredBadges) {
-      notifyError({
-        title: 'Error Read Contract',
-        message: 'Error while reading badge titles from the blockchain.',
-      });
+      toast.error(
+        'Error Read Contract.Error while reading badge titles from the blockchain.',
+      );
       return;
     }
 

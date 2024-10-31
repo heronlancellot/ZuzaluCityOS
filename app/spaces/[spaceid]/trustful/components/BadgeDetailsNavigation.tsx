@@ -1,8 +1,8 @@
 'use client';
+
 import { CloseIcon } from '@chakra-ui/icons';
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
-
 import { useTrustful } from '@/context/TrustfulContext';
 import { GiveBadgeStepAddress } from './GiveBadge';
 import { ArrowIcon, ArrowIconVariant } from '@/components/icons/ArrowIcon';

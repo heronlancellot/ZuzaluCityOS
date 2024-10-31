@@ -10,9 +10,8 @@ import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { getUserRole } from '@/services/user/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
-import { capitalizeFirstLetter } from '@/utils/format';
 import { GiveBadge } from './components/GiveBadge';
-import { Role } from './constants/constants';
+import { Address } from 'viem';
 
 const TrustfulPage = () => {
   const params = useParams();
@@ -21,12 +20,9 @@ const TrustfulPage = () => {
   const [space, setSpace] = useState<Space>();
   const [events, setEvents] = useState<Event[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState<boolean>(true);
-  const { composeClient, ceramic } = useCeramicContext();
-  const { setUserRole, userRole } = useTrustful();
-
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
-  const { username, profile } = useCeramicContext();
+  const { composeClient, ceramic, profile } = useCeramicContext();
+  const { setUserRole } = useTrustful();
 
   const getSpaceByID = async () => {
     setIsEventsLoading(true);
@@ -129,12 +125,12 @@ const TrustfulPage = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       if (address) {
-        await getUserRole('0xd3b4465E16A440D2B2383F5a02b3E6Ad131300b4')
+        await getUserRole(address as Address)
           .then((data) => {
             console.log('User role:', data);
             if (data && data?.role) {
               setUserRole({
-                address: '0xd3b4465E16A440D2B2383F5a02b3E6Ad131300b4',
+                address: address as Address,
                 role: data.role,
               });
             }
@@ -169,14 +165,14 @@ const TrustfulPage = () => {
             padding: '20px',
           }}
         >
-          <Typography color="white" variant="subtitleLB">
+          {/* <Typography color="white" variant="subtitleLB">
             Welcome{' '}
             {userRole && userRole.role !== Role.NO_ROLE
               ? capitalizeFirstLetter(userRole.role).split('_')[0]
               : username
                 ? username
                 : address}
-          </Typography>
+          </Typography> */}
           <GiveBadge />
         </Box>
       </Stack>

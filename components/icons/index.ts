@@ -96,6 +96,8 @@ import { LoginIcon } from './LoginIcon';
 import { BadgeIcon } from './BadgeIcon';
 import { LogoutIcon } from './LogoutIcon';
 import { ThankYouIcon } from './ThankYouIcon';
+import { QrCodeIcon } from './QrCodeIcon';
+import { HeartLoveIcon } from './HeartLoveIcon';
 export {
   HomeIcon,
   SearchIcon,
@@ -195,4 +197,6 @@ export {
   BadgeIcon,
   LogoutIcon,
   ThankYouIcon,
+  QrCodeIcon,
+  HeartLoveIcon,
 };

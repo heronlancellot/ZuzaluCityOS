@@ -1,16 +1,13 @@
 'use client';
 
-import { useContext } from 'react';
-
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { useParams, useRouter } from 'next/navigation';
-
 import {
   BadgeIcon,
-  HeartIcon,
+  HeartLoveIcon,
   LoginIcon,
   LogoutIcon,
-  QRCodeIcon,
+  QrCodeIcon,
   ThankYouIcon,
 } from '@/components/icons';
 // import { WalletContext } from '@/lib/context/WalletContext';
@@ -30,12 +27,8 @@ export const TheFooterNavbar = () => {
   return (
     <Box
       as="footer"
-      position="fixed"
-      bottom={0}
-      left={0}
-      zIndex={0}
       textAlign={'center'}
-      className="px-6 sm:p-0 bg-[#161617] w-full flex group border-t border-[#F5FFFF14] border-opacity-[8]"
+      className="px-6 sm:p-0 bg-[#2d2d2d] w-full flex justify-end group border-t border-[#F5FFFF14] border-opacity-[8]"
     >
       {villagerAttestationCount !== null && (
         <Flex gap={4} className="w-full justify-center">
@@ -59,9 +52,9 @@ export const TheFooterNavbar = () => {
               className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'give-badge' ? 'border-[#B1EF42]' : 'border-transparent'}`}
               onClick={() => push('/give-badge')}
             >
-              {/* <HeartIcon
+              <HeartLoveIcon
                 className={`w-5 h-5 text-white ${params.slug == 'give-badge' ? ' opacity-100' : 'opacity-50'}`}
-              /> */}
+              />
               <Text
                 className={`text-slate-50 ${params.slug == 'give-badge' ? 'opacity-100' : 'opacity-50'} text-sm font-medium leading-none`}
               >
@@ -74,9 +67,9 @@ export const TheFooterNavbar = () => {
               className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'share' ? 'border-[#B1EF42]' : 'border-transparent'}`}
               onClick={() => push('/share')}
             >
-              {/* <QRCodeIcon
+              <QrCodeIcon
                 className={`w-5 h-5 text-white ${params.slug == 'share' ? 'opacity-100' : 'opacity-50'}`}
-              /> */}
+              />
               <Text
                 className={`text-slate-50 ${params.slug == 'share' ? 'opacity-100' : 'opacity-50'} text-sm font-medium leading-none`}
               >

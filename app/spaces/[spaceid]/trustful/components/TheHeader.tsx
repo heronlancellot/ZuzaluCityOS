@@ -1,15 +1,10 @@
 'use client';
-import { type FC } from 'react';
 
+import { type FC } from 'react';
 import { Divider, HStack, Heading } from '@chakra-ui/react';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
-
 import { TrustfulIcon } from '@/components/icons';
-
-import { TheHeaderMenu } from './TheHeaderMenu';
-// import { useWindowSize } from '../utils/useWindowSize';
 
 export const TheHeader: FC = () => {
   // const { isMobile } = useWindowSize();

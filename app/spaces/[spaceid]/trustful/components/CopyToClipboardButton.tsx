@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-
 import { CheckIcon, CopyIcon } from '@chakra-ui/icons';
 import { Tooltip } from '@chakra-ui/react';
 import { useAccount } from 'wagmi';
@@ -29,17 +28,18 @@ export const CopyToClipboardButton = ({
 
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [isVisible, setIsVisible] = useState(false);
-  const prefixToGiveBadge = 'https://trustful.ing/give-badge';
-  const linkToGiveBadgeAddress = `${prefixToGiveBadge}?address=${address}`;
+  // const prefixToGiveBadge = 'https://trustful.ing/give-badge';
+  // const linkToGiveBadgeAddress = `${prefixToGiveBadge}?address=${address}`;
 
   const handleCopy = () => {
     if (isUserAddress) {
       navigator.clipboard.writeText(address as `0x${string}`);
     } else if (label) {
       navigator.clipboard.writeText(label);
-    } else if (isShare) {
-      navigator.clipboard.writeText(linkToGiveBadgeAddress);
     }
+    // else if (isShare) {
+    //   navigator.clipboard.writeText(linkToGiveBadgeAddress);
+    // }
     setIsCopied(true);
     setTimeout(() => {
       setIsCopied(false);

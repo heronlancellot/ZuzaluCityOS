@@ -1,13 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-
 import { Menu, MenuButton, IconButton, Flex } from '@chakra-ui/react';
 import { useAccount } from 'wagmi';
-
-import { ArrowIcon, ArrowIconVariant } from '@/components/icons';
-
-import { EnsAvatar } from './EnsAvatar';
+import { ArrowIcon, ArrowIconVariant, UserIcon } from '@/components/icons';
 
 export const TheHeaderMenu = () => {
   const { address } = useAccount();
@@ -22,7 +18,7 @@ export const TheHeaderMenu = () => {
           aria-label="Options"
           icon={
             <Flex className="p-[6px] gap-2 items-center">
-              <EnsAvatar size={'xs'} ensAddress={address as `0x${string}`} />
+              <UserIcon />
               <ArrowIcon
                 variant={ArrowIconVariant.DOWN}
                 props={{ className: 'w-3 h-3 text-[#F5FFFF80]' }}

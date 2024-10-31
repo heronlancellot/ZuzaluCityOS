@@ -1,9 +1,8 @@
 'use client';
 /* eslint-disable no-dupe-else-if */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { CheckCircleIcon } from '@chakra-ui/icons';
 import {
   Box,
   Button,
@@ -11,13 +10,10 @@ import {
   Divider,
   Flex,
   Input,
-  Link,
   Select,
   Text,
   Textarea,
-  Icon,
 } from '@chakra-ui/react';
-import { useToast } from '@chakra-ui/react';
 import { watchAccount } from '@wagmi/core';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
@@ -25,7 +21,6 @@ import { isAddress, encodeAbiParameters, parseAbiParameters } from 'viem';
 import { scroll } from 'viem/chains';
 import { normalize } from 'viem/ens';
 import { useAccount, useSwitchChain } from 'wagmi';
-
 import {
   ArrowIcon,
   ArrowIconVariant,
@@ -33,16 +28,9 @@ import {
   HandHeartIcon,
   UserIcon,
 } from '@/components/icons';
-import {
-  BadgeDetailsNavigation,
-  // TheHeader,
-  // TheFooterNavbar,
-  PasteToClipboardButton,
-} from './';
-import { useNotify } from '../utils/useNotify';
-import { getEllipsedAddress, isBytes32 } from '@/utils/format';
-import { EnsName } from './EnsName';
-import { EnsAvatar } from './EnsAvatar';
+import { BadgeDetailsNavigation, PasteToClipboardButton } from './';
+import { isBytes32 } from '@/utils/format';
+import { AddressDisplay } from './AddressDisplay';
 import {
   AttestationRequestData,
   fetchENSData,
@@ -56,30 +44,12 @@ import {
   ROLES,
 } from '../constants/constants';
 import { ENS_ADDR_QUERY } from '../constants/schemaQueries';
-// import {
-//   ZUVILLAGE_BADGE_TITLES,
-//   ZUVILLAGE_SCHEMAS,
-//   ROLES,
-//   type BadgeTitle,
-// } from './constants/constants';
-// import { ENS_ADDR_QUERY } from './constants/schemaQueries';
-// import { GiveBadgeContext } from '@/lib/context/GiveBadgeContext';
-// import { WalletContext } from '@/lib/context/WalletContext';
-// import {
-//   submitAttest,
-//   type AttestationRequestData,
-//   hasRole,
-//   fetchENSData,
-// } from '@/lib/service';
 import { EthereumAddress } from '../utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
 import { config } from '@/context/WalletContext';
 import { TheHeader } from './TheHeader';
 import { TheFooterNavbar } from './TheFooterNavbar';
-// import { getEllipsedAddress, isBytes32 } from '@/utils/formatters';
-// import { wagmiConfig } from '@/wagmi';
-
-// import { EnsName, EnsAvatar } from '../02-molecules';
+import toast from 'react-hot-toast';
 
 export enum GiveBadgeStepAddress {
   INSERT_ADDRESS = 'INSERT_ADDRESS',
@@ -89,9 +59,7 @@ export enum GiveBadgeStepAddress {
 
 export const GiveBadge = () => {
   const { address, chainId } = useAccount();
-  const toast = useToast();
   const { push } = useRouter();
-  const { notifyError } = useNotify();
   const unwatch = watchAccount(config, {
     // Check if Config is right here
     onChange() {},
@@ -102,7 +70,6 @@ export const GiveBadge = () => {
     badgeInputAddress,
     setBadgeInputAddress,
     inputBadgeTitleList,
-    userRole,
   } = useTrustful();
   // const { villagerAttestationCount } = useContext(WalletContext);
   const villagerAttestationCount = 1;
@@ -110,10 +77,7 @@ export const GiveBadge = () => {
 
   useEffect(() => {
     if (Number(villagerAttestationCount) === 0) {
-      notifyError({
-        title: 'You have not checked in',
-        message: 'Please check-in first.',
-      });
+      toast.error('You have not checked in. Please check-in first.');
       push('/pre-checkin');
     }
   }, [villagerAttestationCount]);
@@ -222,16 +186,12 @@ export const GiveBadge = () => {
     if (badgeInputAddress && isAddress(badgeInputAddress?.address)) {
       setAddressStep(GiveBadgeStepAddress.INSERT_BADGE_AND_COMMENT);
     } else if (!inputAddress || !isAddress(inputAddress)) {
-      notifyError({
-        title: 'Field is empty',
-        message: 'Please provide a valid Ethereum address.',
-      });
+      toast.error('Field is empty.Please provide a valid Ethereum address. ');
       return;
     } else if (inputAddress && !isAddress(inputAddress)) {
-      notifyError({
-        title: 'Invalid Ethereum Address',
-        message: 'Wrong Ethereum address format. Please try again.',
-      });
+      toast.error(
+        'Invalid Ethereum Address. Wrong Ethereum address format. Please try again.',
+      );
     } else {
       setAddressStep(GiveBadgeStepAddress.INSERT_BADGE_AND_COMMENT);
     }
@@ -290,41 +250,28 @@ export const GiveBadge = () => {
   const handleAttest = async () => {
     if (!address) {
       setLoading(false);
-      notifyError({
-        title: 'No account connected',
-        message: 'Please connect your wallet.',
-      });
+      toast.error('No account connected: Please connect your wallet.');
       console.log('!address', !address);
       return;
     }
 
     if (chainId !== scroll.id) {
-      notifyError({
-        title: 'Unsupported network',
-        message: 'Please switch to the Scroll network to use this application.',
-      });
+      toast.error('Unsupported network: Please switch to the Scroll network.');
       switchChain({ chainId: scroll.id });
       console.log('!chainId !== scroll.id');
-
       return;
     }
 
     if (!badgeInputAddress) {
       setLoading(false);
-      notifyError({
-        title: 'Invalid Ethereum Address',
-        message: 'Please provide a valid Ethereum address.',
-      });
+      toast.error('Invalid Ethereum Address: Please provide a valid address.');
       console.log('!badgeInputAddress', !badgeInputAddress);
       return;
     }
 
     if (!inputBadge) {
       setLoading(false);
-      notifyError({
-        title: 'Invalid Badge',
-        message: 'Please select a badge to give.',
-      });
+      toast.error('Invalid Badge: Please select a badge to give.');
       console.log('!inputBadge', !inputBadge);
       return;
     }
@@ -337,10 +284,7 @@ export const GiveBadge = () => {
       const isManager = await hasRole(ROLES.MANAGER, badgeInputAddress.address);
       if (isManager) {
         setLoading(false);
-        notifyError({
-          title: 'Address is already a Manager',
-          message: 'Address already have this badge.',
-        });
+        toast.error('Address is a Manager. Address already have this badge. ');
         console.log('isManager', isManager);
         return;
       }
@@ -354,10 +298,9 @@ export const GiveBadge = () => {
         );
         if (isVillager) {
           setLoading(false);
-          notifyError({
-            title: 'Address already checked-in',
-            message: 'Address already have this badge.',
-          });
+          toast.error(
+            'Address already checked-in: Address already have this badge.',
+          );
           console.log('isVillager', isVillager);
           return;
         }
@@ -366,10 +309,9 @@ export const GiveBadge = () => {
         encodeArgs = ['Check-out'];
         if (!isBytes32(commentBadge as `0x${string}`)) {
           setLoading(false);
-          notifyError({
-            title: 'Invalid reference UID',
-            message: 'The format provided is not a valid bytes32.',
-          });
+          toast.error(
+            'Invalid reference UID: The format provided is not a valid bytes32.',
+          );
           console.log('!isBytes32(commentBadge)');
           return;
         }
@@ -379,10 +321,9 @@ export const GiveBadge = () => {
         );
         if (!isVillager) {
           setLoading(false);
-          notifyError({
-            title: 'Address already checked-out',
-            message: 'Address already have this badge.',
-          });
+          toast.error(
+            'Address already checked-out: Address already have this badge.',
+          );
           console.log('!isVillager2', !isVillager);
           return;
         }
@@ -398,21 +339,14 @@ export const GiveBadge = () => {
       console.log('isVillager', isVillager);
       if (!isVillager) {
         setLoading(false);
-        notifyError({
-          title: "Address Can't Receive Badges",
-          message: 'Non-Villagers cannot send/receive badges.',
-        });
-        console.log('userRole', userRole);
-        console.log('!isVillager3', !isVillager);
+        toast.error(
+          'Address Cant Receive Badges: Non-Villagers cannot send/receive badges.',
+        );
         return;
       }
     } else {
       setLoading(false);
-      notifyError({
-        title: 'Invalid Badge',
-        message: 'Unexistent or invalid badge selected.',
-      });
-      console.log('!inputBadge2', !inputBadge);
+      toast.error('Invalid Badge: Unexistent or invalid badge selected.');
       return;
     }
 
@@ -444,55 +378,19 @@ export const GiveBadge = () => {
 
     if (response instanceof Error) {
       setLoading(false);
-      notifyError({
-        title: 'Transaction Rejected',
-        message: response.message,
-      });
+      toast.error(`Transaction Rejected ${response.message}`);
       return;
     }
 
     if (response.status !== 'success') {
       setLoading(false);
-      notifyError({
-        title: 'Transaction Rejected',
-        message: 'Contract execution reverted.',
-      });
+      toast.error('Transaction Rejected. Contract execution reverted. ');
       return;
     }
 
-    // TODO: Move to useNotify to create a notifySuccessWithLink function
-    toast({
-      position: 'top-right',
-      duration: 4000,
-      isClosable: true,
-      render: () => (
-        <Box
-          color="white"
-          p={4}
-          bg="green.500"
-          borderRadius="md"
-          boxShadow="lg"
-          display="flex"
-          alignItems="center"
-        >
-          <Icon as={CheckCircleIcon} w={6} h={6} mr={3} />
-          <Box>
-            <Text fontWeight="bold">Success.</Text>
-            <Text>
-              Badge sent at tx:{' '}
-              <Link
-                href={`https://scrollscan.com/tx/${response.transactionHash}`}
-                isExternal
-                color="white"
-                textDecoration="underline"
-              >
-                {getEllipsedAddress(response.transactionHash)}
-              </Link>
-            </Text>
-          </Box>
-        </Box>
-      ),
-    });
+    toast.success(
+      `Badge sent https://scrollscan.com/tx/${response.transactionHash}`,
+    );
 
     setAddressStep(GiveBadgeStepAddress.CONFIRMATION);
     setLoading(false);
@@ -512,7 +410,6 @@ export const GiveBadge = () => {
               <>
                 <TheHeader />
                 <Box
-                  as="main"
                   className="p-6 sm:px-[60px] sm:py-[80px] flex flex-col w-full"
                   gap={8}
                 >
@@ -559,8 +456,8 @@ export const GiveBadge = () => {
                       />
                     </button>
                   </Flex>
-                  <TheFooterNavbar />
                 </Box>
+                <TheFooterNavbar />
               </>
             ) : (
               <Box flex={1} className="flex justify-center items-center">
@@ -586,10 +483,7 @@ export const GiveBadge = () => {
               >
                 <Flex flexDirection={'column'} className="w-full items-center">
                   <Flex className="w-full flex-row p-4 items-center" gap={4}>
-                    <EnsAvatar
-                      size={'md'}
-                      ensAddress={address as `0x${string}`}
-                    />
+                    <UserIcon />
                     <Flex
                       flexDirection={'column'}
                       gap={2}
@@ -598,8 +492,8 @@ export const GiveBadge = () => {
                       <Text className="text-slate-50 text-sm font-medium leading-none">
                         Issuer
                       </Text>
-                      <EnsName
-                        ensAddress={address as `0x${string}`}
+                      <AddressDisplay
+                        userAddress={address as `0x${string}`}
                         copyToClipboard={true}
                         externalLink={true}
                       />
@@ -607,7 +501,7 @@ export const GiveBadge = () => {
                   </Flex>
                   <Divider className="border-slate-50 opacity-10 w-full" />
                   <Flex className="w-full flex-row p-4" gap={4}>
-                    <EnsAvatar size={'md'} ensAddress={badgeInputAddress} />
+                    <UserIcon />
                     <Flex
                       flexDirection={'column'}
                       gap={2}
@@ -616,8 +510,8 @@ export const GiveBadge = () => {
                       <Text className="text-slate-50 text-sm font-medium leading-none">
                         Receiver
                       </Text>
-                      <EnsName
-                        ensAddress={badgeInputAddress}
+                      <AddressDisplay
+                        userAddress={badgeInputAddress}
                         copyToClipboard={true}
                         externalLink={true}
                       />
@@ -733,8 +627,8 @@ export const GiveBadge = () => {
                     Receiver
                   </Text>
                   <Flex gap={2} className="w-full">
-                    <EnsName
-                      ensAddress={badgeReceiverAddress}
+                    <AddressDisplay
+                      userAddress={badgeReceiverAddress}
                       customClassName={true}
                       clipboardClassName={
                         'text-opacity-100 px-4 py-2 w-full disabled text-slate-50 opacity-100 text-sm font-normal border-none'
