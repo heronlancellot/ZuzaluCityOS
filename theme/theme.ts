@@ -92,14 +92,15 @@ let theme = createTheme({
     },
     MuiAutocomplete: {
       styleOverrides: {
-        paper: {
-          backgroundColor: '#222222',
-        },
         popupIndicator: {
           color: 'rgba(255, 255, 255, 0.6)',
         },
         clearIndicator: {
           color: 'rgba(255, 255, 255, 0.6)',
+        },
+        inputRoot: {
+          borderRadius: '10px',
+          backgroundColor: '#313131',
         },
       },
     },

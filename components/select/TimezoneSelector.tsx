@@ -32,7 +32,7 @@ export const TimezoneSelector = ({
       value={data}
       disablePortal
       options={options}
-      sx={{ ...sx, borderRadius: '10px', overflow: 'hidden' }}
+      sx={{ ...sx, borderRadius: '10px' }}
       isOptionEqualToValue={(option, value) => option.value === value.value}
       renderInput={(params) => <TextField {...params} />}
       onChange={(e, val) => val && handleChange(val)}
