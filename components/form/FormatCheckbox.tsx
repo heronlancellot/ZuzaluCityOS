@@ -9,7 +9,7 @@ interface IProps {
   handleChange: () => void;
 }
 
-function FormatCheckbox({ checked, title, desc, handleChange }: IProps) {
+export function FormatCheckbox({ checked, title, desc, handleChange }: IProps) {
   return (
     <Box
       borderRadius="10px"
@@ -24,6 +24,7 @@ function FormatCheckbox({ checked, title, desc, handleChange }: IProps) {
         background: checked
           ? 'linear-gradient(90deg, rgba(125, 255, 209, 0.15) 0.01%, rgba(255, 255, 255, 0.03) 99.99%)'
           : 'rgba(255, 255, 255, 0.05)',
+        cursor: 'pointer',
       }}
     >
       <BpCheckbox checked={checked} />
