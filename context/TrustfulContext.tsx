@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */
+import { GiveBadgeStepAddress } from '@/app/spaces/[spaceid]/trustful/components/GiveBadge';
+import { useNotify } from '@/app/spaces/[spaceid]/trustful/utils/useNotify';
 import React, {
   createContext,
   useContext,
@@ -7,37 +9,85 @@ import React, {
   type ReactNode,
   type Dispatch,
   type SetStateAction,
+  useEffect,
 } from 'react';
 import { Address } from 'viem';
-
-export enum Role {
-  ROOT = 'ROOT_ROLE',
-  MANAGER = 'MANAGER_ROLE',
-  VILLAGER = 'VILLAGER_ROLE',
-  NO_ROLE = 'NO_ROLE',
-}
-
-/** ID of the space enabled for Trustful to appear so far. */
-export const CypherHouseSpaceId =
-  'kjzl6kcym7w8y5ye1nxcz2o08c8pk9nd57bwqqax6wlfaimn5qsf6s3306jgj34';
-
-/** ID of the space to test the application. Should be removed soon when the CypherHouseSpaceId development code is in production */
-export const TestApplicationSpaceId =
-  'kjzl6kcym7w8y7drgmopt1aufcut7p9cbwyoaa0ht9vl8sgs5q39blhgsbeyb83';
+import { useAccount, useSwitchChain } from 'wagmi';
+import { scroll } from 'viem/chains';
+import {
+  Role,
+  ZUVILLAGE_SCHEMAS,
+} from '@/app/spaces/[spaceid]/trustful/constants/constants';
+import { getAllAttestationTitles } from '@/app/spaces/[spaceid]/trustful/service';
+import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 
 interface User {
   address: Address;
   role: Role;
 }
 
+interface Schema {
+  index: string;
+  id: string;
+}
+
+enum BadgeStatus {
+  DEFAULT = 'Default',
+  PENDING = 'Pending',
+  CONFIRMED = 'Confirmed',
+  REJECTED = 'Rejected',
+}
+
+interface Badge {
+  id: string;
+  title: string;
+  status: BadgeStatus;
+  comment?: string;
+  timeCreated: number;
+  attester: string;
+  recipient: string;
+  txid: string;
+  schema: Schema;
+  revoked: boolean;
+  responseId?: string;
+}
+
 interface TrustfulContextType {
   setUserRole: Dispatch<SetStateAction<User | null>>;
   userRole: User | null;
+
+  /**BadgeContext */
+  selectedBadge: Badge | null;
+  setSelectedBadge: Dispatch<SetStateAction<Badge | null>>;
+
+  /**GiveBadgeContext */
+  badgeInputAddress: null | EthereumAddress; // TODO: Allowing EthereumAddress here also, Check this after
+  setBadgeInputAddress: Dispatch<SetStateAction<null | EthereumAddress>>;
+  addressStep: GiveBadgeStepAddress;
+  setAddressStep: Dispatch<SetStateAction<GiveBadgeStepAddress>>;
+  inputBadgeTitleList: string[] | null;
+  setInputBadgeTitleList: Dispatch<SetStateAction<string[] | null>>;
+  newTitleAdded: boolean;
+  setNewTitleAdded: Dispatch<SetStateAction<boolean>>;
 }
 
 const defaultContextValue: TrustfulContextType = {
   userRole: null,
   setUserRole: () => {},
+
+  /**BadgeContext */
+  selectedBadge: null,
+  setSelectedBadge: () => {},
+
+  /**GiveBadgeContext */
+  badgeInputAddress: null,
+  setBadgeInputAddress: () => {},
+  addressStep: GiveBadgeStepAddress.INSERT_ADDRESS,
+  setAddressStep: () => {},
+  inputBadgeTitleList: null,
+  setInputBadgeTitleList: () => {},
+  newTitleAdded: false,
+  setNewTitleAdded: () => {},
 };
 
 const TrustfulContext = createContext<TrustfulContextType>(defaultContextValue);
@@ -51,13 +101,100 @@ export const TrustfulContextProvider: React.FC<
 > = ({ children }) => {
   const [userRole, setUserRole] = useState<User | null>(null);
 
+  /**BadgeContext */
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+
+  /**GiveBadgeContext */
+  const [badgeInputAddress, setBadgeInputAddress] =
+    useState<null | EthereumAddress>(null);
+  const [addressStep, setAddressStep] = useState<GiveBadgeStepAddress>(
+    GiveBadgeStepAddress.INSERT_ADDRESS,
+  );
+  const [inputBadgeTitleList, setInputBadgeTitleList] = useState<
+    string[] | null
+  >(null);
+  const [newTitleAdded, setNewTitleAdded] = useState<boolean>(false);
+
   const TrustfulContextData = useMemo(
     () => ({
       userRole,
       setUserRole,
+      selectedBadge,
+      setSelectedBadge,
+      badgeInputAddress,
+      setBadgeInputAddress,
+      addressStep,
+      setAddressStep,
+      inputBadgeTitleList,
+      setInputBadgeTitleList,
+      newTitleAdded,
+      setNewTitleAdded,
     }),
-    [userRole],
+    [
+      userRole,
+      selectedBadge,
+      badgeInputAddress,
+      addressStep,
+      inputBadgeTitleList,
+      newTitleAdded,
+    ],
   );
+
+  const { switchChain } = useSwitchChain();
+  const { chainId, address } = useAccount();
+  const { notifyError } = useNotify();
+
+  useEffect(() => {
+    if (address) {
+      handleBadgeDropdown();
+    }
+  }, [address, newTitleAdded, addressStep]);
+
+  const handleBadgeDropdown = async () => {
+    if (!address) {
+      notifyError({
+        title: 'No account connected',
+        message: 'Please connect your wallet.',
+      });
+      return;
+    }
+
+    if (chainId !== scroll.id) {
+      notifyError({
+        title: 'Unsupported network',
+        message: 'Please switch to the Scroll network to use this application.',
+      });
+      switchChain({ chainId: scroll.id });
+      return;
+    }
+
+    const filteredBadges: string[] | Error = await getAllAttestationTitles();
+
+    console.log('filteredBadges', filteredBadges);
+    if (filteredBadges instanceof Error || !filteredBadges) {
+      notifyError({
+        title: 'Error Read Contract',
+        message: 'Error while reading badge titles from the blockchain.',
+      });
+      return;
+    }
+
+    if (userRole?.role === Role.ROOT || userRole?.role === Role.MANAGER) {
+      filteredBadges.push('Manager');
+    }
+
+    if (
+      userRole?.address === ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.allowedRole[0]
+    ) {
+      filteredBadges.push('Check-in');
+      filteredBadges.push('Check-out');
+    }
+
+    await Promise.all(filteredBadges);
+    console.log('filteredBadges2', filteredBadges);
+
+    setInputBadgeTitleList(filteredBadges.sort());
+  };
 
   return (
     <TrustfulContext.Provider value={TrustfulContextData}>

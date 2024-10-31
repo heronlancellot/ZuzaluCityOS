@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 'use client';
 
@@ -10,7 +11,8 @@ import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { getUserRole } from '@/services/user/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
 import { capitalizeFirstLetter } from '@/utils/format';
-import { Address } from 'viem';
+import { GiveBadge } from './components/GiveBadge';
+import { Role } from './constants/constants';
 
 const TrustfulPage = () => {
   const params = useParams();
@@ -127,12 +129,12 @@ const TrustfulPage = () => {
   useEffect(() => {
     const fetchUserRole = async () => {
       if (address) {
-        await getUserRole(address as Address)
+        await getUserRole('0xd3b4465E16A440D2B2383F5a02b3E6Ad131300b4')
           .then((data) => {
             console.log('User role:', data);
             if (data && data?.role) {
               setUserRole({
-                address: address as Address,
+                address: '0xd3b4465E16A440D2B2383F5a02b3E6Ad131300b4',
                 role: data.role,
               });
             }
@@ -169,12 +171,13 @@ const TrustfulPage = () => {
         >
           <Typography color="white" variant="subtitleLB">
             Welcome{' '}
-            {userRole && userRole.role !== 'NO_ROLE'
+            {userRole && userRole.role !== Role.NO_ROLE
               ? capitalizeFirstLetter(userRole.role).split('_')[0]
               : username
                 ? username
                 : address}
           </Typography>
+          <GiveBadge />
         </Box>
       </Stack>
     </Stack>
