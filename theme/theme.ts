@@ -103,6 +103,40 @@ let theme = createTheme({
         },
       },
     },
+    MuiTimePicker: {
+      defaultProps: {
+        sx: {
+          '& .MuiSvgIcon-root': {
+            color: 'white',
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            border: 'none',
+          },
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: '#313131',
+            borderRadius: '10px',
+          },
+        },
+        slotProps: {
+          popper: {
+            sx: {
+              ...{
+                '& .MuiPickersDay-root': { color: 'black' },
+                '& .MuiPickersDay-root.Mui-selected': {
+                  backgroundColor: '#D7FFC4',
+                },
+                '& .MuiPickersCalendarHeader-root': {
+                  color: 'black',
+                },
+                '& .MuiMultiSectionDigitalClock-root': {
+                  color: 'black',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     MuiDesktopDatePicker: {
       defaultProps: {
         sx: {
