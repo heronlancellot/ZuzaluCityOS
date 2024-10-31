@@ -28,10 +28,11 @@ export const TimezoneSelector = ({
 
   return (
     <Autocomplete
+      size="small"
       value={data}
       disablePortal
       options={options}
-      sx={{ ...sx }}
+      sx={{ ...sx, borderRadius: '10px', overflow: 'hidden' }}
       isOptionEqualToValue={(option, value) => option.value === value.value}
       renderInput={(params) => <TextField {...params} />}
       onChange={(e, val) => val && handleChange(val)}
