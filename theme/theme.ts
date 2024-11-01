@@ -85,8 +85,9 @@ let theme = createTheme({
         icon: {
           color: 'rgba(255, 255, 255, 0.6)',
         },
-        outlined: {
-          backgroundColor: '#373737',
+        root: {
+          borderRadius: '10px',
+          backgroundColor: '#313131',
         },
       },
     },
@@ -102,6 +103,9 @@ let theme = createTheme({
           borderRadius: '10px',
           backgroundColor: '#313131',
         },
+      },
+      defaultProps: {
+        size: 'small',
       },
     },
     MuiTimePicker: {
