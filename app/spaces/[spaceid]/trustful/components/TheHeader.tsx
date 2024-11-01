@@ -3,12 +3,9 @@
 import { type FC } from 'react';
 import { Divider, HStack, Heading } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
-import { useAccount } from 'wagmi';
 import { TrustfulIcon } from '@/components/icons';
 
 export const TheHeader: FC = () => {
-  // const { isMobile } = useWindowSize();
-  const { isConnected } = useAccount();
   const router = useRouter();
   return (
     <>
@@ -28,10 +25,6 @@ export const TheHeader: FC = () => {
           >
             Trustful
           </Heading>
-        </HStack>
-        <HStack>
-          {/* {!isMobile && !isConnected && <ConnectButton label="Connect" />} */}
-          {/* {isConnected && <TheHeaderMenu />} */}
         </HStack>
       </HStack>
       <Divider className="border-slate-50 opacity-10" />
