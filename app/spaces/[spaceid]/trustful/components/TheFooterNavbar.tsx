@@ -24,6 +24,8 @@ export const TheFooterNavbar = () => {
         ? 'Check Out'
         : 'Thank You';
 
+  const actualURL = `/spaces/${params.spaceid}/trustful`;
+
   return (
     <Box
       as="footer"
@@ -35,7 +37,7 @@ export const TheFooterNavbar = () => {
           {villagerAttestationCount > 0 && (
             <Box
               className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'my-badges' ? 'border-[#B1EF42]' : 'border-transparent'}`}
-              onClick={() => push('/my-badges')}
+              onClick={() => push(`${actualURL}/my-badges`)}
             >
               <BadgeIcon
                 className={`w-5 h-5 text-white ${params.slug == 'my-badges' ? 'opacity-100' : 'opacity-50'}`}
@@ -50,7 +52,7 @@ export const TheFooterNavbar = () => {
           {villagerAttestationCount > 0 && (
             <Box
               className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'give-badge' ? 'border-[#B1EF42]' : 'border-transparent'}`}
-              onClick={() => push('/give-badge')}
+              onClick={() => push(`${actualURL}`)}
             >
               <HeartLoveIcon
                 className={`w-5 h-5 text-white ${params.slug == 'give-badge' ? ' opacity-100' : 'opacity-50'}`}
@@ -65,7 +67,7 @@ export const TheFooterNavbar = () => {
           {villagerAttestationCount > 0 && (
             <Box
               className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'share' ? 'border-[#B1EF42]' : 'border-transparent'}`}
-              onClick={() => push('/share')}
+              onClick={() => push(`${actualURL}/share`)}
             >
               <QrCodeIcon
                 className={`w-5 h-5 text-white ${params.slug == 'share' ? 'opacity-100' : 'opacity-50'}`}
@@ -80,7 +82,7 @@ export const TheFooterNavbar = () => {
           <Box
             className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'checkout' || params.slug == 'checkin' ? 'border-[#B1EF42]' : 'border-transparent'}`}
             onClick={() => {
-              if (checkInStatus === 'Check In') push('/checkin');
+              if (checkInStatus === 'Check In') push(`${actualURL}/checkin`);
               if (
                 checkInStatus === 'Check Out' ||
                 checkInStatus === 'Thank You'

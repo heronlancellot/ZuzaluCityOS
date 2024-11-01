@@ -1,11 +1,10 @@
-import { readContract } from 'viem/actions';
-
-import { client, config } from '@/context/WalletContext';
+import { client } from '@/context/WalletContext';
 import { RESOLVER_CONTRACT_SCROLL } from '../constants/constants';
+import { Address } from 'viem';
 
 export async function hasRole(
-  role: `0x${string}`,
-  account: `0x${string}`,
+  role: Address,
+  account: Address,
 ): Promise<boolean | Error> {
   const data = {
     abi: [
