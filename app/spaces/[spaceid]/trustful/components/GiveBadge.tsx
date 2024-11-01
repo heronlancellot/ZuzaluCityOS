@@ -1,8 +1,9 @@
 'use client';
+
 /* eslint-disable no-dupe-else-if */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState } from 'react';
 
+import { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -61,7 +62,6 @@ export const GiveBadge = () => {
   const { address, chainId } = useAccount();
   const { push } = useRouter();
   const unwatch = watchAccount(config, {
-    // Check if Config is right here
     onChange() {},
   });
   const {
@@ -71,17 +71,12 @@ export const GiveBadge = () => {
     setBadgeInputAddress,
     inputBadgeTitleList,
   } = useTrustful();
-  // const { villagerAttestationCount } = useContext(WalletContext);
+  /** Commented for now.
+   * TODO: Check if villagerAttestationCount is needed.
+   * const { villagerAttestationCount } = useContext(WalletContext);
+   */
   const villagerAttestationCount = 1;
   const { switchChain } = useSwitchChain();
-
-  useEffect(() => {
-    if (Number(villagerAttestationCount) === 0) {
-      toast.error('You have not checked in. Please check-in first.');
-      push('/pre-checkin');
-    }
-  }, [villagerAttestationCount]);
-
   const [badgeReceiverAddress, setBadgeReceiverAddress] =
     useState<EthereumAddress | null>(null);
   const [inputAddress, setInputAddress] = useState<string>();
@@ -89,10 +84,24 @@ export const GiveBadge = () => {
   const [commentBadge, setCommentBadge] = useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
   const [text, setText] = useState<string>('');
+  const searchParams = useSearchParams();
+  const addressShared = searchParams.get('address');
+  const param = useParams();
 
-  // Resets the context when the component is mounted for the first time
+  /** Commented for now. 
+   * TODO: Check if 'Checkin/Pre-Checkin' is needed.
+   *   useEffect(() => {
+          if (Number(villagerAttestationCount) === 0) {
+            toast.error('You have not checked in. Please check-in first.');
+            push('/pre-checkin');
+          }
+        }, [villagerAttestationCount]);
+   */
+
+  /**
+   * Resets the context when the component is mounted for the first time
+   */
   useEffect(() => {
-    console.log('inputBadgeTitleList', inputBadgeTitleList);
     return () => {
       setAddressStep(GiveBadgeStepAddress.INSERT_ADDRESS);
       setBadgeInputAddress(null);
@@ -101,7 +110,6 @@ export const GiveBadge = () => {
   }, []);
 
   useEffect(() => {
-    // User changes account
     if (address) {
       setAddressStep(GiveBadgeStepAddress.INSERT_ADDRESS);
       setBadgeInputAddress(null);
@@ -115,10 +123,6 @@ export const GiveBadge = () => {
       unwatch();
     };
   }, [address]);
-
-  const searchParams = useSearchParams();
-  const addressShared = searchParams.get('address');
-  const param = useParams();
 
   // Checks if the shared-address is valid and sets it to the inputAddress
   useEffect(() => {
@@ -142,6 +146,7 @@ export const GiveBadge = () => {
     }
   }, [inputAddress]);
 
+  // TODO: Check if handleResolveEns is needed
   const handleResolveEns = async () => {
     if (!inputAddress) return;
     if (!/\.eth$/.test(inputAddress)) {
