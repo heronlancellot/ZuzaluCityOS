@@ -1,4 +1,9 @@
-import { TICKET_FACTORY_ADDRESS, mUSDC_TOKEN, isDev } from '@/constant';
+import {
+  TICKET_FACTORY_ADDRESS,
+  mUSDC_TOKEN,
+  isDev,
+  resendApiKey,
+} from '@/constant';
 import { client, config } from '@/context/WalletContext';
 import { ERC20_ABI } from '@/utils/erc20_abi';
 import { TICKET_ABI } from '@/utils/ticket_abi';
@@ -8,6 +13,7 @@ import { Address, isAddress, parseUnits } from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
 import { writeContract, waitForTransactionReceipt } from 'wagmi/actions';
 import { ZuButton, ZuInput } from '@/components/core';
+import { supabase } from '@/utils/supabase/client';
 import {
   ArrowDownSquare,
   CloseIcon,
@@ -57,6 +63,7 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { ButtonGroup } from '../Common';
 import { useToast } from '@/components/toast/ToastContext';
+import { Resend } from 'resend';
 interface IProps {
   amount?: string;
   recipient?: string;
@@ -993,24 +1000,49 @@ export const Whitelist = ({
   let ticket = tickets[vaultIndex];
 
   const handleSendEmails = async (emailList: string) => {
-    const emailJsConfig = await fetchEmailJsConfig();
-    if (emailJsConfig) {
-      const { serviceId, templateId, userId } = emailJsConfig;
-      const emails = emailList.split(',').map((email) => email.trim());
-      for (const email of emails) {
-        await send(
-          serviceId,
-          templateId,
-          {
-            to_name: email,
-            from_name: event?.title,
-            message: 'Here is your invitation to mint the ticket.',
-          },
-          userId,
-        );
+    try {
+      let emailTemplate = '';
+      console.log(event?.id, 'event?.id');
+      const { data, error: supabaseError } = await supabase
+        .from('eventEmailTemplate')
+        .select('*')
+        .eq('eventId', event?.id)
+        .single();
+
+      if (supabaseError) {
+        console.error('Supabase error:', supabaseError);
+        return;
       }
-    } else {
-      console.log('Failed to fetch email JS config.');
+
+      if (!data) {
+        console.error('No email template found');
+        return;
+      }
+
+      emailTemplate = data.template;
+
+      if (!resendApiKey) {
+        console.error('Missing Resend API key');
+        return;
+      }
+
+      const resend = new Resend(resendApiKey);
+      const emails = emailList.split(',').map((email) => email.trim());
+
+      for (const email of emails) {
+        try {
+          const result = await resend.emails.send({
+            from: data.sender_Email,
+            to: email,
+            subject: data.subject,
+            html: emailTemplate,
+          });
+        } catch (emailError) {
+          console.error(`Failed to send email to ${email}:`, emailError);
+        }
+      }
+    } catch (error) {
+      console.error('Error in handleSendEmails:', error);
     }
   };
 
