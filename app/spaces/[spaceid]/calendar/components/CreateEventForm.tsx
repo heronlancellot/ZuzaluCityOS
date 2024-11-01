@@ -131,9 +131,9 @@ const CreateEventForm: React.FC<EventFormProps> = ({
 
   const handleDescriptionChange = useCallback(
     (val: any) => {
-      descriptionEditorStore.setValue(val);
+      setValue('description', val);
     },
-    [descriptionEditorStore],
+    [setValue],
   );
 
   const onFormSubmit = useCallback(async (data: FormData) => {}, []);
@@ -149,7 +149,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
   useEffect(() => {
     if (event) {
       setValue('name', event.title);
-      event.description && descriptionEditorStore.setValue(event.description);
+      event.description && setValue('description', event.description);
       event.imageUrl && setValue('imageUrl', event.imageUrl);
       setValue('isAllDay', event.isAllDay);
       setValue('startDate', dayjs(event.startDate));
@@ -253,7 +253,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                       also update descriptions.
                     </FormLabelDesc>
                     <SuperEditor
-                      value={descriptionEditorStore.value}
+                      value={decodeOutputData(description ?? '')}
                       onChange={handleDescriptionChange}
                     />
                     {errors?.description && (
