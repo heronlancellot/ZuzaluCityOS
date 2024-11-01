@@ -13,7 +13,7 @@ export const TimezoneSelector = ({
   value,
 }: TimezoneSelectorProps) => {
   const { options } = useTimezoneSelect({ timezones: allTimezones });
-  const [data, setData] = useState(value);
+  const [data, setData] = useState<ITimezoneOption | null>(null);
 
   const handleChange = (val: ITimezoneOption) => {
     setData(val);
@@ -22,7 +22,7 @@ export const TimezoneSelector = ({
 
   useEffect(() => {
     if (value?.value !== data?.value) {
-      setData(value);
+      setData(value!);
     }
   }, [data?.value, value, value?.value]);
 
@@ -33,7 +33,11 @@ export const TimezoneSelector = ({
       disablePortal
       options={options}
       sx={{ ...sx, borderRadius: '10px' }}
-      isOptionEqualToValue={(option, value) => option.value === value.value}
+      isOptionEqualToValue={(option, value) => {
+        if (!option || !value) return false;
+        return option.value === value.value;
+      }}
+      getOptionLabel={(option) => option.label || ''}
       renderInput={(params) => <TextField {...params} />}
       onChange={(e, val) => val && handleChange(val)}
     />

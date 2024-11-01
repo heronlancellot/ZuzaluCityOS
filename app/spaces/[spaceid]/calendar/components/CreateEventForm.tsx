@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import Yup from '@/utils/yupExtensions';
@@ -13,7 +13,10 @@ import {
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimezoneSelector } from '@/components/select/TimezoneSelector';
-import { useEditorStore } from '@/components/editor/useEditorStore';
+import {
+  decodeOutputData,
+  useEditorStore,
+} from '@/components/editor/useEditorStore';
 import { ZuInput, ZuSwitch } from 'components/core';
 import {
   FormLabel,
@@ -22,7 +25,11 @@ import {
 } from '@/components/typography/formTypography';
 import Dialog from '@/app/spaces/components/Modal/Dialog';
 import { DesktopDatePicker, TimePicker } from '@mui/x-date-pickers';
-import { ITimezoneOption } from 'react-timezone-select';
+import {
+  allTimezones,
+  ITimezoneOption,
+  useTimezoneSelect,
+} from 'react-timezone-select';
 import { useCeramicContext } from '@/context/CeramicContext';
 import FormFooter from '@/components/form/FormFooter';
 import FormHeader from '@/components/form/FormHeader';
@@ -35,6 +42,7 @@ const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
 });
 
 import dayjs from 'dayjs';
+import { CalEvent } from '@/types';
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
@@ -73,16 +81,19 @@ const schema = Yup.object().shape({
 type FormData = Yup.InferType<typeof schema>;
 
 interface EventFormProps {
-  spaceId: string;
+  editType: string;
+  event?: CalEvent;
   handleClose: () => void;
 }
 
 const CreateEventForm: React.FC<EventFormProps> = ({
-  spaceId,
+  event,
+  editType,
   handleClose,
 }) => {
   const [track, setTrack] = useState('');
   const descriptionEditorStore = useEditorStore();
+  const { options } = useTimezoneSelect({ timezones: allTimezones });
 
   const {
     control,
@@ -91,6 +102,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
     setValue,
     setError,
     watch,
+    reset,
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -107,6 +119,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
 
   const isAllDay = watch('isAllDay');
   const format = watch('format');
+  const description = watch('description');
 
   const [isLoading, setLoading] = useState(false);
   const [blockClickModal, setBlockClickModal] = useState(false);
@@ -126,15 +139,39 @@ const CreateEventForm: React.FC<EventFormProps> = ({
   const onFormSubmit = useCallback(async (data: FormData) => {}, []);
 
   const handleDialogClose = useCallback(() => {
+    descriptionEditorStore.clear();
+    reset();
     setShowModal(false);
     setBlockClickModal(false);
     handleClose();
-  }, [handleClose]);
+  }, [descriptionEditorStore, handleClose, reset]);
+
+  useEffect(() => {
+    if (event) {
+      setValue('name', event.title);
+      event.description && descriptionEditorStore.setValue(event.description);
+      event.imageUrl && setValue('imageUrl', event.imageUrl);
+      setValue('isAllDay', event.isAllDay);
+      setValue('startDate', dayjs(event.startDate));
+      setValue('endDate', dayjs(event.endDate));
+      setValue('startTime', dayjs(event.startDate));
+      setValue('endTime', dayjs(event.endDate));
+      setValue(
+        'timezone',
+        options.find(
+          (item) => item.value === event.timezone,
+        ) as ITimezoneOption,
+      );
+      setValue('format', event.format);
+      setValue('locationName', event.location);
+      setValue('locationUrl', event.link);
+    }
+  }, []);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Dialog
-        title="Event Created"
+        title={event ? 'Event Updated' : 'Event Created'}
         message="Please view it."
         showModal={showModal}
         onClose={handleDialogClose}
@@ -143,8 +180,8 @@ const CreateEventForm: React.FC<EventFormProps> = ({
       <Dialog
         showModal={blockClickModal}
         showActions={false}
-        title="Creating Event"
-        message="Please wait while the event is being created..."
+        title={event ? 'Updating Event' : 'Creating Event'}
+        message="Please wait while the event is being updated..."
       />
       <Box
         sx={{
@@ -155,7 +192,11 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         }}
       >
         <Box sx={{ position: 'sticky', top: 0, zIndex: 1200 }}>
-          <FormHeader title="Create Event" handleClose={handleClose} />
+          <FormHeader
+            isBack={!!event}
+            title={event ? 'Edit Event' : 'Create Event'}
+            handleClose={handleDialogClose}
+          />
         </Box>
 
         <Box
@@ -360,21 +401,6 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                       )}
                     />
                   </Stack>
-                  <Stack spacing={'10px'}>
-                    <FormLabel>Session Frequency</FormLabel>
-                    <Controller
-                      name="recurring"
-                      control={control}
-                      render={({ field }) => (
-                        <Select size="small" {...field}>
-                          <MenuItem value="none">Only Once</MenuItem>
-                          <MenuItem value="daily">Every Day</MenuItem>
-                          <MenuItem value="weekly">Every Week</MenuItem>
-                          <MenuItem value="monthly">Every Month</MenuItem>
-                        </Select>
-                      )}
-                    />
-                  </Stack>
                 </Box>
               </Box>
             </Box>
@@ -422,7 +448,11 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                       <FormatCheckbox
                         key={`FormatCheckbox-${index}`}
                         checked={format === item.value}
-                        handleChange={() => setValue('format', item.value)}
+                        handleChange={() => {
+                          setValue('format', item.value);
+                          setValue('locationName', '');
+                          setValue('locationUrl', '');
+                        }}
                         title={item.title}
                         desc={item.desc}
                       />

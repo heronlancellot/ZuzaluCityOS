@@ -500,6 +500,7 @@ export interface CalEvent {
   title: string;
   description?: string;
   imageUrl?: string;
+  isAllDay: boolean;
   startDate: string;
   endDate: string;
   creator: string;

@@ -3,20 +3,24 @@ import {
   Cog6Icon,
   LinkIcon,
   MapIcon,
+  PencilIcon,
   TicketIcon,
+  TrashIcon,
+  XMarkIcon,
 } from '@/components/icons';
-import { Box, Divider, Link, Stack, Typography } from '@mui/material';
+import { Box, Divider, Link, Menu, Stack, Typography } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs/AdapterDayjs';
 import { ZuButton } from '@/components/core';
 import FormHeader from '@/components/form/FormHeader';
 import Image from 'next/image';
 import { CalEvent } from '@/types';
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import dynamic from 'next/dynamic';
+import { useDialog } from '@/components/dialog/DialogContext';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -31,9 +35,18 @@ const EditorPreview = dynamic(
 interface ViewEventProps {
   event: CalEvent;
   handleClose: () => void;
+  handleEdit: (type: string) => void;
 }
 
-export default function ViewEvent({ event, handleClose }: ViewEventProps) {
+export default function ViewEvent({
+  event,
+  handleClose,
+  handleEdit,
+}: ViewEventProps) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const { showDialog } = useDialog();
+
   const dateContent = useMemo(() => {
     const { startDate, endDate, timezone } = event;
     const start = dayjs(startDate);
@@ -100,6 +113,32 @@ export default function ViewEvent({ event, handleClose }: ViewEventProps) {
     );
   }, [event.startDate, event.timezone]);
 
+  const handleMenuClose = useCallback(() => {
+    setAnchorEl(null);
+  }, []);
+
+  const handleManageClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setAnchorEl(event.currentTarget);
+    },
+    [],
+  );
+
+  const handleMenuClick = useCallback((type: 'edit' | 'delete') => {
+    setAnchorEl(null);
+    if (type === 'edit') {
+      handleEdit('edit');
+    } else if (type === 'delete') {
+      showDialog({
+        title: 'Delete Event',
+        message: 'Are you sure you want to delete this event?',
+        onConfirm: () => {
+          //   handleEdit('delete');
+        },
+      });
+    }
+  }, []);
+
   const creator = JSON.parse(event.creator);
 
   return (
@@ -122,7 +161,7 @@ export default function ViewEvent({ event, handleClose }: ViewEventProps) {
             overflowY: 'scroll',
             padding: '20px',
             gap: '20px',
-            paddingBottom: '120px',
+            paddingBottom: '125px',
           }}
         >
           <Stack
@@ -156,10 +195,84 @@ export default function ViewEvent({ event, handleClose }: ViewEventProps) {
                 fontSize: '14px',
                 fontWeight: 600,
               }}
-              onClick={() => {}}
+              onClick={handleManageClick}
             >
               Manage
             </ZuButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              slotProps={{
+                paper: {
+                  style: {
+                    backgroundColor: 'rgba(34, 34, 34, 0.8)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    zIndex: 9999,
+                    padding: '2px 10px',
+                    width: '200px',
+                    marginTop: '8px',
+                    backdropFilter: 'blur(10px)',
+                  },
+                },
+              }}
+            >
+              <Stack flexDirection="column" sx={{ gap: '10px' }}>
+                {[
+                  {
+                    title: 'Edit Event',
+                  },
+                ].map((item) => (
+                  <Stack
+                    key={item.title}
+                    direction="row"
+                    gap="10px"
+                    alignItems="center"
+                    p="6px"
+                    borderRadius="8px"
+                    sx={{
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      },
+                    }}
+                    onClick={() => handleMenuClick('edit')}
+                  >
+                    <PencilIcon size={4} />
+                    <Typography fontSize={13} lineHeight={1.4}>
+                      Edit Event
+                    </Typography>
+                  </Stack>
+                ))}
+                <Divider />
+                {[
+                  {
+                    title: 'Edit Event',
+                  },
+                ].map((item) => (
+                  <Stack
+                    key={item.title}
+                    direction="row"
+                    gap="10px"
+                    alignItems="center"
+                    p="6px"
+                    borderRadius="8px"
+                    sx={{
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      },
+                    }}
+                    onClick={() => handleMenuClick('delete')}
+                  >
+                    <TrashIcon size={4} color="#FF5E5E" />
+                    <Typography fontSize={13} lineHeight={1.4} color="#FF5E5E">
+                      Delete Event
+                    </Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            </Menu>
           </Stack>
           {event.imageUrl && (
             <Image

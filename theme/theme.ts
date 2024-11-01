@@ -93,6 +93,9 @@ let theme = createTheme({
     },
     MuiAutocomplete: {
       styleOverrides: {
+        paper: {
+          backgroundColor: '#222222',
+        },
         popupIndicator: {
           color: 'rgba(255, 255, 255, 0.6)',
         },

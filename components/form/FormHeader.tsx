@@ -1,14 +1,20 @@
 import { ZuButton } from '@/components/core';
 import { XMarkIcon } from '@/components/icons';
 import { Box, Typography } from '@mui/material';
+import { ArrowLeftIcon } from '@mui/x-date-pickers';
 import React from 'react';
 
 interface IProps {
   title: string;
+  isBack?: boolean;
   handleClose: () => void;
 }
 
-export default function FormHeader({ handleClose, title }: IProps) {
+export default function FormHeader({
+  handleClose,
+  title,
+  isBack = false,
+}: IProps) {
   return (
     <Box
       display="flex"
@@ -20,13 +26,13 @@ export default function FormHeader({ handleClose, title }: IProps) {
       bgcolor="rgba(34, 34, 34, 0.8)"
     >
       <ZuButton
-        startIcon={<XMarkIcon />}
+        startIcon={isBack ? <ArrowLeftIcon /> : <XMarkIcon />}
         onClick={handleClose}
         sx={{
           backgroundColor: 'transparent',
         }}
       >
-        Close
+        {isBack ? 'Back' : 'Close'}
       </ZuButton>
       <Typography variant="subtitleSB">{title}</Typography>
     </Box>
