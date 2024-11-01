@@ -11,13 +11,6 @@ export const TestApplicationSpaceId =
 export const RESOLVER_CONTRACT_SCROLL =
   '0xeD4544F10D347e326140dBB869b6f4120DAf2c7B';
 
-// New Roles. Waiting the new Schemas to work.
-// export enum ROLES {
-//   ROOT = '22fb519433861c45473566e91e80aa1914463a0b4af5ac6bdf6df51390ffd531',
-//   MANAGER = 'b0338c231136c7d683dac0e65a1c5e782ff105b7aed212ee282bb75acacd28a1',
-//   VILLAGER = 'b6f4ee3f4de68852bfb9b340710124f632d1e4bbb9d14c935ffc5555829b5647',
-// }
-
 export enum Role {
   ROOT = 'ROOT_ROLE',
   MANAGER = 'MANAGER_ROLE',
