@@ -2,7 +2,14 @@ import React, { useState, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import Yup from '@/utils/yupExtensions';
-import { Box, Typography, Stack, FormHelperText } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Stack,
+  FormHelperText,
+  Select,
+  MenuItem,
+} from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimezoneSelector } from '@/components/select/TimezoneSelector';
@@ -27,6 +34,8 @@ const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
   ssr: false,
 });
 
+import dayjs from 'dayjs';
+
 const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
   description: Yup.string(),
@@ -48,6 +57,7 @@ const schema = Yup.object().shape({
   timezone: Yup.object().shape({
     value: Yup.string(),
   }),
+  recurring: Yup.string(),
   imageUrl: Yup.string(),
   format: Yup.string(),
   locationName: Yup.string().when('format', {
@@ -85,6 +95,12 @@ const CreateEventForm: React.FC<EventFormProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       format: 'in-person',
+      startDate: dayjs(),
+      endDate: dayjs(),
+      startTime: dayjs(),
+      endTime: dayjs().add(1, 'hour'),
+      isAllDay: false,
+      recurring: 'none',
     },
     shouldFocusError: true,
   });
@@ -319,6 +335,21 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                           width: '100%',
                         }}
                       />
+                    )}
+                  />
+                </Stack>
+                <Stack spacing={'10px'}>
+                  <FormLabel>Session Frequency</FormLabel>
+                  <Controller
+                    name="recurring"
+                    control={control}
+                    render={({ field }) => (
+                      <Select size="small" {...field}>
+                        <MenuItem value="none">Only Once</MenuItem>
+                        <MenuItem value="daily">Every Day</MenuItem>
+                        <MenuItem value="weekly">Every Week</MenuItem>
+                        <MenuItem value="monthly">Every Month</MenuItem>
+                      </Select>
                     )}
                   />
                 </Stack>
