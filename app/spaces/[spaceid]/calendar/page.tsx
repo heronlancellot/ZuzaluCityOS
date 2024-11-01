@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import ViewEvent from './components/ViewEvent';
 import { useDialog } from '@/components/dialog/DialogContext';
 import CreateEventForm from './components/CreateEventForm';
+import CalendarView from './components/CalendarView';
 
 const mockCalEvent: CalEvent = {
   title: 'Team Weekly Sync',
@@ -34,7 +35,7 @@ const Calendar = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
 
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [type, setType] = useState<string>('view');
 
   const { composeClient } = useCeramicContext();
@@ -74,6 +75,7 @@ const Calendar = () => {
         banner={spaceData?.banner}
         isAdmin={true}
       />
+      <CalendarView />
       <Drawer open={open} onClose={toggleDrawer} onOpen={toggleDrawer}>
         {type && type !== 'view' && (
           <CreateEventForm

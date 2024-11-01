@@ -91,8 +91,6 @@ const CreateEventForm: React.FC<EventFormProps> = ({
   editType,
   handleClose,
 }) => {
-  const [track, setTrack] = useState('');
-  const descriptionEditorStore = useEditorStore();
   const { options } = useTimezoneSelect({ timezones: allTimezones });
 
   const {
@@ -100,7 +98,6 @@ const CreateEventForm: React.FC<EventFormProps> = ({
     handleSubmit,
     formState: { errors },
     setValue,
-    setError,
     watch,
     reset,
   } = useForm<FormData>({
@@ -139,12 +136,11 @@ const CreateEventForm: React.FC<EventFormProps> = ({
   const onFormSubmit = useCallback(async (data: FormData) => {}, []);
 
   const handleDialogClose = useCallback(() => {
-    descriptionEditorStore.clear();
     reset();
     setShowModal(false);
     setBlockClickModal(false);
     handleClose();
-  }, [descriptionEditorStore, handleClose, reset]);
+  }, [handleClose, reset]);
 
   useEffect(() => {
     if (event) {

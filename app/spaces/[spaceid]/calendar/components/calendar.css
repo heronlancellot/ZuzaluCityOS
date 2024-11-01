@@ -1,0 +1,36 @@
+.fc-theme-standard td {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.fc-theme-standard td:hover {
+  /* background-color: rgba(255, 255, 255, 0.1) !important; */
+}
+
+.fc-theme-standard td:first-child {
+  border-left: none !important;
+}
+
+.fc-theme-standard td:last-child {
+  border-right: none !important;
+}
+
+.fc-theme-standard tbody tr:first-child td {
+  border-top: none !important;
+}
+
+.fc-theme-standard th {
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.fc .fc-scrollgrid-liquid {
+  border: none !important;
+}
+.fc .fc-daygrid-day.fc-day-today {
+  background-color: transparent !important;
+}
+
+.fc .fc-cell-shaded,
+.fc .fc-day-disabled {
+  background-color: transparent !important;
+}
