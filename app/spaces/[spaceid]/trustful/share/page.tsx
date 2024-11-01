@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -9,19 +10,20 @@ import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { getUserRole } from '@/services/user/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
-import { GiveBadge } from './components/GiveBadge';
 import { Address } from 'viem';
+import { ShareSection } from './components/ShareSection';
 
-const TrustfulPage = () => {
+const TrustfulSharePage = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
+  console.log('params', params);
 
   const [space, setSpace] = useState<Space>();
   const [events, setEvents] = useState<Event[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState<boolean>(true);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const { composeClient, ceramic, profile } = useCeramicContext();
-  const { setUserRole } = useTrustful();
+  const { composeClient, ceramic, profile, username } = useCeramicContext();
+  const { setUserRole, userRole } = useTrustful();
 
   const getSpaceByID = async () => {
     setIsEventsLoading(true);
@@ -164,11 +166,11 @@ const TrustfulPage = () => {
             padding: '20px',
           }}
         >
-          <GiveBadge />
+          <ShareSection />
         </Box>
       </Stack>
     </Stack>
   );
 };
 
-export default TrustfulPage;
+export default TrustfulSharePage;
