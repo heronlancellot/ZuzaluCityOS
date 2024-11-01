@@ -17,6 +17,7 @@ export default function FormHeader({ handleClose, title }: IProps) {
       borderBottom="1px solid #383838"
       paddingX={3}
       gap={2}
+      bgcolor="rgba(34, 34, 34, 0.8)"
     >
       <ZuButton
         startIcon={<XMarkIcon />}

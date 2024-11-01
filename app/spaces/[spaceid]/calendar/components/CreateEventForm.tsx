@@ -146,271 +146,48 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         title="Creating Event"
         message="Please wait while the event is being created..."
       />
-      <Box>
-        <FormHeader title="Create Event" handleClose={handleClose} />
-        <Stack gap="20px" p="20px">
-          <Box display="flex" flexDirection="column" gap="20px">
-            <Box bgcolor="#262626" borderRadius="10px">
-              <Stack padding="20px 20px 0" gap="10px">
-                <FormTitle>Event Details</FormTitle>
-                <Typography
-                  fontSize={14}
-                  lineHeight={1.6}
-                  sx={{ opacity: 0.6 }}
-                >
-                  Set event title and description
-                </Typography>
-              </Stack>
-              <Box
-                padding="0 20px 20px"
-                mt="30px"
-                display="flex"
-                flexDirection="column"
-                gap="20px"
-              >
-                <Stack spacing="10px">
-                  <FormLabel>Event Name*</FormLabel>
-                  <Controller
-                    name="name"
-                    control={control}
-                    render={({ field, fieldState: { error } }) => (
-                      <>
-                        <ZuInput
-                          {...field}
-                          placeholder="a name for this calendar event"
-                          error={!!error}
-                        />
-                        {error && (
-                          <FormHelperText error>{error.message}</FormHelperText>
-                        )}
-                      </>
-                    )}
-                  />
-                </Stack>
-                <Stack spacing="10px">
-                  <FormLabel>Event Description</FormLabel>
-                  <FormLabelDesc>
-                    This is a description greeting for new members. You can also
-                    update descriptions.
-                  </FormLabelDesc>
-                  <SuperEditor
-                    value={descriptionEditorStore.value}
-                    onChange={handleDescriptionChange}
-                  />
-                  {errors?.description && (
-                    <FormHelperText error>
-                      {errors?.description.message}
-                    </FormHelperText>
-                  )}
-                </Stack>
-                <Stack spacing="10px">
-                  <FormLabel>Event Image</FormLabel>
-                  <FormLabelDesc>
-                    Recommend min of 620x338px (16:9 Ratio)
-                  </FormLabelDesc>
-                  <Controller
-                    name="imageUrl"
-                    control={control}
-                    render={({ field }) => <FormUploader {...field} />}
-                  />
-                </Stack>
-              </Box>
-            </Box>
-          </Box>
-          <Box display="flex" flexDirection="column" gap="20px">
-            <Box bgcolor="#262626" borderRadius="10px">
-              <Stack padding="20px 20px 0" gap="10px">
-                <FormTitle>Date & Time</FormTitle>
-                <Typography
-                  fontSize={14}
-                  lineHeight={1.6}
-                  sx={{ opacity: 0.6 }}
-                >
-                  Set event date, times and frequency
-                </Typography>
-              </Stack>
-              <Box
-                padding="0 20px 20px"
-                mt="30px"
-                display="flex"
-                flexDirection="column"
-                gap="20px"
-              >
-                <Box display="flex" alignItems="center" gap="20px">
-                  <Controller
-                    name="isAllDay"
-                    control={control}
-                    render={({ field }) => <ZuSwitch {...field} />}
-                  />
-                  <Typography fontSize={16} lineHeight={1.2} fontWeight={600}>
-                    All Day
+      <Box
+        sx={{
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+        }}
+      >
+        <Box sx={{ position: 'sticky', top: 0, zIndex: 1200 }}>
+          <FormHeader title="Create Event" handleClose={handleClose} />
+        </Box>
+
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+          }}
+        >
+          <Stack gap="20px" p="20px" pb="80px">
+            <Box display="flex" flexDirection="column" gap="20px">
+              <Box bgcolor="#262626" borderRadius="10px">
+                <Stack padding="20px 20px 0" gap="10px">
+                  <FormTitle>Event Details</FormTitle>
+                  <Typography
+                    fontSize={14}
+                    lineHeight={1.6}
+                    sx={{ opacity: 0.6 }}
+                  >
+                    Set event title and description
                   </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between" gap="20px">
-                  <Stack flex={1} spacing="10px">
-                    <FormLabel>Start Date*</FormLabel>
-                    <Controller
-                      name="startDate"
-                      control={control}
-                      render={({ field, fieldState: { error } }) => (
-                        <>
-                          <DesktopDatePicker {...field} />
-                          {error && (
-                            <FormHelperText error>
-                              {error.message}
-                            </FormHelperText>
-                          )}
-                        </>
-                      )}
-                    />
-                  </Stack>
-                  <Stack flex={1} spacing="10px">
-                    <FormLabel>End Date*</FormLabel>
-                    <Controller
-                      name="endDate"
-                      control={control}
-                      render={({ field, fieldState: { error } }) => (
-                        <>
-                          <DesktopDatePicker {...field} />
-                          {error && (
-                            <FormHelperText error>
-                              {error.message}
-                            </FormHelperText>
-                          )}
-                        </>
-                      )}
-                    />
-                  </Stack>
-                </Box>
-                {!isAllDay && (
-                  <Box display="flex" justifyContent="space-between" gap="20px">
-                    <Stack flex={1} spacing="10px">
-                      <FormLabel>Start Time*</FormLabel>
-                      <Controller
-                        name="startTime"
-                        control={control}
-                        render={({ field, fieldState: { error } }) => (
-                          <>
-                            <TimePicker {...field} />
-                            {error && (
-                              <FormHelperText error>
-                                {error.message}
-                              </FormHelperText>
-                            )}
-                          </>
-                        )}
-                      />
-                    </Stack>
-                    <Stack flex={1} spacing="10px">
-                      <FormLabel>End Time*</FormLabel>
-                      <Controller
-                        name="endTime"
-                        control={control}
-                        render={({ field, fieldState: { error } }) => (
-                          <>
-                            <TimePicker {...field} />
-                            {error && (
-                              <FormHelperText error>
-                                {error.message}
-                              </FormHelperText>
-                            )}
-                          </>
-                        )}
-                      />
-                    </Stack>
-                  </Box>
-                )}
-                <Stack spacing={'10px'}>
-                  <FormLabel>Timezone</FormLabel>
-                  <Controller
-                    name="timezone"
-                    control={control}
-                    render={({ field }) => (
-                      <TimezoneSelector
-                        value={field.value as ITimezoneOption}
-                        setSelectedTimezone={(v) =>
-                          setValue('timezone', v as ITimezoneOption)
-                        }
-                        sx={{
-                          width: '100%',
-                        }}
-                      />
-                    )}
-                  />
                 </Stack>
-                <Stack spacing={'10px'}>
-                  <FormLabel>Session Frequency</FormLabel>
-                  <Controller
-                    name="recurring"
-                    control={control}
-                    render={({ field }) => (
-                      <Select size="small" {...field}>
-                        <MenuItem value="none">Only Once</MenuItem>
-                        <MenuItem value="daily">Every Day</MenuItem>
-                        <MenuItem value="weekly">Every Week</MenuItem>
-                        <MenuItem value="monthly">Every Month</MenuItem>
-                      </Select>
-                    )}
-                  />
-                </Stack>
-              </Box>
-            </Box>
-          </Box>
-          <Box display="flex" flexDirection="column" gap="20px">
-            <Box bgcolor="#262626" borderRadius="10px">
-              <Stack padding="20px 20px 0" gap="10px">
-                <FormTitle>Format & Location</FormTitle>
-                <Typography
-                  fontSize={14}
-                  lineHeight={1.6}
-                  sx={{ opacity: 0.6 }}
-                >
-                  Set event format and location with links
-                </Typography>
-              </Stack>
-              <Box
-                display="flex"
-                flexDirection="column"
-                gap="20px"
-                padding="20px"
-              >
                 <Box
+                  padding="0 20px 20px"
+                  mt="30px"
                   display="flex"
-                  justifyContent="space-between"
+                  flexDirection="column"
                   gap="20px"
-                  width={'100%'}
                 >
-                  {[
-                    {
-                      title: 'In-Person',
-                      desc: 'This is a physical event',
-                      value: 'in-person',
-                    },
-                    {
-                      title: 'Online',
-                      desc: 'This is a virtual event',
-                      value: 'online',
-                    },
-                    {
-                      title: 'Hybrid',
-                      desc: 'Both In-Person & Online',
-                      value: 'hybrid',
-                    },
-                  ].map((item, index) => (
-                    <FormatCheckbox
-                      key={`FormatCheckbox-${index}`}
-                      checked={format === item.value}
-                      handleChange={() => setValue('format', item.value)}
-                      title={item.title}
-                      desc={item.desc}
-                    />
-                  ))}
-                </Box>
-                {format !== 'online' && (
                   <Stack spacing="10px">
-                    <FormLabel>Location Name*</FormLabel>
+                    <FormLabel>Event Name*</FormLabel>
                     <Controller
-                      name="locationName"
+                      name="name"
                       control={control}
                       render={({ field, fieldState: { error } }) => (
                         <>
@@ -428,34 +205,291 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                       )}
                     />
                   </Stack>
-                )}
-                {format !== 'in-person' && (
                   <Stack spacing="10px">
-                    <FormLabel>Location URL*</FormLabel>
+                    <FormLabel>Event Description</FormLabel>
+                    <FormLabelDesc>
+                      This is a description greeting for new members. You can
+                      also update descriptions.
+                    </FormLabelDesc>
+                    <SuperEditor
+                      value={descriptionEditorStore.value}
+                      onChange={handleDescriptionChange}
+                    />
+                    {errors?.description && (
+                      <FormHelperText error>
+                        {errors?.description.message}
+                      </FormHelperText>
+                    )}
+                  </Stack>
+                  <Stack spacing="10px">
+                    <FormLabel>Event Image</FormLabel>
+                    <FormLabelDesc>
+                      Recommend min of 620x338px (16:9 Ratio)
+                    </FormLabelDesc>
                     <Controller
-                      name="locationUrl"
+                      name="imageUrl"
                       control={control}
-                      render={({ field, fieldState: { error } }) => (
-                        <>
-                          <ZuInput
-                            {...field}
-                            placeholder="https://"
-                            error={!!error}
-                          />
-                          {error && (
-                            <FormHelperText error>
-                              {error.message}
-                            </FormHelperText>
+                      render={({ field }) => <FormUploader {...field} />}
+                    />
+                  </Stack>
+                </Box>
+              </Box>
+            </Box>
+            <Box display="flex" flexDirection="column" gap="20px">
+              <Box bgcolor="#262626" borderRadius="10px">
+                <Stack padding="20px 20px 0" gap="10px">
+                  <FormTitle>Date & Time</FormTitle>
+                  <Typography
+                    fontSize={14}
+                    lineHeight={1.6}
+                    sx={{ opacity: 0.6 }}
+                  >
+                    Set event date, times and frequency
+                  </Typography>
+                </Stack>
+                <Box
+                  padding="0 20px 20px"
+                  mt="30px"
+                  display="flex"
+                  flexDirection="column"
+                  gap="20px"
+                >
+                  <Box display="flex" alignItems="center" gap="20px">
+                    <Controller
+                      name="isAllDay"
+                      control={control}
+                      render={({ field }) => <ZuSwitch {...field} />}
+                    />
+                    <Typography fontSize={16} lineHeight={1.2} fontWeight={600}>
+                      All Day
+                    </Typography>
+                  </Box>
+                  <Box display="flex" justifyContent="space-between" gap="20px">
+                    <Stack flex={1} spacing="10px">
+                      <FormLabel>Start Date*</FormLabel>
+                      <Controller
+                        name="startDate"
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <>
+                            <DesktopDatePicker {...field} />
+                            {error && (
+                              <FormHelperText error>
+                                {error.message}
+                              </FormHelperText>
+                            )}
+                          </>
+                        )}
+                      />
+                    </Stack>
+                    <Stack flex={1} spacing="10px">
+                      <FormLabel>End Date*</FormLabel>
+                      <Controller
+                        name="endDate"
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <>
+                            <DesktopDatePicker {...field} />
+                            {error && (
+                              <FormHelperText error>
+                                {error.message}
+                              </FormHelperText>
+                            )}
+                          </>
+                        )}
+                      />
+                    </Stack>
+                  </Box>
+                  {!isAllDay && (
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      gap="20px"
+                    >
+                      <Stack flex={1} spacing="10px">
+                        <FormLabel>Start Time*</FormLabel>
+                        <Controller
+                          name="startTime"
+                          control={control}
+                          render={({ field, fieldState: { error } }) => (
+                            <>
+                              <TimePicker {...field} />
+                              {error && (
+                                <FormHelperText error>
+                                  {error.message}
+                                </FormHelperText>
+                              )}
+                            </>
                           )}
-                        </>
+                        />
+                      </Stack>
+                      <Stack flex={1} spacing="10px">
+                        <FormLabel>End Time*</FormLabel>
+                        <Controller
+                          name="endTime"
+                          control={control}
+                          render={({ field, fieldState: { error } }) => (
+                            <>
+                              <TimePicker {...field} />
+                              {error && (
+                                <FormHelperText error>
+                                  {error.message}
+                                </FormHelperText>
+                              )}
+                            </>
+                          )}
+                        />
+                      </Stack>
+                    </Box>
+                  )}
+                  <Stack spacing={'10px'}>
+                    <FormLabel>Timezone</FormLabel>
+                    <Controller
+                      name="timezone"
+                      control={control}
+                      render={({ field }) => (
+                        <TimezoneSelector
+                          value={field.value as ITimezoneOption}
+                          setSelectedTimezone={(v) =>
+                            setValue('timezone', v as ITimezoneOption)
+                          }
+                          sx={{
+                            width: '100%',
+                          }}
+                        />
                       )}
                     />
                   </Stack>
-                )}
+                  <Stack spacing={'10px'}>
+                    <FormLabel>Session Frequency</FormLabel>
+                    <Controller
+                      name="recurring"
+                      control={control}
+                      render={({ field }) => (
+                        <Select size="small" {...field}>
+                          <MenuItem value="none">Only Once</MenuItem>
+                          <MenuItem value="daily">Every Day</MenuItem>
+                          <MenuItem value="weekly">Every Week</MenuItem>
+                          <MenuItem value="monthly">Every Month</MenuItem>
+                        </Select>
+                      )}
+                    />
+                  </Stack>
+                </Box>
               </Box>
             </Box>
-          </Box>
-          <Box display="flex" flexDirection="column" gap="20px">
+            <Box display="flex" flexDirection="column" gap="20px">
+              <Box bgcolor="#262626" borderRadius="10px">
+                <Stack padding="20px 20px 0" gap="10px">
+                  <FormTitle>Format & Location</FormTitle>
+                  <Typography
+                    fontSize={14}
+                    lineHeight={1.6}
+                    sx={{ opacity: 0.6 }}
+                  >
+                    Set event format and location with links
+                  </Typography>
+                </Stack>
+                <Box
+                  display="flex"
+                  flexDirection="column"
+                  gap="20px"
+                  padding="20px"
+                >
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    gap="20px"
+                    width={'100%'}
+                  >
+                    {[
+                      {
+                        title: 'In-Person',
+                        desc: 'This is a physical event',
+                        value: 'in-person',
+                      },
+                      {
+                        title: 'Online',
+                        desc: 'This is a virtual event',
+                        value: 'online',
+                      },
+                      {
+                        title: 'Hybrid',
+                        desc: 'Both In-Person & Online',
+                        value: 'hybrid',
+                      },
+                    ].map((item, index) => (
+                      <FormatCheckbox
+                        key={`FormatCheckbox-${index}`}
+                        checked={format === item.value}
+                        handleChange={() => setValue('format', item.value)}
+                        title={item.title}
+                        desc={item.desc}
+                      />
+                    ))}
+                  </Box>
+                  {format !== 'online' && (
+                    <Stack spacing="10px">
+                      <FormLabel>Location Name*</FormLabel>
+                      <Controller
+                        name="locationName"
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <>
+                            <ZuInput
+                              {...field}
+                              placeholder="a name for this calendar event"
+                              error={!!error}
+                            />
+                            {error && (
+                              <FormHelperText error>
+                                {error.message}
+                              </FormHelperText>
+                            )}
+                          </>
+                        )}
+                      />
+                    </Stack>
+                  )}
+                  {format !== 'in-person' && (
+                    <Stack spacing="10px">
+                      <FormLabel>Location URL*</FormLabel>
+                      <Controller
+                        name="locationUrl"
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <>
+                            <ZuInput
+                              {...field}
+                              placeholder="https://"
+                              error={!!error}
+                            />
+                            {error && (
+                              <FormHelperText error>
+                                {error.message}
+                              </FormHelperText>
+                            )}
+                          </>
+                        )}
+                      />
+                    </Stack>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          </Stack>
+        </Box>
+
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1200,
+          }}
+        >
+          <Box p="20px" bgcolor="#222">
             <FormFooter
               confirmText="Create Event"
               disabled={isLoading}
@@ -463,7 +497,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
               handleConfirm={handleSubmit(onFormSubmit)}
             />
           </Box>
-        </Stack>
+        </Box>
       </Box>
     </LocalizationProvider>
   );
