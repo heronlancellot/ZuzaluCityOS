@@ -495,3 +495,17 @@ export interface ZupassConfigItem {
   eventId: string;
   eventName: string;
 }
+
+export interface CalEvent {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  startDate: string;
+  endDate: string;
+  creator: string;
+  timezone: string;
+  format: string;
+  link?: string;
+  location?: string;
+  recurring: string;
+}
