@@ -1,4 +1,4 @@
-import { Role } from '@/context/TrustfulContext';
+import { Role } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { Address } from 'viem';
 
 interface UserRoleResponse {

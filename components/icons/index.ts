@@ -86,6 +86,18 @@ import { BuildStoreFrontIcon } from './BuildStoreFront';
 import { LottoPGFIcon } from './LottoPGF';
 import { WrenchIcon } from './Wrench';
 import { KeyIcon } from './Key';
+import { ArrowIcon } from './ArrowIcon';
+import { ArrowIconVariant } from './ArrowIcon';
+import { CommentIcon } from './CommentIcon';
+import { HandHeartIcon } from './HandHeartIcon';
+import { UserIcon } from './UserIcon';
+import { TrustfulIcon } from './TrustfulIcon';
+import { LoginIcon } from './LoginIcon';
+import { BadgeIcon } from './BadgeIcon';
+import { LogoutIcon } from './LogoutIcon';
+import { ThankYouIcon } from './ThankYouIcon';
+import { QrCodeIcon } from './QrCodeIcon';
+import { HeartLoveIcon } from './HeartLoveIcon';
 export {
   HomeIcon,
   SearchIcon,
@@ -175,4 +187,16 @@ export {
   LottoPGFIcon,
   WrenchIcon,
   KeyIcon,
+  ArrowIcon,
+  ArrowIconVariant,
+  CommentIcon,
+  HandHeartIcon,
+  UserIcon,
+  TrustfulIcon,
+  LoginIcon,
+  BadgeIcon,
+  LogoutIcon,
+  ThankYouIcon,
+  QrCodeIcon,
+  HeartLoveIcon,
 };

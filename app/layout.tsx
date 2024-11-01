@@ -15,6 +15,7 @@ import { ZupassProvider } from '@/context/ZupassContext';
 import '@/utils/yupExtensions';
 import Dialog from '@/app/spaces/components/Modal/Dialog';
 import { TrustfulContextProvider } from '@/context/TrustfulContext';
+import { Toaster } from 'react-hot-toast';
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ function RootLayout({
                         <div style={{ minHeight: `calc(100vh - 50px)` }}>
                           {children}
                         </div>
+                        <Toaster />
                       </AppContextProvider>
                     </TrustfulContextProvider>
                   </ZupassProvider>

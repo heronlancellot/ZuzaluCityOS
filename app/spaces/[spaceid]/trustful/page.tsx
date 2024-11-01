@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 'use client';
 
@@ -9,7 +10,7 @@ import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { getUserRole } from '@/services/user/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
-import { capitalizeFirstLetter } from '@/utils/format';
+import { GiveBadge } from './components/GiveBadge';
 import { Address } from 'viem';
 
 const TrustfulPage = () => {
@@ -19,12 +20,9 @@ const TrustfulPage = () => {
   const [space, setSpace] = useState<Space>();
   const [events, setEvents] = useState<Event[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState<boolean>(true);
-  const { composeClient, ceramic } = useCeramicContext();
-  const { setUserRole, userRole } = useTrustful();
-
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
-  const { username, profile } = useCeramicContext();
+  const { composeClient, ceramic, profile } = useCeramicContext();
+  const { setUserRole } = useTrustful();
 
   const getSpaceByID = async () => {
     setIsEventsLoading(true);
@@ -167,14 +165,15 @@ const TrustfulPage = () => {
             padding: '20px',
           }}
         >
-          <Typography color="white" variant="subtitleLB">
+          {/* <Typography color="white" variant="subtitleLB">
             Welcome{' '}
-            {userRole && userRole.role !== 'NO_ROLE'
+            {userRole && userRole.role !== Role.NO_ROLE
               ? capitalizeFirstLetter(userRole.role).split('_')[0]
               : username
                 ? username
                 : address}
-          </Typography>
+          </Typography> */}
+          <GiveBadge />
         </Box>
       </Stack>
     </Stack>

@@ -23,8 +23,8 @@ import { useTheme } from '@mui/material/styles';
 import { useRouter, usePathname } from 'next/navigation';
 
 import styles from './SubSidebar.module.css';
-import { TrustfulIcon } from '@/components/icons/Trustful';
-import { TestApplicationSpaceId } from '@/context/TrustfulContext';
+import { TrustfulIcon } from '@/components/icons/TrustfulIcon';
+import { TestApplicationSpaceId } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 interface SubSidebarProps {
   spaceId: string;
