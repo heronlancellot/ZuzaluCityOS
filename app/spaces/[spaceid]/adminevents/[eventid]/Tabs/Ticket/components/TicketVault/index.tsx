@@ -5,7 +5,7 @@ import {
   USDCIcon,
   USDTIcon,
 } from '@/components/icons';
-import { Box, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Box, Button, Stack, Typography, useMediaQuery } from '@mui/material';
 import Image from 'next/image';
 import { SendNFTTicket, WithdrawToken, Whitelist } from './component';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +15,11 @@ import { client } from '@/context/WalletContext';
 import { Address, GetEnsNameReturnType } from 'viem';
 import { ERC20_ABI } from '@/utils/erc20_abi';
 import { Contract, Event } from '@/types';
+import { Uploader3 } from '@lxdao/uploader3';
+import { PreviewFile } from '@/components/PreviewFile/PreviewFile';
+import { useUploaderPreview } from '@/components/PreviewFile/useUploaderPreview';
+import { updateTicketImage } from '@/services/event/updateContractImage';
+import { useQueryClient } from '@tanstack/react-query';
 interface ITicketVault {
   vaultIndex: number;
   ticketAddresses: Array<string>;
@@ -23,6 +28,7 @@ interface ITicketVault {
   refetch: () => void;
   onClose: () => void;
   event: Event;
+  setBlockClickModal: (value: boolean) => void;
 }
 
 const TicketVault = ({
@@ -33,11 +39,14 @@ const TicketVault = ({
   refetch,
   onClose,
   event,
+  setBlockClickModal = () => {},
 }: ITicketVault) => {
   const isMobile = useMediaQuery('(max-width:500px)');
   const [action, setAction] = React.useState('Withdraw');
   const [controller, setController] = useState<GetEnsNameReturnType>('');
   const [balance, setBalance] = useState<number>(0);
+  const avatarUploader = useUploaderPreview();
+  const queryClient = useQueryClient();
 
   let ticketAddress = ticketAddresses[vaultIndex];
   let ticket = tickets[vaultIndex];
@@ -91,7 +100,7 @@ const TicketVault = ({
           spacing={2.5}
           marginTop={'10px'}
         >
-          <Image
+          {/*<Image
             alt={''}
             src={eventContract?.image_url || '/24.webp'}
             loader={() => eventContract?.image_url || '/24.webp'}
@@ -102,7 +111,96 @@ const TicketVault = ({
               width: isMobile ? '100%' : undefined,
               height: isMobile ? '100%' : '100px',
             }}
-          />
+          />*/}
+          <Stack>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              <PreviewFile
+                sx={{
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '10px',
+                }}
+                src={avatarUploader.getUrl() || eventContract?.image_url}
+                errorMessage={avatarUploader.errorMessage()}
+                isLoading={avatarUploader.isLoading()}
+              />
+              <Stack direction="column" spacing={1}>
+                <Uploader3
+                  accept={['.gif', '.jpeg', '.gif', '.png']}
+                  api={'/api/file/upload'}
+                  multiple={false}
+                  crop={{
+                    size: { width: 400, height: 400 },
+                    aspectRatio: 1,
+                  }} // must be false when accept is svg
+                  onUpload={(file) => {
+                    avatarUploader.setFile(file);
+                  }}
+                  onComplete={(file) => {
+                    avatarUploader.setFile(file);
+                  }}
+                >
+                  <Button
+                    component="span"
+                    sx={{
+                      color: 'white',
+                      borderRadius: '10px',
+                      backgroundColor: '#373737',
+                      border: '1px solid #383838',
+                      width: '100px',
+                      height: '30px',
+                      fontSize: '10px',
+                    }}
+                  >
+                    Change Image
+                  </Button>
+                </Uploader3>
+                {avatarUploader.getUrl() && (
+                  <Button
+                    onClick={async () => {
+                      setBlockClickModal(true);
+                      try {
+                        await updateTicketImage({
+                          eventId: event.id,
+                          contractAddress: ticketAddress,
+                          image_url: avatarUploader.getUrl()!,
+                        });
+                        console.log(
+                          'Update image with:',
+                          avatarUploader.getUrl()!,
+                        );
+                      } catch (error) {
+                        console.error('Failed to update image:', error);
+                      } finally {
+                        avatarUploader.setFile(undefined);
+                        setBlockClickModal(false);
+                        queryClient.invalidateQueries({
+                          queryKey: ['fetchEventById'],
+                        });
+                      }
+                    }}
+                    sx={{
+                      color: 'white',
+                      borderRadius: '10px',
+                      backgroundColor: '#373737',
+                      border: '1px solid #383838',
+                      width: '100px',
+                      height: '30px',
+                      fontSize: '10px',
+                    }}
+                  >
+                    Update Image
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+          </Stack>
           <Stack direction="column" spacing={0.9}>
             <Typography
               variant="h5"

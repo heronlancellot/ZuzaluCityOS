@@ -1000,49 +1000,22 @@ export const Whitelist = ({
   let ticket = tickets[vaultIndex];
 
   const handleSendEmails = async (emailList: string) => {
-    try {
-      let emailTemplate = '';
-      console.log(event?.id, 'event?.id');
-      const { data, error: supabaseError } = await supabase
-        .from('eventEmailTemplate')
-        .select('*')
-        .eq('eventId', event?.id)
-        .single();
-
-      if (supabaseError) {
-        console.error('Supabase error:', supabaseError);
-        return;
-      }
-
-      if (!data) {
-        console.error('No email template found');
-        return;
-      }
-
-      emailTemplate = data.template;
-
-      if (!resendApiKey) {
-        console.error('Missing Resend API key');
-        return;
-      }
-
-      const resend = new Resend(resendApiKey);
+    const emailJsConfig = await fetchEmailJsConfig(event?.id as string);
+    if (emailJsConfig) {
+      const { serviceId, templateId, userId } = emailJsConfig;
       const emails = emailList.split(',').map((email) => email.trim());
-
       for (const email of emails) {
-        try {
-          const result = await resend.emails.send({
-            from: data.sender_Email,
-            to: email,
-            subject: data.subject,
-            html: emailTemplate,
-          });
-        } catch (emailError) {
-          console.error(`Failed to send email to ${email}:`, emailError);
-        }
+        await send(
+          serviceId,
+          templateId,
+          {
+            to_email: email,
+          },
+          userId,
+        );
       }
-    } catch (error) {
-      console.error('Error in handleSendEmails:', error);
+    } else {
+      console.log('Failed to fetch email JS config.');
     }
   };
 

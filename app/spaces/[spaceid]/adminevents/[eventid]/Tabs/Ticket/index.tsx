@@ -465,6 +465,7 @@ const Ticket = ({ event }: PropTypes) => {
         ticketAddresses={ticketAddresses}
         tickets={tickets}
         refetch={readFromContract}
+        setBlockClickModal={setBlockClickModal}
         eventContracts={
           event?.regAndAccess.edges[0].node.scrollPassTickets
             ? event?.regAndAccess.edges[0].node.scrollPassTickets
