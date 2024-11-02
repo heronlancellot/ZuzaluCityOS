@@ -45,6 +45,7 @@ const TicketVault = ({
   const [action, setAction] = React.useState('Withdraw');
   const [controller, setController] = useState<GetEnsNameReturnType>('');
   const [balance, setBalance] = useState<number>(0);
+  const [decimal, setDecimal] = useState<number>(0);
   const avatarUploader = useUploaderPreview();
   const queryClient = useQueryClient();
 
@@ -66,7 +67,12 @@ const TicketVault = ({
     });
         //setController(ensName);*/
     }
-    console.log(ticket);
+    const decimal = (await client.readContract({
+      address: ticket[2]?.result,
+      abi: ERC20_ABI,
+      functionName: 'decimals',
+    })) as number;
+    setDecimal(decimal);
     const balance = (await client.readContract({
       address: ticket[2]?.result as Address,
       abi: ERC20_ABI,
@@ -74,7 +80,7 @@ const TicketVault = ({
       args: [ticketAddress],
     })) as bigint;
 
-    setBalance(Number(balance / BigInt(10 ** 18)));
+    setBalance(Number(balance / BigInt(10 ** decimal)));
   };
 
   useEffect(() => {
@@ -256,7 +262,7 @@ const TicketVault = ({
                   opacity: '0.8',
                 }}
               >
-                {(ticket[3]?.result / BigInt(10 ** 18)).toString()}
+                {(ticket[3]?.result / BigInt(10 ** decimal)).toString()}
               </Typography>
               <Typography
                 fontSize="10px"

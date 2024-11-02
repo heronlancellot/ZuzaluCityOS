@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, Typography, useMediaQuery } from '@mui/material';
 import ZuButton from 'components/core/Button';
 import {
@@ -11,6 +11,8 @@ import Image from 'next/image';
 import { shortenAddress } from '@/utils/format';
 import { mUSDC_TOKEN } from '@/constant';
 import { Contract, RegistrationAndAccess } from '@/types';
+import { ERC20_ABI } from '@/utils/erc20_abi';
+import { client } from '@/context/WalletContext';
 type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
 export type TicketCardProps = {
@@ -49,7 +51,21 @@ const TicketCard: React.FC<TicketCardProps> = ({
   regAndAccess,
 }) => {
   const isMobile = useMediaQuery('(max-width:500px)');
+  const [decimal, setDecimal] = useState<number>(18);
   let status = true;
+
+  useEffect(() => {
+    const fetchDecimal = async () => {
+      const decimalValue = (await client.readContract({
+        address: ticket[2]?.result,
+        abi: ERC20_ABI,
+        functionName: 'decimals',
+      })) as number;
+      setDecimal(decimalValue);
+    };
+
+    fetchDecimal();
+  }, [ticket]);
 
   const currentTicket = regAndAccess?.scrollPassTickets?.find(
     (ticket) =>
@@ -67,8 +83,8 @@ const TicketCard: React.FC<TicketCardProps> = ({
       bgcolor="#2d2d2d"
       sx={{ cursor: 'pointer' }}
       onClick={() => {
-        setToggleAction && setToggleAction('ViewVault'),
-          onToggle('right', true);
+        setToggleAction && setToggleAction('ViewVault');
+        onToggle('right', true);
         setVaultIndex && setVaultIndex(index);
       }}
     >
@@ -105,7 +121,7 @@ const TicketCard: React.FC<TicketCardProps> = ({
                 lineHeight={1.2}
                 sx={{ opacity: 0.7 }}
               >
-                {(ticket[3].result / BigInt(10 ** 18)).toString()}{' '}
+                {(ticket[3].result / BigInt(10 ** decimal)).toString()}{' '}
               </Typography>
               <Typography fontSize={10} lineHeight={1.2} sx={{ opacity: 0.7 }}>
                 {ticket[2]?.result === mUSDC_TOKEN ? 'USDC' : 'USDT'}
