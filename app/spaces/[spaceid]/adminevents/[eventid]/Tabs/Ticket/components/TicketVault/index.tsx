@@ -66,7 +66,7 @@ const TicketVault = ({
     });
         //setController(ensName);*/
     }
-
+    console.log(ticket);
     const balance = (await client.readContract({
       address: ticket[2]?.result as Address,
       abi: ERC20_ABI,
