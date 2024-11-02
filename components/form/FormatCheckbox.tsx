@@ -12,7 +12,6 @@ interface IProps {
 function FormatCheckbox({ checked, title, desc, handleChange }: IProps) {
   return (
     <Box
-      bgcolor={checked ? '#484E45' : '#373737'}
       borderRadius="10px"
       padding="10px"
       display="flex"
@@ -20,18 +19,24 @@ function FormatCheckbox({ checked, title, desc, handleChange }: IProps) {
       gap="10px"
       flex={1}
       onClick={handleChange}
+      sx={{
+        opacity: checked ? 1 : 0.7,
+        background: checked
+          ? 'linear-gradient(90deg, rgba(125, 255, 209, 0.15) 0.01%, rgba(255, 255, 255, 0.03) 99.99%)'
+          : 'rgba(255, 255, 255, 0.05)',
+      }}
     >
       <BpCheckbox checked={checked} />
-      <Stack>
+      <Stack spacing="4px">
         <Typography
           color="white"
-          fontSize="16px"
-          fontWeight={600}
-          fontFamily="Inter"
+          fontSize="18px"
+          fontWeight={700}
+          lineHeight={1.2}
         >
           {title}
         </Typography>
-        <Typography color="white" fontSize="10px" fontFamily="Inter">
+        <Typography color="white" fontSize="10px" lineHeight={1.2}>
           {desc}
         </Typography>
       </Stack>

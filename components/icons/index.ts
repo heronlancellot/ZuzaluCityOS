@@ -86,6 +86,7 @@ import { BuildStoreFrontIcon } from './BuildStoreFront';
 import { LottoPGFIcon } from './LottoPGF';
 import { WrenchIcon } from './Wrench';
 import { KeyIcon } from './Key';
+import { ArrowUpTrayIcon } from './ArrowUpTray';
 import { WalletIcon } from './Wallet';
 export {
   HomeIcon,
@@ -176,5 +177,6 @@ export {
   LottoPGFIcon,
   WrenchIcon,
   KeyIcon,
+  ArrowUpTrayIcon,
   WalletIcon,
 };

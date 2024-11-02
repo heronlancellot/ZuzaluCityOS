@@ -144,7 +144,7 @@ const TicketCard: React.FC<TicketCardProps> = ({
               fontSize={13}
               lineHeight={1.4}
             >
-              {status ? 'Available' : 'Hidden'}: To All
+              {status ? 'Available' : 'Hidden'}
             </Typography>
           </Stack>
           <Typography fontSize={14} lineHeight={1.6} sx={{ opacity: 0.7 }}>

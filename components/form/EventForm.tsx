@@ -51,7 +51,7 @@ const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
   tagline: Yup.string().required('Event tagline is required'),
   description: Yup.string(),
-  externalUrl: Yup.string(),
+  externalUrl: Yup.string().required('External Website is required'),
   startTime: Yup.mixed().dayjs().required('Start date is required'),
   endTime: Yup.mixed().dayjs().required('End date is required'),
   timezone: Yup.object().shape({
@@ -222,7 +222,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           socialLinks: socialLinks ?? [],
           adminId,
           person: isPerson!,
-          timezone: timezone ? timezone.value! : dayjs.tz.guess(),
+          timezone: timezone?.value ? timezone.value : dayjs.tz.guess(),
           tracks: tracks || [],
           locations: locations || [],
           externalUrl: externalUrl || 'TBD',
@@ -407,7 +407,7 @@ export const EventForm: React.FC<EventFormProps> = ({
               </Stack>
             </Stack>
             <Stack spacing="10px" padding="20px">
-              <FormLabel>External Website</FormLabel>
+              <FormLabel>External Website*</FormLabel>
               <Controller
                 name="externalUrl"
                 control={control}

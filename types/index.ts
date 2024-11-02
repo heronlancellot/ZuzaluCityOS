@@ -250,6 +250,7 @@ export interface Session {
   liveStreamLink?: string;
   recording_link?: string;
   uuid: string;
+  isPublic?: boolean;
 }
 export type SessionSupabaseData = {
   title: string;

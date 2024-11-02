@@ -17,7 +17,8 @@ import Image from 'next/image';
 const Home = () => {
   const router = useRouter();
   const theme = useTheme();
-  const { isAuthenticated, composeClient, ceramic } = useCeramicContext();
+  const { isAuthenticated, composeClient, ceramic, profile } =
+    useCeramicContext();
 
   const [events, setEvents] = useState<Event[]>([]);
   const [tickets, setTickets] = useState<ScrollPassTickets[]>([]);
@@ -211,7 +212,7 @@ const Home = () => {
         <Stack my="60px" alignItems="center" justifyContent="center">
           <Box position="relative">
             <Image
-              src="/user/avatar_p.png"
+              src={profile?.avatar ?? '/user/avatar_p.png'}
               alt="profile"
               height={80}
               width={80}

@@ -1,13 +1,19 @@
-import { TICKET_FACTORY_ADDRESS, mUSDC_TOKEN, isDev } from '@/constant';
+import {
+  TICKET_FACTORY_ADDRESS,
+  mUSDC_TOKEN,
+  isDev,
+  resendApiKey,
+} from '@/constant';
 import { client, config } from '@/context/WalletContext';
 import { ERC20_ABI } from '@/utils/erc20_abi';
 import { TICKET_ABI } from '@/utils/ticket_abi';
 import { TICKET_WITH_WHITELIST_ABI } from '@/utils/ticket_with_whitelist_abi';
-import React, { Dispatch, useEffect, useState } from 'react';
-import { Address, parseUnits } from 'viem';
+import React, { Dispatch, useEffect, useMemo, useState } from 'react';
+import { Address, isAddress, parseUnits } from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
 import { writeContract, waitForTransactionReceipt } from 'wagmi/actions';
 import { ZuButton, ZuInput } from '@/components/core';
+import { supabase } from '@/utils/supabase/client';
 import {
   ArrowDownSquare,
   CloseIcon,
@@ -24,6 +30,7 @@ import {
   GoToExplorerIcon,
   Square2StackIcon,
   ArrowTopRightSquareIcon,
+  PlusIcon,
 } from '@/components/icons';
 import {
   Box,
@@ -39,6 +46,7 @@ import {
   List,
   ListItem,
   IconButton,
+  Collapse,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -50,6 +58,12 @@ import { send } from '@emailjs/browser';
 import { Contract, Event } from '@/types';
 import { formatAddressString } from '@/components/layout/Header';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import * as yup from 'yup';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { ButtonGroup } from '../Common';
+import { useToast } from '@/components/toast/ToastContext';
+import { Resend } from 'resend';
 interface IProps {
   amount?: string;
   recipient?: string;
@@ -856,40 +870,33 @@ export const ConfirmWithdrawalTransaction = ({
     </>
   );
 };
-const steps = [
-  {
-    label: 'Addresses being uploaded',
-    description: '0x9999...f08E',
-    // description: '0x999999cf1046e68e36E1aA2E0E07105eDDD1f08E',
-  },
-  {
-    label: 'Ticket contract updated',
-    description: '0x9999...f08E',
-    // description: '0x999999cf1046e68e36E1aA2E0E07105eDDD1f08E',
-  },
-  {
-    label: 'Sending email notifications',
-    description: '0x0184..287d6',
-  },
-  {
-    label: 'Last Step',
-    description: `desc`,
-  },
-];
-const TicketProcessingProgress = () => {
+
+interface ITicketProcessingProgress {
+  hash: string;
+  sendEmails: boolean;
+}
+
+const TicketProcessingProgress = ({
+  hash,
+  sendEmails,
+}: ITicketProcessingProgress) => {
   const [activeStep, setActiveStep] = React.useState(0);
 
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleReset = () => {
-    setActiveStep(0);
-  };
+  const steps = useMemo(() => {
+    const steps = [
+      {
+        label: 'Addresses being uploaded',
+        description: hash,
+      },
+    ];
+    if (sendEmails) {
+      steps.push({
+        label: 'Sending email notifications',
+        description: '',
+      });
+    }
+    return steps;
+  }, [hash, sendEmails]);
 
   return (
     <Box>
@@ -940,6 +947,21 @@ const TicketProcessingProgress = () => {
     </Box>
   );
 };
+
+const schema = yup.object({
+  addresses: yup.array().of(
+    yup.object({
+      address: yup
+        .string()
+        .required('Address is required')
+        .test('is-ethereum-address', 'Invalid EVM address', (value) => {
+          return value ? isAddress(value) : false;
+        }),
+    }),
+  ),
+  emails: yup.string(),
+});
+
 export const Whitelist = ({
   vaultIndex,
   ticketAddresses,
@@ -948,44 +970,65 @@ export const Whitelist = ({
   event,
   onClose,
 }: ITicketVault) => {
-  const [addresses, setAddresses] = useState<string[]>([]);
-  const [initial, setInitial] = useState<boolean>(false);
-  const [email, setEmail] = useState<boolean>(false);
-  const [process, setProcess] = useState<boolean>(false);
-  const [updated, setUpdated] = useState<boolean>(false);
-  const [emailList, setEmailList] = useState('');
+  const [openWhitelist, setOpenWhitelist] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { showToast } = useToast();
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    reset,
+  } = useForm<yup.InferType<typeof schema>>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      addresses: [{ address: '' }],
+    },
+  });
+
+  const {
+    fields: addressesFields,
+    remove: addressesRemove,
+    append: addressesAppend,
+  } = useFieldArray({
+    control,
+    name: 'addresses',
+  });
+
   let ticketAddress = ticketAddresses[vaultIndex];
   let ticket = tickets[vaultIndex];
-  const handleSendEmails = async () => {
-    const emailJsConfig = await fetchEmailJsConfig();
+
+  const handleSendEmails = async (emailList: string) => {
+    const emailJsConfig = await fetchEmailJsConfig(event?.id as string);
     if (emailJsConfig) {
       const { serviceId, templateId, userId } = emailJsConfig;
       const emails = emailList.split(',').map((email) => email.trim());
       for (const email of emails) {
-        const result = await send(
+        await send(
           serviceId,
           templateId,
           {
-            to_name: email,
-            from_name: event?.title,
-            message: 'Here is your invitation to mint the ticket.',
+            to_email: email,
           },
           userId,
         );
       }
-      setEmailList('');
     } else {
       console.log('Failed to fetch email JS config.');
     }
   };
-  const handleAddWhiteLIST = async () => {
+
+  const handleAddWhiteLIST = async (data: any) => {
     try {
+      setIsLoading(true);
+      const { addresses, emails } = data;
       const appendHash = await writeContract(config, {
         chainId: isDev ? scrollSepolia.id : scroll.id,
         address: ticketAddress as Address,
         functionName: 'appendToWhitelist',
         abi: TICKET_WITH_WHITELIST_ABI,
-        args: [addresses],
+        args: [addresses.map((address: any) => address.address)],
       });
 
       const { status: appendStatus } = await waitForTransactionReceipt(config, {
@@ -994,14 +1037,19 @@ export const Whitelist = ({
       });
 
       if (appendStatus === 'success') {
-        setUpdated(true);
+        showToast({
+          message: 'Addresses added to whitelist',
+        });
         refetch?.();
-        if (emailList.length > 0) {
-          await handleSendEmails();
+        reset();
+        if (emails.length > 0) {
+          await handleSendEmails(emails);
         }
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1024,7 +1072,7 @@ export const Whitelist = ({
     reader.onload = function () {
       const text = reader.result as string;
       const lines = text.split('\n').map((line) => line.trim());
-      const newAddress = [...addresses];
+      const newAddress = [...addressesFields.map((field) => field.address)];
       const isAddress = (add: string) => {
         if (add.length !== 42) return false;
         return /^0x[a-fA-F0-9]{40}$/.test(add);
@@ -1035,7 +1083,10 @@ export const Whitelist = ({
         }
       });
 
-      setAddresses(newAddress);
+      setValue(
+        'addresses',
+        newAddress.map((address) => ({ address })),
+      );
     };
     reader.readAsText(file);
   };
@@ -1048,295 +1099,177 @@ export const Whitelist = ({
           <Typography variant="subtitleMB">Whitelist</Typography>
         </Stack>
         <Stack direction="row" spacing="10px" alignItems="center">
-          <Typography variant="bodyS">Total Invites Sent:</Typography>
-          <Typography variant="bodyMB">00</Typography>
+          <Typography variant="bodyS" sx={{ opacity: 0.8 }}>
+            Total Invites Sent:
+          </Typography>
+          <Typography variant="bodyMB">0</Typography>
         </Stack>
       </Stack>
-      {!initial && !email && !process && (
-        <>
-          <Stack spacing="20px">
-            {addresses.length === 0 ? (
-              <Stack spacing="10px">
-                <Typography variant="bodyBB">
-                  Input Approved Addresses
-                </Typography>
-                <Typography variant="bodyM">
-                  Upload addresses of individuals to directly gain access to
-                  mint this ticket. These users will interact and pay the set
-                  contributing amount of the ticket.
-                </Typography>
-              </Stack>
-            ) : (
-              <Stack spacing="20px">
-                <Stack spacing="10px">
-                  <Typography variant="bodyBB">Approved Addresses</Typography>
-                  <Typography variant="bodyM">
-                    Upload addresses of individuals to directly gain access to
-                    mint this ticket. These users will interact and pay the set
-                    contributing amount of the ticket.
-                  </Typography>
-                </Stack>
-                <Stack spacing="20px">
-                  <Typography variant="bodyBB">Upload file</Typography>
-                  <Typography variant="bodyM">
-                    <Button
-                      component="label"
-                      role={undefined}
-                      variant="contained"
-                      tabIndex={-1}
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      Upload addresses file
-                      <VisuallyHiddenInput
-                        onChange={handleChangeFile}
-                        accept=".csv, .text, .txt"
-                        type="file"
-                      />
-                    </Button>
-                  </Typography>
-                </Stack>
-                <Stack spacing="20px">
-                  {addresses.map((item, index) => (
-                    <Stack spacing="10px" key={`InviteAddressIndex-${index}`}>
-                      <Typography variant="bodyBB">Address (eth)</Typography>
-                      <Stack direction="row" spacing="10px" alignItems="center">
-                        <ZuInput
-                          value={item}
-                          onChange={(e) =>
-                            setAddresses((prev) =>
-                              prev.map((item, i) =>
-                                i === index ? e.target.value : item,
-                              ),
-                            )
+      <Stack spacing="20px">
+        <Stack spacing="10px">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="bodyBB">Approved Addresses</Typography>
+            <Button
+              component="label"
+              role={undefined}
+              tabIndex={-1}
+              sx={{
+                p: '3px 14px',
+                color: '#fff',
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: '10px',
+              }}
+            >
+              Import Addresses (CSV)
+              <VisuallyHiddenInput
+                onChange={handleChangeFile}
+                accept=".csv, .text, .txt"
+                type="file"
+              />
+            </Button>
+          </Stack>
+          <Typography variant="bodyM" sx={{ opacity: 0.8 }}>
+            Upload addresses of individuals to directly gain access to mint this
+            ticket. These users will directly interact and pay the set
+            contributing amount to the ticket contract.
+          </Typography>
+          {addressesFields.length ? (
+            <Stack spacing="20px" sx={{ mt: '20px !important' }}>
+              {addressesFields.map((field, index) => (
+                <Stack spacing="10px" key={field.id}>
+                  <Stack direction="row" spacing="10px" alignItems="center">
+                    <Controller
+                      control={control}
+                      name={`addresses.${index}.address`}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          fullWidth
+                          error={!!errors.addresses?.[index]}
+                          helperText={
+                            errors.addresses?.[index]?.address?.message
                           }
                         />
-                        <Box
-                          padding="8px 10px 6px 10px"
-                          bgcolor="#373737"
-                          borderRadius="10px"
-                          sx={{ cursor: 'pointer' }}
-                          onClick={() =>
-                            setAddresses((prev) =>
-                              prev.filter((_, i) => i !== index),
-                            )
-                          }
-                        >
-                          <XCricleIcon />
-                        </Box>
-                      </Stack>
-                    </Stack>
-                  ))}
-                </Stack>
-              </Stack>
-            )}
-            <Stack
-              onClick={() => {
-                setAddresses((prev) => {
-                  const newState = [...prev, ''];
-                  return newState;
-                });
-              }}
-              sx={{ cursor: 'pointer' }}
-              direction="row"
-              spacing="10px"
-              padding="8px 14px"
-              justifyContent="center"
-              borderRadius="10px"
-              bgcolor="#313131"
-              alignItems="center"
-            >
-              <PlusCircleIcon />
-              <Typography variant="bodyM">Add Address</Typography>
-            </Stack>
-            <Stack
-              sx={{ cursor: 'pointer' }}
-              spacing="10px"
-              padding="10px 20px"
-              borderRadius="10px"
-              border="1px solid #383838"
-            >
-              <Stack direction="row" justifyContent="center" spacing="10px">
-                <Typography variant="bodyM">
-                  View existing list of addresses added
-                </Typography>
-                <ChevronDownIcon size={4.5} />
-              </Stack>
-              <Stack spacing="10px">
-                {ticket[9]?.result &&
-                  ticket[9].result.map((address: string, index: number) => (
-                    <Stack
-                      key={index}
-                      direction="row"
-                      spacing="10px"
-                      alignItems="center"
+                      )}
+                    />
+                    <IconButton
+                      disabled={addressesFields.length === 1}
+                      onClick={() =>
+                        addressesFields.length > 1 && addressesRemove(index)
+                      }
                     >
-                      <Typography
-                        fontSize={16}
-                        fontWeight={600}
-                        lineHeight={1.2}
-                        sx={{ opacity: 0.8 }}
-                      >
-                        {formatAddressString(address)}
-                      </Typography>
-                      <CopyToClipboard text={address || ''}>
-                        <IconButton
-                          sx={{ p: 0, color: 'rgba(255, 255, 255, 0.5)' }}
-                        >
-                          <Square2StackIcon size={4.5} />
-                        </IconButton>
-                      </CopyToClipboard>
-
-                      <IconButton
-                        sx={{
-                          p: 0,
-                          color: 'rgba(255, 255, 255, 0.5)',
-                          position: 'relative',
-                          top: '-1px',
-                        }}
-                        onClick={() => {
-                          window.open(
-                            `https://scrollscan.com/address/${address}`,
-                            '_blank',
-                          );
-                        }}
-                      >
-                        <ArrowTopRightSquareIcon size={4.5} />
-                      </IconButton>
-                    </Stack>
-                  ))}
-              </Stack>
+                      <XCricleIcon size={6} color="rgba(255, 255, 255, 0.5)" />
+                    </IconButton>
+                  </Stack>
+                </Stack>
+              ))}
             </Stack>
-          </Stack>
-          <ZuButton
-            sx={{
-              backgroundColor: '#2f474e',
-              color: '#67DAFF',
-              width: '100%',
-            }}
-            startIcon={<RightArrowIcon color="#67DAFF" />}
-            onClick={() => {
-              setEmail(true);
-            }}
-          >
-            Next Step
-          </ZuButton>
-        </>
-      )}
-      {!initial && email && !process && (
-        <>
-          <Stack spacing="10px">
-            <Typography variant="bodyBB">
-              Send email invitations (optional)
-            </Typography>
-            <Typography variant="bodyM" sx={{ opacity: 0.8 }}>
-              Input corresponding emails of the eth addresses to be sent a
-              notification link to mint this ticket.
-            </Typography>
+          ) : null}
+        </Stack>
+        <ZuButton
+          startIcon={<PlusIcon size={4} />}
+          sx={{ width: '100%', p: '10px', fontWeight: 600 }}
+          onClick={() => addressesAppend({ address: '' })}
+        >
+          Add Address
+        </ZuButton>
+      </Stack>
+      <Stack spacing="10px">
+        <Typography variant="bodyBB">
+          Send email invitations (optional)
+        </Typography>
+        <Typography variant="bodyM" sx={{ opacity: 0.8 }}>
+          Input corresponding emails of the eth addresses to be sent a
+          notification link to mint this ticket.
+        </Typography>
+        <Controller
+          control={control}
+          name="emails"
+          render={({ field }) => (
             <TextField
               multiline
               rows={4}
-              value={emailList}
-              onChange={(e) => setEmailList(e.target.value)}
               placeholder="simon@ecf.network, reno@ecf.network"
-              sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                borderRadius: '10px',
-                border: 'none',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  border: 'none',
-                },
-              }}
+              {...field}
             />
-            <Stack
-              sx={{ cursor: 'pointer' }}
-              direction="row"
-              spacing="10px"
-              padding="10px 20px"
-              justifyContent="center"
-              borderRadius="10px"
-              border="1px solid #383838"
-            >
-              <Typography variant="bodyM">
-                View existing list of addresses added
-              </Typography>
-              <ChevronDownIcon size={4.5} />
-            </Stack>
-          </Stack>
-          <Stack direction="row" spacing="20px">
-            <ZuButton
-              sx={{
-                width: '100%',
-              }}
-              startIcon={<LeftArrowIcon />}
-              onClick={() => setEmail(false)}
-            >
-              Back
-            </ZuButton>
-            <ZuButton
-              sx={{
-                backgroundColor: '#2f474e',
-                color: '#67DAFF',
-                width: '100%',
-              }}
-              startIcon={<RightArrowIcon color="#67DAFF" />}
-              onClick={() => {
-                handleAddWhiteLIST();
-                setProcess(true);
-                setEmail(false);
-              }}
-            >
-              Upload & Send
-            </ZuButton>
-          </Stack>
-        </>
-      )}
-      {!initial && !email && process && (
-        <>
-          {!updated ? (
-            <Stack padding="10px" borderRadius="10px" bgcolor="#313131">
-              <Typography variant="bodyM" textAlign="center">
-                Contract being updated...
-              </Typography>
-            </Stack>
-          ) : (
-            <Stack
-              direction="row"
-              padding="10px"
-              borderRadius="10px"
-              bgcolor="rgba(125, 255, 209, 0.10)"
-              justifyContent="center"
-              spacing="10px"
-            >
-              <CheckIcon />
-              <Typography variant="bodyM" textAlign="center" color="#7DFFD1">
-                Contract Updated
-              </Typography>
-            </Stack>
           )}
-          <TicketProcessingProgress />
-          {updated && (
-            <ZuButton
-              onClick={() => {
-                setInitial(false);
-                setProcess(false);
-                setEmail(false);
-                setUpdated(false);
-                setEmailList('');
-                setAddresses([]);
-                onClose?.();
-              }}
-              sx={{
-                backgroundColor: '#2f474e',
-                color: '#67DAFF',
-                width: '100%',
-              }}
-              startIcon={<XCricleIcon color="#67DAFF" />}
-            >
-              Close
-            </ZuButton>
-          )}
-        </>
-      )}
+        />
+      </Stack>
+      <Stack
+        sx={{ cursor: 'pointer' }}
+        padding="10px 20px"
+        borderRadius="10px"
+        border="1px solid #383838"
+      >
+        <Stack
+          direction="row"
+          justifyContent="center"
+          spacing="10px"
+          onClick={() => setOpenWhitelist((v) => !v)}
+        >
+          <Typography variant="bodyM">
+            View existing list of addresses added
+          </Typography>
+          <ChevronDownIcon size={4.5} />
+        </Stack>
+        <Collapse in={openWhitelist}>
+          <Stack spacing="10px" mt="10px">
+            {ticket[9]?.result &&
+              ticket[9].result.map((address: string, index: number) => (
+                <Stack
+                  key={index}
+                  direction="row"
+                  spacing="10px"
+                  alignItems="center"
+                >
+                  <Typography
+                    fontSize={16}
+                    fontWeight={600}
+                    lineHeight={1.2}
+                    sx={{ opacity: 0.8 }}
+                  >
+                    {formatAddressString(address)}
+                  </Typography>
+                  <CopyToClipboard text={address || ''}>
+                    <IconButton
+                      sx={{ p: 0, color: 'rgba(255, 255, 255, 0.5)' }}
+                    >
+                      <Square2StackIcon size={4.5} />
+                    </IconButton>
+                  </CopyToClipboard>
+
+                  <IconButton
+                    sx={{
+                      p: 0,
+                      color: 'rgba(255, 255, 255, 0.5)',
+                      position: 'relative',
+                      top: '-1px',
+                    }}
+                    onClick={() => {
+                      window.open(
+                        `https://scrollscan.com/address/${address}`,
+                        '_blank',
+                      );
+                    }}
+                  >
+                    <ArrowTopRightSquareIcon size={4.5} />
+                  </IconButton>
+                </Stack>
+              ))}
+          </Stack>
+        </Collapse>
+      </Stack>
+      <ButtonGroup
+        handleBack={onClose!}
+        handleNext={handleSubmit(handleAddWhiteLIST)}
+        isConfirmButton
+        isBackButton={false}
+        isLoading={isLoading}
+      />
     </Stack>
   );
 };

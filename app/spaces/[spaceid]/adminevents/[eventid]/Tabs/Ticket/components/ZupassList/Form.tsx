@@ -10,7 +10,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateRegAndAccess } from '@/services/event/regAndAccess';
 import { RegistrationAndAccess, ZuPassInfo } from '@/types';
 import { useParams } from 'next/navigation';
-import { EdDSAPublicKey } from '@pcd/eddsa-pcd';
 
 interface FormProps {
   regAndAccess?: RegistrationAndAccess;

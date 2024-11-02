@@ -98,7 +98,6 @@ export default function NewUserPromptModal({
               ceramic?.did?.parent &&
               !hasProcessedNullifier.current
             ) {
-              console.log('nullifierHash', nullifierHash);
               setStage('Updating');
               const addZupassMemberInput = {
                 eventId: eventId,

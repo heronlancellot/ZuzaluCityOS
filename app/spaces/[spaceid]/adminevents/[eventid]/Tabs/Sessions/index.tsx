@@ -786,7 +786,7 @@ const Sessions = () => {
                             <Stack spacing="4px">
                               <FormLabel>{sessionLocation}</FormLabel>
                               {/*} <FormLabelDesc>
-                                Sessions booked: {bookedSessions.length}
+                                Sessions booked: {bookedmap(length}
                               </FormLabelDesc>*/}
                               <Typography
                                 variant="caption"
