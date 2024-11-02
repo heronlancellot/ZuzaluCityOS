@@ -434,7 +434,7 @@ export const Tickets: React.FC<IProps> = ({
       if (filteredResults.length > 0) {
         const firstTicket = filteredResults[0].ticket;
         const decimalValue = (await client.readContract({
-          address: firstTicket[2]?.result,
+          address: firstTicket[3]?.result,
           abi: ERC20_ABI,
           functionName: 'decimals',
         })) as number;
@@ -676,7 +676,7 @@ export const Mint: React.FC<IProps> = ({
     const fetchDecimals = async () => {
       if (mintTicket) {
         const decimalValue = (await client.readContract({
-          address: mintTicket.ticket[2]?.result,
+          address: mintTicket.ticket[3]?.result,
           abi: ERC20_ABI,
           functionName: 'decimals',
         })) as number;
@@ -1095,7 +1095,7 @@ export const Complete: React.FC<IProps> = ({
     const fetchDecimals = async () => {
       if (ticketMinted) {
         const decimalValue = (await client.readContract({
-          address: ticketMinted[2]?.result,
+          address: ticketMinted[3]?.result,
           abi: ERC20_ABI,
           functionName: 'decimals',
         })) as number;
