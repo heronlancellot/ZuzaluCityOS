@@ -16,8 +16,7 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const slideWidth = useRef(0); // To store calculated slide width
-
+  const slideWidth = useRef(0);
   useEffect(() => {
     slideWidth.current = carouselRef.current
       ? carouselRef.current.offsetWidth / items.length
@@ -25,7 +24,7 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
   }, [items]); // Recalculate on item change
 
   const handleTouchMove = (event: React.MouseEvent) => {
-    const deltaX = event.movementX || 0; // Handle compatibility with older browsers
+    const deltaX = event.movementX || 0;
     if (Math.abs(deltaX) > slideWidth.current / 2) {
       deltaX > 0
         ? setCurrentIndex((prev) => Math.max(prev - 1, 0))

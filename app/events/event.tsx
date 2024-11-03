@@ -20,7 +20,7 @@ import { EventCard, LotteryCard } from '@/components/cards';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useCeramicContext } from '../../context/CeramicContext';
-import { Event, EventData } from '@/types';
+import { Event, EventData, LegacyEvent } from '@/types';
 import { EventIcon, SearchIcon } from '@/components/icons';
 import EventHeader from './components/EventHeader';
 import {
@@ -28,6 +28,7 @@ import {
   EventCardSkeleton,
   groupEventsByMonth,
 } from '@/components/cards/EventCard';
+import { supabase } from '@/utils/supabase/client';
 
 const EventsPage: React.FC = () => {
   const theme = useTheme();
@@ -39,26 +40,42 @@ const EventsPage: React.FC = () => {
   const { composeClient } = useCeramicContext();
 
   const getEvents = async () => {
-    setIsEventsLoading(true);
-    const response: any = await composeClient.executeQuery(`
+    try {
+      setIsEventsLoading(true);
+
+      const ceramicResponse: any = await composeClient.executeQuery(`
       query {
-        zucityEventIndex(first: 20) {
+        zucityEventIndex(first: 20, sorting: { createdAt: DESC }) {
           edges {
             node {
-              id
-              title
+              createdAt
               description
-              startTime
               endTime
-              timezone
-              status
-              tagline
-              imageUrl
               externalUrl
+              gated
+              id
+              imageUrl
               meetingUrl
               profileId
               spaceId
-              createdAt
+              startTime
+              status
+              tagline
+              timezone
+              title
+              members{
+              id
+              }
+              admins{
+              id
+              }
+              superAdmin{
+              id
+              }
+              profile {
+                username
+                avatar
+              }
               space {
                 name
                 avatar
@@ -69,21 +86,68 @@ const EventsPage: React.FC = () => {
         }
       }
     `);
-    if ('zucityEventIndex' in response.data) {
-      const eventData: EventData = response.data as EventData;
-      const fetchedEvents: Event[] = eventData.zucityEventIndex.edges.map(
-        (edge) => edge.node,
-      );
-      const searchedEvents: Event[] = fetchedEvents.filter((item) => {
-        return item?.title.toLowerCase().includes(searchVal?.toLowerCase());
-      });
-      if (searchedEvents?.length > 0) {
-        setEvents(searchedEvents);
-      } else {
-        setEvents(fetchedEvents);
+
+      const { data: legacyEvents, error } = await supabase
+        .from('legacyEvents')
+        .select('*');
+
+      if (error) throw error;
+
+      let allEvents: Event[] = [];
+      if (ceramicResponse?.data?.zucityEventIndex) {
+        const ceramicEvents: Event[] =
+          ceramicResponse.data.zucityEventIndex.edges.map((edge: any) => ({
+            ...edge.node,
+            source: 'ceramic',
+          }));
+        allEvents = [...ceramicEvents];
       }
-    } else {
-      console.error('Invalid data structure:', response.data);
+
+      if (legacyEvents) {
+        const convertedLegacyEvents: Event[] = legacyEvents
+          .filter((legacy): legacy is NonNullable<typeof legacy> => !!legacy.id)
+          .map((legacy) => ({
+            id: legacy.id,
+            title: legacy.name ?? '',
+            description: legacy.description ?? '',
+            startTime: legacy.start_date ?? '',
+            endTime: legacy.end_date ?? '',
+            status: legacy.status ?? '',
+            tagline: legacy.tagline ?? '',
+            imageUrl: legacy.image_url ?? '',
+            profileId: '',
+            spaceId: '',
+            timezone: 'UTC',
+            tracks: legacy.event_type || [],
+            source: 'Legacy',
+            participantCount: 0,
+            minParticipant: 0,
+            maxParticipant: 0,
+            createdAt: legacy.start_date,
+            gated: false,
+            externalUrl: '',
+            meetingUrl: '',
+            legacyData: {
+              event_space_type: legacy.event_space_type,
+              format: legacy.format,
+              experience_level: legacy.experience_level,
+              social_links: legacy.social_links,
+              extra_links: legacy.extra_links,
+            },
+          }));
+        allEvents = [...allEvents, ...convertedLegacyEvents];
+      }
+
+      allEvents.sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
+
+      setEvents(allEvents);
+      setIsEventsLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+      setIsEventsLoading(false);
     }
   };
 

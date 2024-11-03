@@ -519,7 +519,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
               imageUrl={eventData.imageUrl}
               status={eventData.status}
             />
-            {isMobile && eventData.regAndAccess.edges[0] ? (
+            {isMobile && eventData.regAndAccess?.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
@@ -647,7 +647,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
               },
             }}
           >
-            {!isMobile && eventData.regAndAccess.edges[0] ? (
+            {!isMobile && eventData.regAndAccess?.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
@@ -655,7 +655,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
-                eventRegistration={eventData.regAndAccess.edges[0].node}
+                eventRegistration={eventData.regAndAccess?.edges[0]?.node}
                 setApplication={setApplication}
                 event={eventData}
               />

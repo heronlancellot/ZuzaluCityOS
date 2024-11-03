@@ -97,7 +97,9 @@ export const Verify: React.FC<IProps> = ({
         address: TICKET_FACTORY_ADDRESS as Address,
         abi: TICKET_FACTORY_ABI as Abi,
         functionName: 'getTickets',
-        args: [event?.regAndAccess.edges[0].node.scrollPassContractFactoryID],
+        args: [
+          event?.regAndAccess?.edges[0]?.node?.scrollPassContractFactoryID,
+        ],
       })) as Array<string>;
       setTicketAddresses(getTicketAddresses);
       if (getTicketAddresses?.length > 0) {

@@ -30,6 +30,8 @@ import React, { Fragment, useEffect, useMemo, useState } from 'react';
 import { EventComingSoonCard } from '@/components/cards/ComingSoonCard';
 import { getSpacesQuery } from '@/services/space';
 import Banner from './components/Banner';
+import { supabase } from '@/utils/supabase/client';
+import { LegacyEvent } from '@/types';
 
 const Home: React.FC = () => {
   const theme = useTheme();
@@ -87,7 +89,9 @@ const Home: React.FC = () => {
   const getEvents = async () => {
     try {
       setIsEventsLoading(true);
-      const response: any = await composeClient.executeQuery(`
+
+      // 獲取 Ceramic 事件
+      const ceramicResponse: any = await composeClient.executeQuery(`
       query {
         zucityEventIndex(first: 20, sorting: { createdAt: DESC }) {
           edges {
@@ -131,16 +135,68 @@ const Home: React.FC = () => {
       }
     `);
 
-      if (response && response.data && 'zucityEventIndex' in response.data) {
-        const eventData: EventData = response.data as EventData;
-        const fetchedEvents: Event[] = eventData.zucityEventIndex.edges.map(
-          (edge) => edge.node,
-        );
-        setEvents(fetchedEvents);
-        setIsEventsLoading(false);
-        const getEvent =
-          fetchedEvents &&
-          fetchedEvents.find((event) => event.id === dashboardEvent);
+      const { data: legacyEvents, error } = await supabase
+        .from('legacyEvents')
+        .select('*');
+
+      if (error) throw error;
+
+      // 處理 Ceramic 事件
+      let allEvents: Event[] = [];
+      if (ceramicResponse?.data?.zucityEventIndex) {
+        const ceramicEvents: Event[] =
+          ceramicResponse.data.zucityEventIndex.edges.map((edge: any) => ({
+            ...edge.node,
+            source: 'ceramic', // 添加來源標識
+          }));
+        allEvents = [...ceramicEvents];
+      }
+
+      if (legacyEvents) {
+        const convertedLegacyEvents: Event[] = legacyEvents
+          .filter((legacy): legacy is NonNullable<typeof legacy> => !!legacy.id)
+          .map((legacy) => ({
+            id: legacy.id,
+            title: legacy.name ?? '',
+            description: legacy.description ?? '',
+            startTime: legacy.start_date ?? '',
+            endTime: legacy.end_date ?? '',
+            status: legacy.status ?? '',
+            tagline: legacy.tagline ?? '',
+            imageUrl: legacy.image_url ?? '',
+            profileId: '',
+            spaceId: '',
+            timezone: 'UTC',
+            tracks: legacy.event_type || [],
+            source: 'Legacy',
+            participantCount: 0,
+            minParticipant: 0,
+            maxParticipant: 0,
+            createdAt: legacy.start_date,
+            gated: false,
+            externalUrl: '',
+            meetingUrl: '',
+            legacyData: {
+              event_space_type: legacy.event_space_type,
+              format: legacy.format,
+              experience_level: legacy.experience_level,
+              social_links: legacy.social_links,
+              extra_links: legacy.extra_links,
+            },
+          }));
+        allEvents = [...allEvents, ...convertedLegacyEvents];
+      }
+
+      allEvents.sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
+
+      setEvents(allEvents);
+      setIsEventsLoading(false);
+
+      const getEvent = allEvents.find((event) => event.id === dashboardEvent);
+      if (getEvent) {
         setTargetEvent(getEvent);
         const userDid = ceramic.did?.parent.toString().toLowerCase() || '';
         if (getEvent) {
@@ -162,11 +218,10 @@ const Home: React.FC = () => {
             setTargetEventView(canView);
           }
         }
-      } else {
-        console.error('Invalid data structure:', response.data);
       }
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      setIsEventsLoading(false);
     }
   };
 

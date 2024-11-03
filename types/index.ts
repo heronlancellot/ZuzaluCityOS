@@ -47,6 +47,8 @@ export interface Event {
   minParticipant: number;
   maxParticipant: number;
   createdAt: string;
+  source?: string;
+  legacyData?: LegacyEvent;
   space?: {
     id?: string;
     name?: string;
@@ -61,22 +63,22 @@ export interface Event {
   };
   customLinks?: [Link];
   tracks?: string;
-  regAndAccess: {
+  regAndAccess?: {
     edges: [
       {
         node: RegistrationAndAccess;
       },
     ];
   };
-  applicationForms: {
+  applicationForms?: {
     edges: [
       {
         node: ApplicationForm;
       },
     ];
   };
-  sessionStorage: string;
-  supportChain: string;
+  sessionStorage?: string;
+  supportChain?: string;
   admins?: {
     id: string;
   }[];
@@ -87,7 +89,24 @@ export interface Event {
     id: string;
   }[];
 }
-
+export interface LegacyEvent {
+  id?: string;
+  name?: string;
+  event_space_type?: string;
+  status?: string;
+  start_date?: string;
+  end_date?: string;
+  description?: string;
+  format?: string;
+  event_type?: string[];
+  experience_level?: string[];
+  creator_id?: string;
+  tagline?: string;
+  social_links?: string;
+  extra_links?: string;
+  image_url?: string;
+  main_location_id?: string;
+}
 export interface RegistrationAndAccess {
   applyRule: string;
   applyOption: string;
