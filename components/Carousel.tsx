@@ -52,6 +52,13 @@ const Carousel: React.FC<CarouselProps> = ({ items }) => {
         overflowX: 'auto',
         gap: '10px',
         scrollbarWidth: 'thin',
+        paddingBottom: '10px',
+        '&::-webkit-scrollbar': {
+          height: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          marginBottom: '10px',
+        },
       }}
     >
       {items.map((item) => (

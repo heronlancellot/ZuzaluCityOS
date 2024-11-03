@@ -72,7 +72,10 @@ const Home: React.FC = () => {
         let fetchedSpaces: Space[] = spaceData.zucitySpaceIndex.edges.map(
           (edge) => edge.node,
         );
-        setSpaces(fetchedSpaces);
+        const shuffledSpaces = [...fetchedSpaces].sort(
+          () => Math.random() - 0.5,
+        );
+        setSpaces(shuffledSpaces);
       } else {
         console.error('Invalid data structure:', response.data);
       }
@@ -396,7 +399,7 @@ const Home: React.FC = () => {
                   variant="bodyM"
                   sx={{ opacity: '0.5', fontSize: '12px' }}
                 >
-                  Newest Spaces
+                  Random Spaces
                 </Typography>
               </Box>
               {spaces.length > 0 ? (
