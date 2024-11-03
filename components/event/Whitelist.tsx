@@ -962,7 +962,7 @@ export const Mint: React.FC<IProps> = ({
                   }}
                   disabled={isMinting}
                 >
-                  Mint Ticket
+                  Sign Transaction
                 </ZuButton>
               </Stack>
             </Stack>
