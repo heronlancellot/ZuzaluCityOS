@@ -246,27 +246,59 @@ const Overview = () => {
       });
   };
   const deleteSpace = async () => {
-    try {
-      const enableIndexingSpaceMutation = `mutation enableIndexingZucitySpace($input: EnableIndexingZucitySpaceInput!) {
-      enableIndexingZucitySpace(input: $input) {
-        document {
-          id
+    showDialog({
+      title: 'Delete Space',
+      message:
+        'This action cannot be undone. Are you sure you want to delete this space?',
+      confirmText: 'Delete',
+      showActions: true,
+      onConfirm: async () => {
+        try {
+          showDialog({
+            title: 'Deleting',
+            message: 'Deleting your space...',
+            showActions: false,
+          });
+
+          const enableIndexingSpaceMutation = `mutation enableIndexingZucitySpace($input: EnableIndexingZucitySpaceInput!) {
+            enableIndexingZucitySpace(input: $input) {
+              document {
+                id
+              }
+            }
+          }`;
+
+          const response = await composeClient.executeQuery(
+            enableIndexingSpaceMutation,
+            {
+              input: {
+                id: params.spaceid,
+                shouldIndex: false,
+              },
+            },
+          );
+
+          showDialog({
+            title: 'Successfully Deleted',
+            message: 'Your space has been deleted',
+            showActions: true,
+            confirmText: 'OK',
+            onConfirm: () => {
+              hideDialog();
+              router.push('/');
+            },
+          });
+        } catch (error) {
+          console.error('Failed to delete space:', error);
+          showDialog({
+            title: 'Failed to Delete',
+            message: 'An error occurred while deleting the space',
+            showActions: true,
+            confirmText: 'OK',
+          });
         }
-      }
-    }`;
-      const response = await composeClient.executeQuery(
-        enableIndexingSpaceMutation,
-        {
-          input: {
-            id: params.spaceid,
-            shouldIndex: false,
-          },
-        },
-      );
-      router.push('/');
-    } catch (error) {
-      console.error('Failed to update space:', error);
-    }
+      },
+    });
   };
 
   const handleAddSocialLink = () => {
