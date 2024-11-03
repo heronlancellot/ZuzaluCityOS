@@ -90,7 +90,6 @@ const Home: React.FC = () => {
     try {
       setIsEventsLoading(true);
 
-      // 獲取 Ceramic 事件
       const ceramicResponse: any = await composeClient.executeQuery(`
       query {
         zucityEventIndex(first: 20, sorting: { createdAt: DESC }) {
@@ -141,13 +140,12 @@ const Home: React.FC = () => {
 
       if (error) throw error;
 
-      // 處理 Ceramic 事件
       let allEvents: Event[] = [];
       if (ceramicResponse?.data?.zucityEventIndex) {
         const ceramicEvents: Event[] =
           ceramicResponse.data.zucityEventIndex.edges.map((edge: any) => ({
             ...edge.node,
-            source: 'ceramic', // 添加來源標識
+            source: 'ceramic',
           }));
         allEvents = [...ceramicEvents];
       }

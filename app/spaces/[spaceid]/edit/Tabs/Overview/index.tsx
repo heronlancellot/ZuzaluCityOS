@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Box,
@@ -7,6 +7,9 @@ import {
   Stack,
   Typography,
   useTheme,
+  Select,
+  MenuItem,
+  TextField,
 } from '@mui/material';
 import { ZuInput, ZuButton } from '@/components/core';
 import { Uploader3 } from '@lxdao/uploader3';
@@ -18,7 +21,10 @@ import { useEditorStore } from '@/components/editor/useEditorStore';
 import SaveAsRoundedIcon from '@mui/icons-material/SaveAsRounded';
 import { createUrl, createUrlWhenEdit } from '@/services/url';
 import { covertNameToUrlName } from '@/utils/format';
-
+import CancelIcon from '@mui/icons-material/Cancel';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { SOCIAL_TYPES } from '@/constant';
+import { useDialog } from '@/components/dialog/DialogContext';
 import dynamic from 'next/dynamic';
 const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
   ssr: false,
@@ -36,6 +42,19 @@ const Overview = () => {
   const bannerUploader = useUploaderPreview();
   const router = useRouter();
   const descriptionEditorStore = useEditorStore();
+
+  const [socialLinks, setSocialLinks] = useState<number[]>([0]);
+  const [customLinks, setCustomLinks] = useState<number[]>([0]);
+  const socialLinksRef = useRef<HTMLDivElement>(null);
+  const customLinksRef = useRef<HTMLDivElement>(null);
+
+  const [socialLinksData, setSocialLinksData] = useState<{
+    [key: string]: string;
+  }>({});
+  const [customLinksData, setCustomLinksData] = useState<
+    { title: string; url: string }[]
+  >([]);
+  const { showDialog, hideDialog } = useDialog();
 
   const getSpace = useCallback(async () => {
     try {
@@ -59,6 +78,10 @@ const Overview = () => {
               github
               discord
               ens
+              customLinks {
+                title
+                links
+              }
             }
           }
         }
@@ -73,6 +96,32 @@ const Overview = () => {
       bannerUploader.setUrl(editSpace.banner);
       descriptionEditorStore.setValue(editSpace.description);
       setTagline(editSpace.tagline);
+
+      const socialData: { [key: string]: string } = {};
+      SOCIAL_TYPES.forEach((type) => {
+        const value = editSpace[type.key as keyof Space];
+        if (value && typeof value === 'string' && value.trim() !== '') {
+          socialData[type.key] = value;
+        }
+      });
+
+      const existingLinksCount = Object.keys(socialData).length;
+      if (existingLinksCount > 0) {
+        setSocialLinksData(socialData);
+        setSocialLinks(Array.from({ length: existingLinksCount }, (_, i) => i));
+      }
+
+      if (editSpace.customLinks && editSpace.customLinks.length > 0) {
+        setCustomLinksData(
+          editSpace.customLinks.map((link) => ({
+            title: link.title,
+            url: link.links,
+          })),
+        );
+        setCustomLinks(
+          Array.from({ length: editSpace.customLinks.length }, (_, i) => i),
+        );
+      }
     } catch (error) {
       console.error('Failed to fetch spaces:', error);
     }
@@ -86,9 +135,23 @@ const Overview = () => {
       avatar: string;
       banner: string;
       description: string;
+      github?: string;
+      twitter?: string;
+      telegram?: string;
+      nostr?: string;
+      lens?: string;
+      discord?: string;
+      ens?: string;
+      customLinks?: { title: string; links: string }[];
     }) => {
-      const { id, name, tagline, avatar, banner, description } = data;
       try {
+        showDialog({
+          title: 'Updating',
+          message: 'Updating your space information...',
+        });
+
+        const { id, ...contentData } = data;
+
         const query = `
           mutation UpdateZucitySpace($i: UpdateZucitySpaceInput!) {
             updateZucitySpace(input: $i) {
@@ -98,28 +161,39 @@ const Overview = () => {
             }
           }
         `;
-        const variables = {
+
+        const response = await composeClient.executeQuery(query, {
           i: {
-            id,
-            content: {
-              name,
-              tagline,
-              avatar,
-              banner,
-              description,
-            },
+            id: id,
+            content: contentData,
           },
-        };
-        await composeClient.executeQuery(query, variables);
-        if (name !== space?.name) {
-          const urlName = covertNameToUrlName(name);
-          await createUrlWhenEdit(urlName, id, 'spaces');
+        });
+
+        if (data.name !== space?.name) {
+          const urlName = covertNameToUrlName(data.name);
+          await createUrlWhenEdit(urlName, data.id, 'spaces');
         }
+        await getSpace();
+
+        showDialog({
+          title: 'Succesfully updated',
+          message: 'Your space information has been updated',
+          onConfirm: () => {
+            hideDialog();
+          },
+        });
       } catch (error) {
         console.error('Failed to update space:', error);
+        showDialog({
+          title: 'Failed to update',
+          message: 'Failed to update space information: ' + error,
+          onConfirm: () => {
+            hideDialog();
+          },
+        });
       }
     },
-    [space?.name],
+    [space?.name, showDialog, getSpace],
   );
 
   useEffect(() => {
@@ -129,7 +203,7 @@ const Overview = () => {
   }, []);
 
   const save = () => {
-    const data = {
+    const baseData = {
       id: space!.id,
       name,
       tagline,
@@ -137,7 +211,32 @@ const Overview = () => {
       banner: bannerUploader.getUrl() as string,
       description: descriptionEditorStore.getValueString(),
     };
-    console.log('data', data);
+
+    const socialData = Object.entries(socialLinksData).reduce(
+      (acc, [key, value]) => {
+        if (value?.trim()) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    const customLinksField =
+      customLinksData.length > 0
+        ? {
+            customLinks: customLinksData.map((link) => ({
+              title: link.title,
+              links: link.url,
+            })),
+          }
+        : {};
+
+    const data = {
+      ...baseData,
+      ...socialData,
+      ...customLinksField,
+    };
     updateSpace(data)
       .then((res) => {
         console.info('Space updated:', res);
@@ -169,6 +268,37 @@ const Overview = () => {
       console.error('Failed to update space:', error);
     }
   };
+
+  const handleAddSocialLink = () => {
+    if (socialLinks.length === 0) {
+      setSocialLinks([0]);
+      return;
+    }
+    const nextItem = Math.max(...socialLinks);
+    const temp = [...socialLinks, nextItem + 1];
+    setSocialLinks(temp);
+  };
+
+  const handleRemoveSociaLink = (index: number) => {
+    const temp = socialLinks.filter((item) => item !== index);
+    setSocialLinks(temp);
+  };
+
+  const handleAddCustomLink = () => {
+    if (customLinks.length === 0) {
+      setCustomLinks([0]);
+      return;
+    }
+    const nextItem = Math.max(...customLinks);
+    const temp = [...customLinks, nextItem + 1];
+    setCustomLinks(temp);
+  };
+
+  const handleRemoveCustomLink = (index: number) => {
+    const temp = customLinks.filter((item) => item !== index);
+    setCustomLinks(temp);
+  };
+
   return (
     <Stack
       spacing="20px"
@@ -389,6 +519,266 @@ const Overview = () => {
           errorMessage={bannerUploader.errorMessage()}
           isLoading={bannerUploader.isLoading()}
         />
+      </Box>
+
+      <Box bgcolor="#2d2d2d" borderRadius="10px">
+        <Box padding="20px" display="flex" justifyContent="space-between">
+          <Typography variant="subtitleMB" color="text.secondary">
+            Links
+          </Typography>
+        </Box>
+
+        <Box
+          padding={'20px'}
+          display={'flex'}
+          flexDirection={'column'}
+          gap={'30px'}
+          ref={socialLinksRef}
+        >
+          <Typography variant="subtitleSB" color="text.secondary">
+            Social Links
+          </Typography>
+          {socialLinks.map((item, index) => {
+            const socialKey = Object.keys(socialLinksData)[index];
+            return (
+              <Box
+                display={'flex'}
+                flexDirection={'row'}
+                gap={'20px'}
+                key={index}
+              >
+                <Box
+                  display={'flex'}
+                  flexDirection={'column'}
+                  gap={'10px'}
+                  flex={1}
+                >
+                  <Typography variant="subtitle2" color="white">
+                    Select Social
+                  </Typography>
+                  <Select
+                    placeholder="Select"
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          backgroundColor: '#222222',
+                        },
+                      },
+                    }}
+                    sx={{
+                      '& > div': {
+                        padding: '8.5px 12px',
+                        borderRadius: '10px',
+                      },
+                    }}
+                    value={socialKey || ''}
+                    onChange={(e) => {
+                      const newSocialData = { ...socialLinksData };
+                      delete newSocialData[socialKey];
+                      newSocialData[e.target.value] = '';
+                      setSocialLinksData(newSocialData);
+                    }}
+                  >
+                    {SOCIAL_TYPES.map((social, idx) => (
+                      <MenuItem value={social.key} key={idx}>
+                        {social.value}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+                <Box
+                  display={'flex'}
+                  flexDirection={'column'}
+                  gap={'10px'}
+                  flex={1}
+                >
+                  <Typography variant="subtitle2" color="white">
+                    URL
+                  </Typography>
+                  <TextField
+                    variant="outlined"
+                    placeholder="https://"
+                    sx={{
+                      '& > div > input': {
+                        padding: '8.5px 12px',
+                      },
+                    }}
+                    value={socialLinksData[socialKey] || ''}
+                    onChange={(e) => {
+                      setSocialLinksData({
+                        ...socialLinksData,
+                        [socialKey]: e.target.value,
+                      });
+                    }}
+                  />
+                </Box>
+                <Box
+                  display={'flex'}
+                  flexDirection={'column'}
+                  justifyContent={'flex-end'}
+                  sx={{ cursor: 'pointer' }}
+                  onClick={() => handleRemoveSociaLink(item)}
+                >
+                  <Box
+                    sx={{
+                      borderRadius: '10px',
+                      width: '40px',
+                      height: '40px',
+                      padding: '10px 14px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                    }}
+                  >
+                    <CancelIcon sx={{ fontSize: 20 }} />
+                  </Box>
+                </Box>
+              </Box>
+            );
+          })}
+          <Button
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '10px',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              textTransform: 'unset',
+              color: 'white',
+            }}
+            onClick={handleAddSocialLink}
+          >
+            <AddCircleIcon />
+            <Typography variant="buttonMSB" color="white">
+              Add Social Link
+            </Typography>
+          </Button>
+        </Box>
+        <Box
+          padding={'20px'}
+          display={'flex'}
+          flexDirection={'column'}
+          gap={'30px'}
+          borderTop={'1px solid rgba(255, 255, 255, 0.10)'}
+          ref={customLinksRef}
+        >
+          <Typography variant="subtitleSB" color="text.secondary">
+            Custom Links
+          </Typography>
+          {customLinks.map((item, index) => {
+            const customLink = customLinksData[index] || { title: '', url: '' };
+            return (
+              <Box
+                display={'flex'}
+                flexDirection={'row'}
+                gap={'20px'}
+                key={index}
+              >
+                <Box
+                  display={'flex'}
+                  flexDirection={'column'}
+                  gap={'10px'}
+                  flex={1}
+                >
+                  <Typography variant="subtitle2" color="white">
+                    Link Title
+                  </Typography>
+                  <TextField
+                    variant="outlined"
+                    placeholder="Type a name"
+                    sx={{
+                      '& > div > input': {
+                        padding: '8.5px 12px',
+                      },
+                    }}
+                    value={customLink.title}
+                    onChange={(e) => {
+                      const newCustomLinks = [...customLinksData];
+                      newCustomLinks[index] = {
+                        ...newCustomLinks[index],
+                        title: e.target.value,
+                      };
+                      setCustomLinksData(newCustomLinks);
+                    }}
+                  />
+                </Box>
+                <Box
+                  display={'flex'}
+                  flexDirection={'column'}
+                  gap={'10px'}
+                  flex={1}
+                >
+                  <Typography variant="subtitle2" color="white">
+                    URL
+                  </Typography>
+                  <TextField
+                    variant="outlined"
+                    placeholder="https://"
+                    sx={{
+                      '& > div > input': {
+                        padding: '8.5px 12px',
+                      },
+                    }}
+                    value={customLink.url}
+                    onChange={(e) => {
+                      const newCustomLinks = [...customLinksData];
+                      newCustomLinks[index] = {
+                        ...newCustomLinks[index],
+                        url: e.target.value,
+                      };
+                      setCustomLinksData(newCustomLinks);
+                    }}
+                  />
+                </Box>
+                <Box
+                  display={'flex'}
+                  flexDirection={'column'}
+                  justifyContent={'flex-end'}
+                  sx={{ cursor: 'pointer' }}
+                  onClick={() => handleRemoveCustomLink(item)}
+                >
+                  <Box
+                    sx={{
+                      borderRadius: '10px',
+                      width: '40px',
+                      height: '40px',
+                      padding: '10px 14px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                    }}
+                  >
+                    <CancelIcon sx={{ fontSize: 20 }} />
+                  </Box>
+                </Box>
+              </Box>
+            );
+          })}
+
+          <Button
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '10px',
+              padding: '8px 14px',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              color: 'white',
+              textTransform: 'unset',
+            }}
+            onClick={handleAddCustomLink}
+          >
+            <AddCircleIcon />
+            <Typography variant="buttonMSB" color="white">
+              Add Custom Link
+            </Typography>
+          </Button>
+        </Box>
       </Box>
       <Button
         sx={{
