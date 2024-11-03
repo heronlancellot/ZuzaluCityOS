@@ -8,11 +8,7 @@ import {
   SwipeableDrawer,
   useTheme,
 } from '@mui/material';
-import {
-  EventName,
-  EventAbout,
-  EventDetail,
-} from '@/components/event';
+import { EventName, EventAbout, EventDetail } from '@/components/event';
 import { ZuButton } from '@/components/core';
 import { XMarkIcon } from '@/components/icons';
 import {
@@ -241,7 +237,7 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
                 <Verify
                   setIsVerify={setIsVerify}
                   eventContractID={
-                    eventData?.regAndAccess.edges[0].node
+                    eventData?.regAndAccess?.edges?.[0]?.node
                       .scrollPassContractFactoryID
                   }
                   setFilteredResults={setFilteredResults}
