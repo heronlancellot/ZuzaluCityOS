@@ -11,7 +11,11 @@ import { TICKET_WITH_WHITELIST_ABI } from '@/utils/ticket_with_whitelist_abi';
 import React, { Dispatch, useEffect, useMemo, useState } from 'react';
 import { Address, isAddress, parseUnits } from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
-import { writeContract, waitForTransactionReceipt } from 'wagmi/actions';
+import {
+  writeContract,
+  waitForTransactionReceipt,
+  readContract,
+} from 'wagmi/actions';
 import { ZuButton, ZuInput } from '@/components/core';
 import { supabase } from '@/utils/supabase/client';
 import {
@@ -31,6 +35,7 @@ import {
   Square2StackIcon,
   ArrowTopRightSquareIcon,
   PlusIcon,
+  RefreshIcon,
 } from '@/components/icons';
 import {
   Box,
@@ -64,6 +69,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { ButtonGroup } from '../Common';
 import { useToast } from '@/components/toast/ToastContext';
 import { Resend } from 'resend';
+
 interface IProps {
   amount?: string;
   recipient?: string;
@@ -1091,6 +1097,46 @@ export const Whitelist = ({
     reader.readAsText(file);
   };
 
+  const addresses = ticket[9]?.result || [];
+
+  const [balances, setBalances] = useState<any[]>([]);
+
+  const fetchBalances = async () => {
+    try {
+      const validAddresses = addresses.slice(1);
+      const results = await Promise.all(
+        validAddresses.map(async (address: string) => {
+          if (!isAddress(address)) {
+            return { result: 0n };
+          }
+          try {
+            const balance = await readContract(config, {
+              address: ticketAddress as Address,
+              abi: ticket[8]?.result ? TICKET_WITH_WHITELIST_ABI : TICKET_ABI,
+              functionName: 'balanceOf',
+              args: [address as Address],
+              chainId: isDev ? scrollSepolia.id : scroll.id,
+            });
+            return { result: balance };
+          } catch (error) {
+            console.error(`Error fetching balance for ${address}:`, error);
+            return { result: 0n };
+          }
+        }),
+      );
+      setBalances(results);
+    } catch (error) {
+      console.error('Error fetching balances:', error);
+      setBalances([]);
+    }
+  };
+
+  useEffect(() => {
+    if (addresses.length > 0 && isAddress(ticketAddress)) {
+      fetchBalances();
+    }
+  }, [addresses, ticketAddress]);
+
   return (
     <Stack spacing="30px" mt="30px">
       <Stack spacing="10px">
@@ -1207,59 +1253,93 @@ export const Whitelist = ({
       >
         <Stack
           direction="row"
-          justifyContent="center"
+          justifyContent="space-between"
           spacing="10px"
-          onClick={() => setOpenWhitelist((v) => !v)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenWhitelist((v) => !v);
+          }}
         >
           <Typography variant="bodyM">
             View existing list of addresses added
           </Typography>
-          <ChevronDownIcon size={4.5} />
+          <Stack direction="row" spacing="10px">
+            {openWhitelist && (
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (addresses.length > 0 && isAddress(ticketAddress)) {
+                    fetchBalances();
+                  }
+                }}
+                sx={{
+                  p: 0,
+                  color: 'rgba(255, 255, 255, 0.5)',
+                }}
+              >
+                <RefreshIcon size={4.5} />
+              </IconButton>
+            )}
+            <ChevronDownIcon size={4.5} />
+          </Stack>
         </Stack>
         <Collapse in={openWhitelist}>
           <Stack spacing="10px" mt="10px">
-            {ticket[9]?.result &&
-              ticket[9].result.map((address: string, index: number) => (
-                <Stack
-                  key={index}
-                  direction="row"
-                  spacing="10px"
-                  alignItems="center"
+            {addresses.slice(1).map((address: string, index: number) => (
+              <Stack
+                key={index}
+                direction="row"
+                spacing="10px"
+                alignItems="center"
+              >
+                <Typography
+                  fontSize={16}
+                  fontWeight={600}
+                  lineHeight={1.2}
+                  sx={{ opacity: 0.8 }}
                 >
-                  <Typography
-                    fontSize={16}
-                    fontWeight={600}
-                    lineHeight={1.2}
-                    sx={{ opacity: 0.8 }}
-                  >
-                    {formatAddressString(address)}
-                  </Typography>
-                  <CopyToClipboard text={address || ''}>
-                    <IconButton
-                      sx={{ p: 0, color: 'rgba(255, 255, 255, 0.5)' }}
-                    >
-                      <Square2StackIcon size={4.5} />
-                    </IconButton>
-                  </CopyToClipboard>
+                  {formatAddressString(address)}
+                </Typography>
 
-                  <IconButton
-                    sx={{
-                      p: 0,
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      position: 'relative',
-                      top: '-1px',
-                    }}
-                    onClick={() => {
-                      window.open(
-                        `https://scrollscan.com/address/${address}`,
-                        '_blank',
-                      );
-                    }}
-                  >
-                    <ArrowTopRightSquareIcon size={4.5} />
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    color:
+                      balances?.[index]?.result > 0n ? '#7DFFD1' : '#FF7D7D',
+                    ml: 1,
+                  }}
+                >
+                  {balances?.[index]?.result > 0n
+                    ? 'Ticket Claimed'
+                    : 'Not Claimed Yet'}
+                </Typography>
+
+                <CopyToClipboard text={address}>
+                  <IconButton sx={{ p: 0, color: 'rgba(255, 255, 255, 0.5)' }}>
+                    <Square2StackIcon size={4.5} />
                   </IconButton>
-                </Stack>
-              ))}
+                </CopyToClipboard>
+
+                <IconButton
+                  sx={{
+                    p: 0,
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    position: 'relative',
+                    top: '-1px',
+                  }}
+                  onClick={() => {
+                    window.open(
+                      isDev
+                        ? `https://sepolia.scrollscan.com/address/${address}`
+                        : `https://scrollscan.com/address/${address}`,
+                      '_blank',
+                    );
+                  }}
+                >
+                  <ArrowTopRightSquareIcon size={4.5} />
+                </IconButton>
+              </Stack>
+            ))}
           </Stack>
         </Collapse>
       </Stack>

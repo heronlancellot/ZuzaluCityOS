@@ -40,7 +40,7 @@ import {
   SponsorComplete,
 } from '@/components/event/Sponsor';
 import { ZuButton } from '@/components/core';
-import { XMarkIcon } from '@/components/icons';
+import { ArrowUpLeftIcon, XMarkIcon } from '@/components/icons';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { CeramicResponseType, EventEdge, Event } from '@/types';
 import { supabase } from '@/utils/supabase/client';
@@ -51,12 +51,14 @@ import getLatLngFromAddress from '@/utils/osm';
 import LotteryCard from '@/components/cards/LotteryCard';
 import { ApplicationForm } from '@/components/event/EventApplication/ApplicationForm';
 import { ApplicationSubmit } from '@/components/event/EventApplication/ApplicationSubmit';
+import { useRouter } from 'next/navigation';
 interface IAbout {
   eventData: Event | undefined;
   setVerify: React.Dispatch<React.SetStateAction<boolean>> | any;
+  canEdit: boolean;
 }
 
-const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
+const About: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
   const [location, setLocation] = useState<string>('');
 
   const [whitelist, setWhitelist] = useState<boolean>(false);
@@ -90,7 +92,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
   const [isTicket, setIsTicket] = useState<boolean>(false);
   const params = useParams();
   const eventId = params.eventid.toString();
-
+  const router = useRouter();
   const { breakpoints } = useTheme();
   const isMobile = useMediaQuery(breakpoints.down('sm'));
 
@@ -461,6 +463,48 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                         Sponsored Banner
                       </Typography>
                     </Stack> */}
+            {canEdit ? (
+              <Stack
+                padding="10px"
+                bgcolor="#ffc77d1a"
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                width="100%"
+                border="1px solid rgba(255, 199, 125, .1)"
+                borderRadius={'8px'}
+              >
+                <Typography
+                  fontSize={'14px'}
+                  lineHeight={'160%'}
+                  color={'rgba(255, 199, 125, 1)'}
+                  fontWeight={600}
+                >
+                  You are organizing this event
+                </Typography>
+                <ZuButton
+                  startIcon={<ArrowUpLeftIcon size={5} />}
+                  sx={{
+                    padding: '6px 10px',
+                    backgroundColor: 'rgba(255, 199, 125, 0.05)',
+                    gap: '10px',
+                    '& > span': {
+                      margin: '0px',
+                    },
+                    color: 'rgba(255, 199, 125, 1)',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                  }}
+                  onClick={() =>
+                    router.push(
+                      `/spaces/${eventData?.space?.id}/adminevents/${eventId}`,
+                    )
+                  }
+                >
+                  Manage
+                </ZuButton>
+              </Stack>
+            ) : null}
 
             <EventName
               avatar={eventData.space?.avatar}
@@ -475,7 +519,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
               imageUrl={eventData.imageUrl}
               status={eventData.status}
             />
-            {isMobile && eventData.regAndAccess.edges[0] ? (
+            {isMobile && eventData.regAndAccess?.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
@@ -603,7 +647,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
               },
             }}
           >
-            {!isMobile && eventData.regAndAccess.edges[0] ? (
+            {!isMobile && eventData.regAndAccess?.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
@@ -611,7 +655,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
-                eventRegistration={eventData.regAndAccess.edges[0].node}
+                eventRegistration={eventData.regAndAccess?.edges[0]?.node}
                 setApplication={setApplication}
                 event={eventData}
               />

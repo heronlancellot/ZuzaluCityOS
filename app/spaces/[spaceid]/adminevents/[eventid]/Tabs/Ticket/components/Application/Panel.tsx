@@ -23,7 +23,7 @@ export default function Panel({ regAndAccess }: PanelProps) {
   const { event } = useEventContext();
 
   const hasConfiged = !!regAndAccess?.applicationForm;
-  const applicationForms = event?.applicationForms.edges ?? [];
+  const applicationForms = event?.applicationForms?.edges ?? [];
 
   const questions = useMemo(() => {
     if (!hasConfiged) return [''];

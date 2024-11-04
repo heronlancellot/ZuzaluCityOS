@@ -252,7 +252,7 @@ export async function POST(req: Request) {
       );
 
       const regAndAccess =
-        getEventResponse.data.node.regAndAccess.edges?.[0].node;
+        getEventResponse.data.node.regAndAccess?.edges?.[0]?.node;
       if (regAndAccess.ticketType !== TicketingMethod.NoTicketing) {
         return NextResponse.json(
           {
