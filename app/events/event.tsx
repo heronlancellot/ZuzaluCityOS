@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -29,6 +29,7 @@ import {
   groupEventsByMonth,
 } from '@/components/cards/EventCard';
 import { supabase } from '@/utils/supabase/client';
+import dayjs from 'dayjs';
 
 const EventsPage: React.FC = () => {
   const theme = useTheme();
@@ -158,6 +159,33 @@ const EventsPage: React.FC = () => {
         setIsEventsLoading(false);
       });
   }, []);
+
+  const eventsData = useMemo(() => {
+    const data = groupEventsByMonth(events);
+    let keys = Object.keys(data).sort((a, b) => {
+      const dateA = dayjs(a, 'MMMM YYYY');
+      const dateB = dayjs(b, 'MMMM YYYY');
+      return dateA.isBefore(dateB) ? 1 : -1;
+    });
+
+    const invalidDateIndex = keys.findIndex((key) => key === 'Invalid Date');
+    if (invalidDateIndex !== -1) {
+      const invalidDate = keys.splice(invalidDateIndex, 1)[0];
+      keys.push(invalidDate);
+    }
+
+    const groupedEvents: { [key: string]: Event[] } = {};
+    keys.forEach((key) => {
+      const value = data[key];
+      value.sort((a, b) => {
+        const dateA = dayjs(a.startTime);
+        const dateB = dayjs(b.startTime);
+        return dateA.isAfter(dateB) ? 1 : -1;
+      });
+      groupedEvents[key] = value;
+    });
+    return groupedEvents;
+  }, [events]);
 
   // TODO: Implement search functionality
   const onSearch = () => {
@@ -300,28 +328,26 @@ const EventsPage: React.FC = () => {
               </>
             ) : (
               events.length > 0 &&
-              Object.entries(groupEventsByMonth(events)).map(
-                ([month, events], index) => {
-                  return (
-                    <Fragment key={month + index}>
-                      <EventCardMonthGroup>{month}</EventCardMonthGroup>
-                      {events.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                      ))}
-                      {/*<Grid*/}
-                      {/*  key={`Lottery-Card`}*/}
-                      {/*  xs={12}*/}
-                      {/*  sm={6}*/}
-                      {/*  md={4}*/}
-                      {/*  xl={3}*/}
-                      {/*  sx={{ display: 'flex', justifyContent: 'center' }}*/}
-                      {/*>*/}
-                      {/*  <LotteryCard />*/}
-                      {/*</Grid>*/}
-                    </Fragment>
-                  );
-                },
-              )
+              Object.entries(eventsData).map(([month, events], index) => {
+                return (
+                  <Fragment key={month + index}>
+                    <EventCardMonthGroup>{month}</EventCardMonthGroup>
+                    {events.map((event) => (
+                      <EventCard key={event.id} event={event} />
+                    ))}
+                    {/*<Grid*/}
+                    {/*  key={`Lottery-Card`}*/}
+                    {/*  xs={12}*/}
+                    {/*  sm={6}*/}
+                    {/*  md={4}*/}
+                    {/*  xl={3}*/}
+                    {/*  sx={{ display: 'flex', justifyContent: 'center' }}*/}
+                    {/*>*/}
+                    {/*  <LotteryCard />*/}
+                    {/*</Grid>*/}
+                  </Fragment>
+                );
+              })
             )}
           </Stack>
         </Stack>
