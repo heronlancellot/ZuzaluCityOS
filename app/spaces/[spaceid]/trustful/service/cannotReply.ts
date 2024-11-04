@@ -1,7 +1,7 @@
 import { readContract } from 'viem/actions';
 
 import { client, config } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
 
 export async function cannotReply(
   uid: `0x${string}`,
@@ -20,7 +20,7 @@ export async function cannotReply(
 
   try {
     const response = await client.readContract({
-      address: RESOLVER_CONTRACT_SCROLL as `0x${string}`,
+      address: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
       functionName: 'cannotReply',
       abi: data.abi,
       args: [uid],

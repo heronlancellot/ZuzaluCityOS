@@ -1,5 +1,5 @@
 import { client } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
 
 export interface ConnetedWalletConfiguration {
   walletClient: any;
@@ -24,7 +24,7 @@ export async function allowedAttestationTitles(
 
   try {
     const response = await client.readContract({
-      address: RESOLVER_CONTRACT_SCROLL as `0x${string}`,
+      address: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
       functionName: 'allowedAttestationTitles',
       abi: data.abi,
       args: [attestationTitle],

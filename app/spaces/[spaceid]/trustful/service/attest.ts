@@ -1,5 +1,5 @@
 import { getWalletClient } from '@wagmi/core';
-import { encodeFunctionData, type TransactionReceipt } from 'viem';
+import { Address, encodeFunctionData, type TransactionReceipt } from 'viem';
 import {
   sendTransaction,
   estimateGas,
@@ -10,25 +10,27 @@ import { client, config } from '@/context/WalletContext';
 import { EAS_CONTRACT_SCROLL } from '../constants/constants';
 
 export interface AttestationRequestData {
-  recipient: `0x${string}`;
+  recipient: Address;
   expirationTime: bigint;
   revocable: boolean;
-  refUID: `0x${string}`;
-  data: `0x${string}`;
+  refUID: Address;
+  data: Address;
   value: bigint;
+  // attester: Address; // TODO: CHECK IF NEED THIS
+  // revocationTime: bigint; // TODO: CHECK IF NEED THIS
 }
 
 export interface AttestationRequest {
-  schema: `0x${string}`;
+  schema: Address;
   data: AttestationRequestData;
 }
 
 export async function submitAttest(
-  from: `0x${string}`,
-  schemaUID: `0x${string}`,
+  from: Address,
+  schemaUID: Address,
   attestationRequestData: AttestationRequestData,
 ): Promise<TransactionReceipt | Error> {
-  const walletClient = await getWalletClient(config); // Changed WagmiConfig to config
+  const walletClient = await getWalletClient(config);
   let gasLimit;
 
   const AttestationRequest: AttestationRequest = {
@@ -42,48 +44,44 @@ export async function submitAttest(
         inputs: [
           {
             components: [
+              { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
               { internalType: 'bytes32', name: 'schema', type: 'bytes32' },
+              { internalType: 'uint64', name: 'time', type: 'uint64' },
               {
-                components: [
-                  {
-                    internalType: 'address',
-                    name: 'recipient',
-                    type: 'address',
-                  },
-                  {
-                    internalType: 'uint64',
-                    name: 'expirationTime',
-                    type: 'uint64',
-                  },
-                  { internalType: 'bool', name: 'revocable', type: 'bool' },
-                  { internalType: 'bytes32', name: 'refUID', type: 'bytes32' },
-                  { internalType: 'bytes', name: 'data', type: 'bytes' },
-                  { internalType: 'uint256', name: 'value', type: 'uint256' },
-                ],
-                internalType: 'struct AttestationRequestData',
-                name: 'data',
-                type: 'tuple',
+                internalType: 'uint64',
+                name: 'expirationTime',
+                type: 'uint64',
               },
+              {
+                internalType: 'uint64',
+                name: 'revocationTime',
+                type: 'uint64',
+              },
+              { internalType: 'bytes32', name: 'refUID', type: 'bytes32' },
+              { internalType: 'address', name: 'recipient', type: 'address' },
+              { internalType: 'address', name: 'attester', type: 'address' },
+              { internalType: 'bool', name: 'revocable', type: 'bool' },
+              { internalType: 'bytes', name: 'data', type: 'bytes' },
             ],
-            internalType: 'struct AttestationRequest',
-            name: 'request',
+            internalType: 'struct Attestation',
+            name: 'attestation',
             type: 'tuple',
           },
         ],
         name: 'attest',
-        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+        outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
         stateMutability: 'payable',
         type: 'function',
       },
     ],
 
-    args: [AttestationRequest],
+    args: [AttestationRequest], //TODO: ADJUST THE ARGS HERE
   });
 
   try {
     gasLimit = await client.estimateGas({
-      account: from as `0x${string}`,
-      to: EAS_CONTRACT_SCROLL as `0x${string}`,
+      account: from as Address,
+      to: EAS_CONTRACT_SCROLL as Address,
       data: data,
       value: attestationRequestData.value,
     });
@@ -93,8 +91,8 @@ export async function submitAttest(
 
   try {
     const transactionHash = await sendTransaction(walletClient, {
-      account: from as `0x${string}`,
-      to: EAS_CONTRACT_SCROLL as `0x${string}`,
+      account: from as Address,
+      to: EAS_CONTRACT_SCROLL as Address,
       gasLimit: gasLimit,
       data: data,
       value: attestationRequestData.value,

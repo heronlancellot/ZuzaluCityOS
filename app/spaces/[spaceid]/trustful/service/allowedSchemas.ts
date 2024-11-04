@@ -1,7 +1,7 @@
 import { readContract } from 'viem/actions';
 
 import { client } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
 
 // export interface Action {
 //   NONE: 0;
@@ -18,10 +18,7 @@ export async function allowedSchemas(
   const data = {
     abi: [
       {
-        inputs: [
-          { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
-          { internalType: 'bytes32', name: 'roleId', type: 'bytes32' },
-        ],
+        inputs: [{ internalType: 'bytes32', name: 'uid', type: 'bytes32' }],
         name: 'allowedSchemas',
         outputs: [
           { internalType: 'enum IResolver.Action', name: '', type: 'uint8' },
@@ -35,7 +32,7 @@ export async function allowedSchemas(
 
   try {
     const response = await client.readContract({
-      address: RESOLVER_CONTRACT_SCROLL as `0x${string}`,
+      address: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
       functionName: 'allowedSchemas',
       abi: data.abi,
       args: [uid, roleId],
