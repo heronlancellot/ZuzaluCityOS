@@ -284,6 +284,8 @@ const Calendar = () => {
           {(type === 'create' || type === 'edit') && (
             <CreateEventForm
               editType={type}
+              spaceId={spaceId}
+              categories={calendarConfig?.category.split(',') || []}
               // event={mockCalEvent}
               handleClose={handleFormClose}
             />

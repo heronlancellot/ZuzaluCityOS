@@ -15,9 +15,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { TimezoneSelector } from '@/components/select/TimezoneSelector';
 import {
   decodeOutputData,
+  encodeOutputData,
   useEditorStore,
 } from '@/components/editor/useEditorStore';
-import { ZuInput, ZuSwitch } from 'components/core';
+import { ZuInput, ZuSelect, ZuSwitch } from 'components/core';
 import {
   FormLabel,
   FormLabelDesc,
@@ -43,10 +44,17 @@ const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
 
 import dayjs from 'dayjs';
 import { CalEvent } from '@/types';
+import SelectCheckItem from '@/components/select/selectCheckItem';
+import { useMutation } from '@tanstack/react-query';
+import { supabase } from '@/utils/supabase/client';
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
-  description: Yup.string(),
+  categories: Yup.array()
+    .of(Yup.string())
+    .required('Categories are required')
+    .min(1, 'At least one category is required'),
+  description: Yup.mixed(),
   isAllDay: Yup.boolean(),
   startDate: Yup.mixed().dayjs().required('Start date is required'),
   endDate: Yup.mixed().dayjs().required('End date is required'),
@@ -81,14 +89,18 @@ const schema = Yup.object().shape({
 type FormData = Yup.InferType<typeof schema>;
 
 interface EventFormProps {
+  spaceId: string;
   editType: string;
   event?: CalEvent;
+  categories: string[];
   handleClose: () => void;
 }
 
 const CreateEventForm: React.FC<EventFormProps> = ({
+  spaceId,
   event,
   editType,
+  categories,
   handleClose,
 }) => {
   const { options } = useTimezoneSelect({ timezones: allTimezones });
@@ -104,6 +116,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
     resolver: yupResolver(schema),
     defaultValues: {
       format: 'in-person',
+      categories: [],
       startDate: dayjs(),
       endDate: dayjs(),
       startTime: dayjs(),
@@ -117,14 +130,63 @@ const CreateEventForm: React.FC<EventFormProps> = ({
   const isAllDay = watch('isAllDay');
   const format = watch('format');
   const description = watch('description');
+  const currentCategories = watch('categories');
 
-  const [isLoading, setLoading] = useState(false);
   const [blockClickModal, setBlockClickModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   const { profile, ceramic } = useCeramicContext();
-  const profileId = profile?.id || '';
-  const adminId = ceramic?.did?.parent || '';
+
+  const createEventMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const {
+        name,
+        description,
+        categories,
+        imageUrl,
+        format,
+        isAllDay,
+        startDate,
+        startTime,
+        endDate,
+        endTime,
+        timezone,
+        locationName,
+        locationUrl,
+      } = data;
+      const currentStartTime = isAllDay
+        ? dayjs(startDate).startOf('day')
+        : startTime ?? dayjs();
+      const currentEndTime = isAllDay
+        ? dayjs(endDate).endOf('day')
+        : endTime ?? dayjs();
+      return supabase.from('sideEvents').insert({
+        name,
+        description: encodeOutputData(description),
+        category: categories.join(','),
+        image_url: imageUrl,
+        is_all_day: isAllDay,
+        start_date: dayjs(startDate)
+          .hour(currentStartTime.hour())
+          .minute(currentStartTime.minute())
+          .toISOString(),
+        end_date: dayjs(endDate)
+          .hour(currentEndTime.hour())
+          .minute(currentEndTime.minute())
+          .toISOString(),
+        timezone: timezone.value || dayjs.tz.guess(),
+        format,
+        location_name: locationName,
+        location_url: locationUrl,
+        space_id: spaceId,
+        creator: JSON.stringify(profile),
+      });
+    },
+    onSuccess: () => {
+      reset();
+      handleClose();
+    },
+  });
 
   const handleDescriptionChange = useCallback(
     (val: any) => {
@@ -133,7 +195,13 @@ const CreateEventForm: React.FC<EventFormProps> = ({
     [setValue],
   );
 
-  const onFormSubmit = useCallback(async (data: FormData) => {}, []);
+  const onFormSubmit = useCallback(
+    async (data: FormData) => {
+      console.log(data);
+      createEventMutation.mutate(data);
+    },
+    [createEventMutation],
+  );
 
   const handleDialogClose = useCallback(() => {
     reset();
@@ -233,6 +301,46 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                             placeholder="a name for this calendar event"
                             error={!!error}
                           />
+                          {error && (
+                            <FormHelperText error>
+                              {error.message}
+                            </FormHelperText>
+                          )}
+                        </>
+                      )}
+                    />
+                  </Stack>
+                  <Stack spacing="10px">
+                    <FormLabel>Calendar Categories*</FormLabel>
+                    <FormLabelDesc>
+                      Choose a type for your event to relay its nature to
+                      guests.
+                    </FormLabelDesc>
+                    <Controller
+                      name="categories"
+                      control={control}
+                      render={({ field, fieldState: { error } }) => (
+                        <>
+                          <Select
+                            size="small"
+                            multiple
+                            renderValue={(selected) => selected.join(', ')}
+                            {...field}
+                            error={!!error}
+                          >
+                            {categories.map((item) => (
+                              <MenuItem key={item} value={item}>
+                                <SelectCheckItem
+                                  label={item}
+                                  isChecked={
+                                    currentCategories.findIndex(
+                                      (v) => v === item,
+                                    ) > -1
+                                  }
+                                />
+                              </MenuItem>
+                            ))}
+                          </Select>
                           {error && (
                             <FormHelperText error>
                               {error.message}
@@ -518,7 +626,8 @@ const CreateEventForm: React.FC<EventFormProps> = ({
           <Box p="20px" bgcolor="#222">
             <FormFooter
               confirmText="Create Event"
-              disabled={isLoading}
+              disabled={createEventMutation.isPending}
+              isLoading={createEventMutation.isPending}
               handleClose={handleClose}
               handleConfirm={handleSubmit(onFormSubmit)}
             />
