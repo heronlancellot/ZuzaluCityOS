@@ -367,11 +367,18 @@ const Home: React.FC = () => {
 
   const eventsData = useMemo(() => {
     const data = groupEventsByMonth(events);
-    const keys = Object.keys(data).sort((a, b) => {
+    let keys = Object.keys(data).sort((a, b) => {
       const dateA = dayjs(a, 'MMMM YYYY');
       const dateB = dayjs(b, 'MMMM YYYY');
       return dateA.isBefore(dateB) ? 1 : -1;
     });
+
+    const invalidDateIndex = keys.findIndex((key) => key === 'Invalid Date');
+    if (invalidDateIndex !== -1) {
+      const invalidDate = keys.splice(invalidDateIndex, 1)[0];
+      keys.push(invalidDate);
+    }
+
     const groupedEvents: { [key: string]: Event[] } = {};
     keys.forEach((key) => {
       const value = data[key];
