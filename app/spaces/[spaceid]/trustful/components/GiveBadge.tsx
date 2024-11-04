@@ -19,7 +19,7 @@ import { watchAccount } from '@wagmi/core';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
 import { isAddress, encodeAbiParameters, parseAbiParameters } from 'viem';
-import { scroll } from 'viem/chains';
+import { scroll, scrollSepolia } from 'viem/chains';
 import { normalize } from 'viem/ens';
 import { useAccount, useSwitchChain } from 'wagmi';
 import {
@@ -41,8 +41,9 @@ import {
 import {
   BadgeTitle,
   ZUVILLAGE_BADGE_TITLES,
-  ZUVILLAGE_SCHEMAS,
+  TRUSTFUL_SCHEMAS,
   ROLES,
+  isDev,
 } from '../constants/constants';
 import { ENS_ADDR_QUERY } from '../constants/schemaQueries';
 import { EthereumAddress } from '../utils/types';
@@ -126,11 +127,7 @@ export const GiveBadge = () => {
 
   // Checks if the shared-address is valid and sets it to the inputAddress
   useEffect(() => {
-    if (
-      addressShared &&
-      isAddress(addressShared) &&
-      param.slug[0] === 'give-badge'
-    ) {
+    if (addressShared && isAddress(addressShared)) {
       setInputAddress(addressShared);
     }
   }, [addressShared]);
@@ -213,11 +210,11 @@ export const GiveBadge = () => {
     if (!selectedBadge) {
       const customBadge: BadgeTitle = {
         title: event.target.value,
-        uid: ZUVILLAGE_SCHEMAS.ATTEST_EVENT.uid,
+        uid: TRUSTFUL_SCHEMAS.ATTEST_EVENT.uid,
         allowComment: true,
         revocable: false,
-        data: ZUVILLAGE_SCHEMAS.ATTEST_EVENT.data,
-        allowedRole: ZUVILLAGE_SCHEMAS.ATTEST_EVENT.allowedRole,
+        data: TRUSTFUL_SCHEMAS.ATTEST_EVENT.data,
+        allowedRole: TRUSTFUL_SCHEMAS.ATTEST_EVENT.allowedRole,
       };
       selectedBadge = customBadge;
     }
@@ -260,10 +257,11 @@ export const GiveBadge = () => {
       return;
     }
 
-    if (chainId !== scroll.id) {
-      toast.error('Unsupported network: Please switch to the Scroll network.');
-      switchChain({ chainId: scroll.id });
-      console.log('!chainId !== scroll.id');
+    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
+      toast.error(
+        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
+      );
+      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
       return;
     }
 
@@ -283,8 +281,8 @@ export const GiveBadge = () => {
 
     let encodeParam = '';
     let encodeArgs: string[] = [];
-    if (inputBadge.uid === ZUVILLAGE_SCHEMAS.ATTEST_MANAGER.uid) {
-      encodeParam = ZUVILLAGE_SCHEMAS.ATTEST_MANAGER.data;
+    if (inputBadge.uid === TRUSTFUL_SCHEMAS.ATTEST_MANAGER.uid) {
+      encodeParam = TRUSTFUL_SCHEMAS.ATTEST_MANAGER.data;
       encodeArgs = ['Manager'];
       const isManager = await hasRole(ROLES.MANAGER, badgeInputAddress.address);
       if (isManager) {
@@ -293,9 +291,9 @@ export const GiveBadge = () => {
         console.log('isManager', isManager);
         return;
       }
-    } else if (inputBadge.uid === ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.uid) {
+    } else if (inputBadge.uid === TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.uid) {
       if (inputBadge.title === 'Check-in') {
-        encodeParam = ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.data;
+        encodeParam = TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.data;
         encodeArgs = ['Check-in'];
         const isVillager = await hasRole(
           ROLES.VILLAGER,
@@ -310,7 +308,7 @@ export const GiveBadge = () => {
           return;
         }
       } else if (inputBadge.title === 'Check-out') {
-        encodeParam = ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.data;
+        encodeParam = TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.data;
         encodeArgs = ['Check-out'];
         if (!isBytes32(commentBadge as `0x${string}`)) {
           setLoading(false);
@@ -333,8 +331,8 @@ export const GiveBadge = () => {
           return;
         }
       }
-    } else if (inputBadge.uid === ZUVILLAGE_SCHEMAS.ATTEST_EVENT.uid) {
-      encodeParam = ZUVILLAGE_SCHEMAS.ATTEST_EVENT.data;
+    } else if (inputBadge.uid === TRUSTFUL_SCHEMAS.ATTEST_EVENT.uid) {
+      encodeParam = TRUSTFUL_SCHEMAS.ATTEST_EVENT.data;
       encodeArgs = [inputBadge.title, commentBadge ?? ''];
       console.log('badgeInputAddress', badgeInputAddress);
       const isVillager = await hasRole(

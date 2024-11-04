@@ -12,10 +12,11 @@ import React, {
 } from 'react';
 import { Address } from 'viem';
 import { useAccount, useSwitchChain } from 'wagmi';
-import { scroll } from 'viem/chains';
+import { scroll, scrollSepolia } from 'viem/chains';
 import {
+  isDev,
   Role,
-  ZUVILLAGE_SCHEMAS,
+  TRUSTFUL_SCHEMAS,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { getAllAttestationTitles } from '@/app/spaces/[spaceid]/trustful/service';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
@@ -155,11 +156,11 @@ export const TrustfulContextProvider: React.FC<
       return;
     }
 
-    if (chainId !== scroll.id) {
+    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
       toast.error(
-        'Please switch to the Scroll network to use this application.',
+        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
       );
-      switchChain({ chainId: scroll.id });
+      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
       return;
     }
 
@@ -177,9 +178,7 @@ export const TrustfulContextProvider: React.FC<
       filteredBadges.push('Manager');
     }
 
-    if (
-      userRole?.address === ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.allowedRole[0]
-    ) {
+    if (userRole?.address === TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.allowedRole[0]) {
       filteredBadges.push('Check-in');
       filteredBadges.push('Check-out');
     }
