@@ -2,6 +2,7 @@ export const getSpaceEventsQuery = (eventCount: number = 10) => `
       query GetSpaceEvents($id: ID!) {
         node(id: $id) {
           ...on ZucitySpace {
+            id
             avatar
             banner
             description

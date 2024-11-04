@@ -1,7 +1,14 @@
 'use client';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Chip,
+  CircularProgress,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { CalendarConfig, CalEvent, Space } from '@/types';
 import SubSidebar from 'components/layout/Sidebar/SubSidebar';
@@ -44,10 +51,15 @@ const Calendar = () => {
   const [type, setType] = useState<string>('view');
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMember, setIsMember] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState('All');
 
   const { composeClient } = useCeramicContext();
 
-  const { data: spaceData, refetch } = useQuery({
+  const {
+    data: spaceData,
+    refetch: refetchSpace,
+    isLoading: isLoadingSpace,
+  } = useQuery({
     queryKey: ['getSpaceByID', spaceId],
     queryFn: () => {
       return composeClient.executeQuery(getSpaceEventsQuery(), {
@@ -89,7 +101,7 @@ const Calendar = () => {
         if (item.key === 'calendarConfig') {
           return item.value;
         }
-      }) as CalendarConfig;
+      })?.value as CalendarConfig;
     }
     return null;
   }, [spaceData]);
@@ -113,10 +125,149 @@ const Calendar = () => {
       setType('');
       toggleDrawer();
     }
-    refetch();
-  }, [refetch, toggleDrawer, type]);
+  }, [toggleDrawer, type]);
+
+  const handleCategory = useCallback((category: string) => {
+    setCurrentCategory(category);
+  }, []);
 
   const canAccessCalendar = isAdmin || isMember;
+
+  const content = useMemo(() => {
+    if (isLoadingSpace) {
+      return (
+        <CircularProgress
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: '#fff',
+          }}
+        />
+      );
+    }
+    if (!calendarConfig && isAdmin) {
+      return (
+        <ConfigPanel
+          title="Configure Space Calendar"
+          desc="You need to setup initial configurations"
+          sx={{
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            background: 'rgba(44, 44, 44, 0.80)',
+            width: '600px',
+            position: 'absolute',
+            top: '40%',
+            left: '50%',
+            zIndex: 1200,
+            transform: 'translate(-50%, -50%)',
+          }}
+          handleOpen={() => handleType('config')}
+        />
+      );
+    }
+    if (calendarConfig && canAccessCalendar) {
+      return (
+        <>
+          <Stack
+            p="10px 20px"
+            bgcolor="#2E2E2E"
+            borderBottom="1px solid rgba(255, 255, 255, 0.1)"
+            height="60px"
+            justifyContent="center"
+          >
+            <Typography fontSize={20} fontWeight={700} lineHeight={1.2}>
+              {calendarConfig.name}
+            </Typography>
+          </Stack>
+          <Stack
+            borderBottom="1px solid rgba(255, 255, 255, 0.1)"
+            p="10px 20px"
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography
+              fontSize={16}
+              fontWeight={700}
+              lineHeight={1.2}
+              sx={{ opacity: 0.8 }}
+            >
+              {dayjs().format('MMMM YYYY')}
+            </Typography>
+            <ZuButton
+              endIcon={<PlusCircleIcon size={4} />}
+              onClick={() => handleType('create')}
+            >
+              Add event
+            </ZuButton>
+          </Stack>
+          <Stack
+            p="10px"
+            direction="row"
+            gap="10px"
+            flexWrap="wrap"
+            alignItems="center"
+          >
+            {['All', ...calendarConfig.category.split(',')].map((item) => (
+              <Box
+                key={item}
+                sx={{
+                  bgcolor:
+                    currentCategory === item
+                      ? 'rgba(255, 255, 255, 0.20)'
+                      : 'rgba(255, 255, 255, 0.10)',
+                  p: '4px 10px',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.30)',
+                  },
+                }}
+                onClick={() => handleCategory(item)}
+              >
+                <Typography
+                  fontSize={13}
+                  lineHeight={1.4}
+                  sx={{ opacity: 0.8 }}
+                >
+                  #{item}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+          <CalendarView />
+        </>
+      );
+    }
+    return (
+      <ConfigPanel
+        title="Calendar"
+        desc="You don't have access to this calendar"
+        needButton={false}
+        sx={{
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          background: 'rgba(44, 44, 44, 0.80)',
+          width: '600px',
+          position: 'absolute',
+          top: '40%',
+          left: '50%',
+          zIndex: 1200,
+          transform: 'translate(-50%, -50%)',
+        }}
+      />
+    );
+  }, [
+    calendarConfig,
+    canAccessCalendar,
+    currentCategory,
+    handleCategory,
+    handleType,
+    isAdmin,
+    isLoadingSpace,
+  ]);
 
   return (
     <Stack direction="row" width={'100%'}>
@@ -128,68 +279,7 @@ const Calendar = () => {
         isAdmin={true}
       />
       <Stack width="100%" position="relative">
-        {!calendarConfig && isAdmin ? (
-          <ConfigPanel
-            title="Configure Space Calendar"
-            desc="You need to setup initial configurations"
-            sx={{
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              background: 'rgba(44, 44, 44, 0.80)',
-              width: '600px',
-              position: 'absolute',
-              top: '40%',
-              left: '50%',
-              zIndex: 1200,
-              transform: 'translate(-50%, -50%)',
-            }}
-            handleOpen={() => handleType('config')}
-          />
-        ) : null}
-        {calendarConfig && canAccessCalendar ? (
-          <>
-            <Stack
-              borderBottom="1px solid rgba(255, 255, 255, 0.1)"
-              p="10px 16px"
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography
-                fontSize={16}
-                fontWeight={700}
-                lineHeight={1.2}
-                sx={{ opacity: 0.8 }}
-              >
-                {dayjs().format('MMMM YYYY')}
-              </Typography>
-              <ZuButton
-                endIcon={<PlusCircleIcon size={4} />}
-                onClick={() => handleType('create')}
-              >
-                Add event
-              </ZuButton>
-            </Stack>
-            <CalendarView />
-          </>
-        ) : calendarConfig ? (
-          <ConfigPanel
-            title="Calendar"
-            desc="You don't have access to this calendar"
-            needButton={false}
-            sx={{
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
-              background: 'rgba(44, 44, 44, 0.80)',
-              width: '600px',
-              position: 'absolute',
-              top: '40%',
-              left: '50%',
-              zIndex: 1200,
-              transform: 'translate(-50%, -50%)',
-            }}
-          />
-        ) : null}
+        {content}
         <Drawer open={open} onClose={toggleDrawer} onOpen={toggleDrawer}>
           {(type === 'create' || type === 'edit') && (
             <CreateEventForm
@@ -206,7 +296,11 @@ const Calendar = () => {
             />
           )}
           {type === 'config' && (
-            <CalendarConfigForm handleClose={handleFormClose} />
+            <CalendarConfigForm
+              space={spaceData!}
+              handleClose={handleFormClose}
+              refetch={refetchSpace}
+            />
           )}
         </Drawer>
       </Stack>

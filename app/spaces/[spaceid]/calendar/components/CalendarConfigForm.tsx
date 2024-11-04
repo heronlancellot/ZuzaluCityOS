@@ -22,23 +22,29 @@ import { ItemType } from '../../adminevents/[eventid]/Tabs/Ticket/components/typ
 import { RegistrationAccess } from '../../adminevents/[eventid]/Tabs/Ticket/components/types';
 import { Item } from '../../adminevents/[eventid]/Tabs/Ticket/components/Common';
 import { useMutation } from '@tanstack/react-query';
+import { useCeramicContext } from '@/context/CeramicContext';
+import { Space } from '@/types';
 
 interface CalendarConfigFormProps {
+  space: Space;
   handleClose: () => void;
+  refetch: () => void;
 }
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Calendar name is required'),
   category: Yup.array(Yup.string())
     .required('Calendar category is required')
-    .length(1, 'Calendar category is required'),
+    .min(1, 'Calendar category is required'),
   accessRule: Yup.string().required('Access rule is required'),
 });
 
 type FormData = Yup.InferType<typeof schema>;
 
 export default function CalendarConfigForm({
+  space,
   handleClose,
+  refetch,
 }: CalendarConfigFormProps) {
   const {
     control,
@@ -51,18 +57,64 @@ export default function CalendarConfigForm({
     resolver: yupResolver(schema),
     shouldFocusError: true,
   });
+  const { composeClient } = useCeramicContext();
 
   const accessRule = watch('accessRule');
 
   const configCalendarMutation = useMutation({
-    mutationFn: (data: FormData) => {
-      console.log(data);
+    mutationFn: async (data: FormData) => {
+      console.log(data, space);
+      const customAttributes = space.customAttributes || [];
+      const result = await composeClient.executeQuery(
+        `
+      mutation updateZucitySpaceMutation($input: UpdateZucitySpaceInput!) {
+        updateZucitySpace(
+          input: $input
+        ) {
+          document {
+            id
+          }
+        }
+      }
+      `,
+        {
+          input: {
+            id: space.id,
+            content: {
+              customAttributes: [
+                ...customAttributes,
+                {
+                  tbd: JSON.stringify({
+                    key: 'calendarConfig',
+                    value: {
+                      name: data.name,
+                      category: data.category
+                        .map((item) => item?.trim())
+                        .join(','),
+                      accessRule: data.accessRule,
+                    },
+                  }),
+                },
+              ],
+            },
+          },
+        },
+      );
+      console.log(result);
+    },
+    onSuccess: () => {
+      reset();
+      handleClose();
+      refetch();
     },
   });
 
-  const onFormSubmit = useCallback(async (data: FormData) => {
-    console.log(data);
-  }, []);
+  const onFormSubmit = useCallback(
+    async (data: FormData) => {
+      configCalendarMutation.mutate(data);
+    },
+    [configCalendarMutation],
+  );
 
   const accessItems = useMemo<ItemType[]>(
     () => [
@@ -77,7 +129,7 @@ export default function CalendarConfigForm({
         description: 'Only invited addresses can read',
       },
     ],
-    [control],
+    [],
   );
 
   return (
