@@ -61,7 +61,7 @@ export interface Schemas {
   allowedRole: string[];
 }
 
-export const ZUVILLAGE_SCHEMAS: { [key: string]: Schemas } = {
+export const TRUSTFUL_SCHEMAS: { [key: string]: Schemas } = {
   ATTEST_MANAGER: {
     uid: SCHEMA_UIDS.ATTEST_MANAGER as `0x${string}`,
     data: 'string role',
@@ -100,27 +100,27 @@ export interface BadgeTitle {
 export const ZUVILLAGE_BADGE_TITLES: BadgeTitle[] = [
   {
     title: 'Manager',
-    uid: ZUVILLAGE_SCHEMAS.ATTEST_MANAGER.uid,
+    uid: TRUSTFUL_SCHEMAS.ATTEST_MANAGER.uid,
     allowComment: false,
     revocable: true,
-    data: ZUVILLAGE_SCHEMAS.ATTEST_MANAGER.data,
-    allowedRole: ZUVILLAGE_SCHEMAS.ATTEST_MANAGER.allowedRole,
+    data: TRUSTFUL_SCHEMAS.ATTEST_MANAGER.data,
+    allowedRole: TRUSTFUL_SCHEMAS.ATTEST_MANAGER.allowedRole,
   },
   {
     title: 'Check-in',
-    uid: ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.uid,
+    uid: TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.uid,
     allowComment: false,
     revocable: false,
-    data: ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.data,
-    allowedRole: ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.allowedRole,
+    data: TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.data,
+    allowedRole: TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.allowedRole,
   },
   {
     title: 'Check-out',
-    uid: ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.uid,
+    uid: TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.uid,
     allowComment: true,
     revocable: false,
-    data: ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.data,
-    allowedRole: ZUVILLAGE_SCHEMAS.ATTEST_VILLAGER.allowedRole,
+    data: TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.data,
+    allowedRole: TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.allowedRole,
   },
 ];
 
