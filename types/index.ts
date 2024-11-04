@@ -203,7 +203,18 @@ export interface Space {
       };
     }[];
   };
+  customAttributes: TBD[];
 }
+
+export interface CalendarConfig {
+  name: string;
+  category: string;
+  accessRule: string;
+}
+
+type TBD = {
+  tbd: string;
+};
 
 export interface SpaceEdge {
   node: Space;

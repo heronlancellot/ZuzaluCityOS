@@ -1,12 +1,13 @@
 import { ZuButton } from '@/components/core';
 import { PlusCircleIcon, XMarkIcon } from '@/components/icons';
-import { Box } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import React from 'react';
 import { useMediaQuery } from '@/hooks';
 
 interface IProps {
   confirmText: string;
   disabled: boolean;
+  isLoading?: boolean;
   handleClose: () => void;
   handleConfirm: () => void;
 }
@@ -14,6 +15,7 @@ interface IProps {
 export default function FormFooter({
   confirmText,
   disabled,
+  isLoading,
   handleClose,
   handleConfirm,
 }: IProps) {
@@ -25,6 +27,7 @@ export default function FormFooter({
           flex: 1,
           width: isMobile ? '100%' : 'auto',
         }}
+        disabled={disabled || isLoading}
         startIcon={<XMarkIcon />}
         onClick={handleClose}
       >
@@ -37,11 +40,15 @@ export default function FormFooter({
           flex: 1,
           width: isMobile ? '100%' : 'auto',
         }}
-        startIcon={<PlusCircleIcon color="#67DBFF" />}
-        disabled={disabled}
+        startIcon={!isLoading ? <PlusCircleIcon color="#67DBFF" /> : null}
+        disabled={disabled || isLoading}
         onClick={handleConfirm}
       >
-        {confirmText}
+        {isLoading ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          confirmText
+        )}
       </ZuButton>
     </Box>
   );

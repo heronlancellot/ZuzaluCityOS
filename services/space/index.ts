@@ -16,6 +16,9 @@ export const getSpaceEventsQuery = (eventCount: number = 10) => `
             github
             discord
             ens
+            customAttributes {
+              tbd
+            }
             admins {
               id
             }
