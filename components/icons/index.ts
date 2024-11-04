@@ -98,6 +98,7 @@ import { LogoutIcon } from './LogoutIcon';
 import { ThankYouIcon } from './ThankYouIcon';
 import { QrCodeIcon } from './QrCodeIcon';
 import { HeartLoveIcon } from './HeartLoveIcon';
+import { CalendarTimeIcon } from './CalendarTimeIcon';
 export {
   HomeIcon,
   SearchIcon,
@@ -199,4 +200,5 @@ export {
   ThankYouIcon,
   QrCodeIcon,
   HeartLoveIcon,
+  CalendarTimeIcon,
 };

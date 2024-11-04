@@ -7,7 +7,7 @@ import {
 } from 'viem/actions';
 
 import { client, config } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
 
 export async function revokeRole({
   from,
@@ -42,7 +42,7 @@ export async function revokeRole({
   try {
     gasLimit = client.estimateGas({
       account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL as `0x${string}`,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
       data: data,
       value: msgValue,
     });
@@ -53,7 +53,7 @@ export async function revokeRole({
   try {
     const transactionHash = await sendTransaction(walletClient, {
       account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL as `0x${string}`,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
       gasLimit: gasLimit,
       data: data,
       value: msgValue,

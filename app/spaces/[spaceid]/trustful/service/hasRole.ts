@@ -1,5 +1,5 @@
 import { client } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
 import { Address } from 'viem';
 
 export async function hasRole(
@@ -23,7 +23,7 @@ export async function hasRole(
 
   try {
     const response = await client.readContract({
-      address: RESOLVER_CONTRACT_SCROLL as `0x${string}`,
+      address: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
       functionName: 'hasRole',
       abi: data.abi,
       args: [role, account],
