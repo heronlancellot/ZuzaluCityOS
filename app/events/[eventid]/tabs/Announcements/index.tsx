@@ -438,7 +438,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                     return <PostCard post={post} key={post.id} />;
                   })}
             </Stack>
-            {isMobile && eventData.regAndAccess.edges[0] ? (
+            {isMobile && eventData.regAndAccess?.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
@@ -446,7 +446,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
-                eventRegistration={eventData.regAndAccess.edges[0].node}
+                eventRegistration={eventData.regAndAccess?.edges[0]?.node}
                 setApplication={setApplication}
                 event={eventData}
               />
@@ -466,7 +466,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
               },
             }}
           >
-            {!isMobile && eventData.regAndAccess.edges[0] ? (
+            {!isMobile && eventData.regAndAccess?.edges[0] ? (
               <EventRegister
                 onToggle={toggleDrawer}
                 setWhitelist={setWhitelist}
@@ -474,7 +474,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
                 externalUrl={eventData.externalUrl}
                 eventId={eventData.id}
                 setVerify={setVerify}
-                eventRegistration={eventData.regAndAccess.edges[0].node}
+                eventRegistration={eventData.regAndAccess?.edges[0]?.node}
                 setApplication={setApplication}
                 event={eventData}
               />

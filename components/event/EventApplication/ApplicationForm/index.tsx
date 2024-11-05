@@ -157,7 +157,7 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
               </AccordionSummary>
               <AccordionDetails>
                 <RadioGroup>
-                  {event.regAndAccess.edges[0].node.scrollPassTickets?.map(
+                  {event.regAndAccess?.edges?.[0]?.node.scrollPassTickets?.map(
                     (contract, index) => (
                       <FormControlLabel
                         key={index}
@@ -234,29 +234,29 @@ export const ApplicationForm: React.FC<ApplicationFormProps> = ({
             </Stack>
           </Stack>
           <Stack spacing="20px">
-            {JSON.parse(event.regAndAccess.edges[0].node.applicationForm).map(
-              (item: QuestionItem, index: number) => (
-                <Stack key={index} spacing="10px" width="100%">
-                  <Typography
-                    sx={{
-                      fontSize: 16,
-                      fontWeight: 700,
-                      lineHeight: '1.2',
-                    }}
-                  >
-                    {item.question}
-                  </Typography>
-                  <TextField
-                    multiline
-                    rows={4}
-                    fullWidth
-                    placeholder="Enter your answer here"
-                    variant="outlined"
-                    {...register(`question_${index}`)}
-                  />
-                </Stack>
-              ),
-            )}
+            {JSON.parse(
+              event.regAndAccess?.edges?.[0]?.node.applicationForm ?? '',
+            ).map((item: QuestionItem, index: number) => (
+              <Stack key={index} spacing="10px" width="100%">
+                <Typography
+                  sx={{
+                    fontSize: 16,
+                    fontWeight: 700,
+                    lineHeight: '1.2',
+                  }}
+                >
+                  {item.question}
+                </Typography>
+                <TextField
+                  multiline
+                  rows={4}
+                  fullWidth
+                  placeholder="Enter your answer here"
+                  variant="outlined"
+                  {...register(`question_${index}`)}
+                />
+              </Stack>
+            ))}
           </Stack>
         </Stack>
         <Typography

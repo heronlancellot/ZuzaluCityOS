@@ -67,7 +67,6 @@ export const ZupassProvider: React.FC<ZupassProviderProps> = ({ children }) => {
         addLog('Got watermark');
         addLog('Opening popup window');
         setAuthState('authenticating');
-        console.log('currentZuConfig', currentZuConfig);
         const result = await zuAuthPopup({
           zupassUrl: process.env.NEXT_PUBLIC_ZUPASS_SERVER_URL as string,
           fieldsToReveal: {
@@ -79,7 +78,6 @@ export const ZupassProvider: React.FC<ZupassProviderProps> = ({ children }) => {
           watermark,
           config: currentZuConfig,
         });
-        console.log('result', result);
         if (result.type === 'pcd') {
           addLog('Received PCD');
           setPcdStr(result.pcdStr);
@@ -102,7 +100,6 @@ export const ZupassProvider: React.FC<ZupassProviderProps> = ({ children }) => {
             },
             externalNullifier: watermark,
           });
-          console.log('pcd', pcd);
           setNullifierHash(pcd.claim.nullifierHash as string);
           addLog('Authenticated successfully');
           setAuthState('authenticated');

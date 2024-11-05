@@ -30,6 +30,8 @@ import React, { Fragment, useEffect, useMemo, useState } from 'react';
 import { EventComingSoonCard } from '@/components/cards/ComingSoonCard';
 import { getSpacesQuery } from '@/services/space';
 import Banner from './components/Banner';
+import { supabase } from '@/utils/supabase/client';
+import { LegacyEvent } from '@/types';
 
 const Home: React.FC = () => {
   const theme = useTheme();
@@ -72,7 +74,10 @@ const Home: React.FC = () => {
         let fetchedSpaces: Space[] = spaceData.zucitySpaceIndex.edges.map(
           (edge) => edge.node,
         );
-        setSpaces(fetchedSpaces);
+        const shuffledSpaces = [...fetchedSpaces].sort(
+          () => Math.random() - 0.5,
+        );
+        setSpaces(shuffledSpaces);
       } else {
         console.error('Invalid data structure:', response.data);
       }
@@ -84,7 +89,8 @@ const Home: React.FC = () => {
   const getEvents = async () => {
     try {
       setIsEventsLoading(true);
-      const response: any = await composeClient.executeQuery(`
+
+      const ceramicResponse: any = await composeClient.executeQuery(`
       query {
         zucityEventIndex(first: 20, sorting: { createdAt: DESC }) {
           edges {
@@ -128,16 +134,67 @@ const Home: React.FC = () => {
       }
     `);
 
-      if (response && response.data && 'zucityEventIndex' in response.data) {
-        const eventData: EventData = response.data as EventData;
-        const fetchedEvents: Event[] = eventData.zucityEventIndex.edges.map(
-          (edge) => edge.node,
-        );
-        setEvents(fetchedEvents);
-        setIsEventsLoading(false);
-        const getEvent =
-          fetchedEvents &&
-          fetchedEvents.find((event) => event.id === dashboardEvent);
+      const { data: legacyEvents, error } = await supabase
+        .from('legacyEvents')
+        .select('*');
+
+      if (error) throw error;
+
+      let allEvents: Event[] = [];
+      if (ceramicResponse?.data?.zucityEventIndex) {
+        const ceramicEvents: Event[] =
+          ceramicResponse.data.zucityEventIndex.edges.map((edge: any) => ({
+            ...edge.node,
+            source: 'ceramic',
+          }));
+        allEvents = [...ceramicEvents];
+      }
+
+      if (legacyEvents) {
+        const convertedLegacyEvents: Event[] = legacyEvents
+          .filter((legacy): legacy is NonNullable<typeof legacy> => !!legacy.id)
+          .map((legacy) => ({
+            id: legacy.id,
+            title: legacy.name ?? '',
+            description: legacy.description ?? '',
+            startTime: legacy.start_date ?? '',
+            endTime: legacy.end_date ?? '',
+            status: legacy.status ?? '',
+            tagline: legacy.tagline ?? '',
+            imageUrl: legacy.image_url ?? '',
+            profileId: '',
+            spaceId: '',
+            timezone: 'UTC',
+            tracks: legacy.event_type || [],
+            source: 'Legacy',
+            participantCount: 0,
+            minParticipant: 0,
+            maxParticipant: 0,
+            createdAt: legacy.start_date,
+            gated: false,
+            externalUrl: '',
+            meetingUrl: '',
+            legacyData: {
+              event_space_type: legacy.event_space_type,
+              format: legacy.format,
+              experience_level: legacy.experience_level,
+              social_links: legacy.social_links,
+              extra_links: legacy.extra_links,
+            },
+          }));
+        allEvents = [...allEvents, ...convertedLegacyEvents];
+      }
+
+      allEvents.sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
+
+      setEvents(allEvents);
+      setIsEventsLoading(false);
+
+      const getEvent = allEvents.find((event) => event.id === dashboardEvent);
+      if (getEvent) {
         setTargetEvent(getEvent);
         const userDid = ceramic.did?.parent.toString().toLowerCase() || '';
         if (getEvent) {
@@ -159,11 +216,10 @@ const Home: React.FC = () => {
             setTargetEventView(canView);
           }
         }
-      } else {
-        console.error('Invalid data structure:', response.data);
       }
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      setIsEventsLoading(false);
     }
   };
 
@@ -311,11 +367,18 @@ const Home: React.FC = () => {
 
   const eventsData = useMemo(() => {
     const data = groupEventsByMonth(events);
-    const keys = Object.keys(data).sort((a, b) => {
+    let keys = Object.keys(data).sort((a, b) => {
       const dateA = dayjs(a, 'MMMM YYYY');
       const dateB = dayjs(b, 'MMMM YYYY');
       return dateA.isBefore(dateB) ? 1 : -1;
     });
+
+    const invalidDateIndex = keys.findIndex((key) => key === 'Invalid Date');
+    if (invalidDateIndex !== -1) {
+      const invalidDate = keys.splice(invalidDateIndex, 1)[0];
+      keys.push(invalidDate);
+    }
+
     const groupedEvents: { [key: string]: Event[] } = {};
     keys.forEach((key) => {
       const value = data[key];
@@ -396,7 +459,7 @@ const Home: React.FC = () => {
                   variant="bodyM"
                   sx={{ opacity: '0.5', fontSize: '12px' }}
                 >
-                  Newest Spaces
+                  Random Spaces
                 </Typography>
               </Box>
               {spaces.length > 0 ? (

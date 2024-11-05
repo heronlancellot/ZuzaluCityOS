@@ -22,7 +22,7 @@ export const composeClient = new ComposeClient({
   definition: definition as RuntimeCompositeDefinition,
 });
 export const dashboardEvent = process.env.NEXT_PUBLIC_EVENT_ID;
-
+export const resendApiKey = process.env.NEXT_PUBLIC_RESEND_API_KEY;
 export const JWT_SECRET = 'ZuCity';
 export const chainID = isDev ? 534351 : 534352;
 export const PROVIDER =
@@ -153,10 +153,6 @@ export const SOCIAL_TYPES: {
   {
     key: 'nostr',
     value: 'Nostr',
-  },
-  {
-    key: 'externalUrl',
-    value: 'External URL',
   },
 ];
 

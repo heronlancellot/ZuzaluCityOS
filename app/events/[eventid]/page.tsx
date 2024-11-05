@@ -177,7 +177,11 @@ const Home = () => {
         canViewSessions={sessionView}
       />
       {tabName === 'About' && (
-        <About eventData={eventData} setVerify={setVerify} />
+        <About
+          eventData={eventData}
+          setVerify={setVerify}
+          canEdit={announcementsEdit}
+        />
       )}
       {tabName === 'Sessions' && (
         <Sessions eventData={eventData} option={urlOption} />

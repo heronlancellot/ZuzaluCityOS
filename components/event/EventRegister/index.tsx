@@ -94,7 +94,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
       auth();
     }*/
     if (!nullifierHash) {
-      const zuPassInfo = event.regAndAccess.edges[0]?.node.zuPassInfo;
+      const zuPassInfo = event?.regAndAccess?.edges?.[0]?.node.zuPassInfo;
       const zuPassConfig =
         zuPassInfo && zuPassInfo.length > 0
           ? {
@@ -329,7 +329,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           }
         }
       } else if (ticketType === 'Zupass') {
-        const zuPassInfo = event.regAndAccess.edges[0]?.node.zuPassInfo;
+        const zuPassInfo = event?.regAndAccess?.edges?.[0]?.node.zuPassInfo;
         const zuPassConfig =
           zuPassInfo && zuPassInfo.length > 0
             ? {

@@ -113,7 +113,7 @@ const Ticket = ({ event }: PropTypes) => {
   const [ticketAddresses, setTicketAddresses] = useState<Array<string>>([]);
   const initialWhitelist = ['0x0000000000000000000000000000000000000000'];
 
-  const regAndAccess = event?.regAndAccess.edges?.[0]?.node;
+  const regAndAccess = event?.regAndAccess?.edges?.[0]?.node;
   const queryClient = useQueryClient();
 
   const updateEventContract = async (
@@ -465,9 +465,10 @@ const Ticket = ({ event }: PropTypes) => {
         ticketAddresses={ticketAddresses}
         tickets={tickets}
         refetch={readFromContract}
+        setBlockClickModal={setBlockClickModal}
         eventContracts={
-          event?.regAndAccess.edges[0].node.scrollPassTickets
-            ? event?.regAndAccess.edges[0].node.scrollPassTickets
+          event?.regAndAccess?.edges?.[0]?.node.scrollPassTickets
+            ? event?.regAndAccess?.edges?.[0]?.node.scrollPassTickets
             : []
         }
         onClose={handleClose}
@@ -517,8 +518,8 @@ const Ticket = ({ event }: PropTypes) => {
           onToggle={handleOpen}
           event={event!}
           eventContracts={
-            event?.regAndAccess.edges[0].node.scrollPassTickets
-              ? event?.regAndAccess.edges[0].node.scrollPassTickets
+            event?.regAndAccess?.edges?.[0]?.node.scrollPassTickets
+              ? event?.regAndAccess?.edges?.[0]?.node.scrollPassTickets
               : []
           }
         />

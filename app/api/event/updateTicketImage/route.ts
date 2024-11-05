@@ -11,20 +11,7 @@ import { Contract } from '@/types';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const {
-      eventId,
-      id,
-      type,
-      contractAddress,
-      description,
-      image_url,
-      status,
-      checkin,
-      name,
-      price,
-      tokenType,
-      disclaimer,
-    } = body;
+    const { eventId, contractAddress, image_url } = body;
     const { data, error } = await supabase
       .from('events')
       .select('privateKey')
@@ -48,6 +35,7 @@ export async function POST(req: Request) {
             regAndAccess(first:1) {
               edges {
                 node {
+                  id
                   scrollPassTickets {
                     type
                     status
@@ -92,22 +80,21 @@ export async function POST(req: Request) {
     )
       ? regAndAccess.scrollPassTickets
       : [];
-    const newContract: Contract = {
-      type,
-      contractAddress,
-      description,
-      image_url,
-      status,
-      checkin: checkin ?? '0',
-      name,
-      price,
-      tokenType,
-      disclaimer,
-    };
-    const updatedContracts: Contract[] = [...existingContracts, newContract];
+    const updatedContracts = existingContracts.map((contract) => {
+      if (
+        contract.contractAddress?.toLowerCase() ===
+        contractAddress.toString().toLowerCase()
+      ) {
+        return {
+          ...contract,
+          image_url,
+        };
+      }
+      return contract;
+    });
     const variables = {
       input: {
-        id,
+        id: regAndAccess.id,
         content: {
           scrollPassTickets: updatedContracts,
         },
@@ -119,7 +106,7 @@ export async function POST(req: Request) {
     );
     return NextResponse.json(
       {
-        message: 'Successfully added into member list',
+        message: 'Successfully updated ticket image',
       },
       { status: 200 },
     );

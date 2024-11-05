@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Stack,
   Typography,
@@ -97,7 +97,9 @@ export const Verify: React.FC<IProps> = ({
         address: TICKET_FACTORY_ADDRESS as Address,
         abi: TICKET_FACTORY_ABI as Abi,
         functionName: 'getTickets',
-        args: [event?.regAndAccess.edges[0].node.scrollPassContractFactoryID],
+        args: [
+          event?.regAndAccess?.edges[0]?.node?.scrollPassContractFactoryID,
+        ],
       })) as Array<string>;
       setTicketAddresses(getTicketAddresses);
       if (getTicketAddresses?.length > 0) {
@@ -405,6 +407,8 @@ export const Tickets: React.FC<IProps> = ({
   const [isMinting, setIsMinting] = useState(false);
   const { switchChainAsync } = useSwitchChain();
   const { composeClient, ceramic } = useCeramicContext();
+  const [decimals, setDecimals] = useState<number>(18);
+
   const getDisclaimer = async (item: any) => {
     const contractAddress = item?.ticket[0].trim().toLowerCase();
     const matchingContract =
@@ -426,6 +430,23 @@ export const Tickets: React.FC<IProps> = ({
       ) ?? null;
     setDisclaimer(matchingContract?.disclaimer);
   };
+
+  useEffect(() => {
+    const fetchDecimals = async () => {
+      if (filteredResults.length > 0) {
+        const firstTicket = filteredResults[0].ticket;
+        const decimalValue = (await client.readContract({
+          address: firstTicket[3]?.result,
+          abi: ERC20_ABI,
+          functionName: 'decimals',
+        })) as number;
+        setDecimals(decimalValue);
+      }
+    };
+
+    fetchDecimals();
+  }, [filteredResults]);
+
   return (
     <Stack>
       <Stack
@@ -493,7 +514,7 @@ export const Tickets: React.FC<IProps> = ({
                         Contributing Amount to Mint:
                       </Typography>
                       <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
-                        {(ticket[4].result / BigInt(10 ** 18)).toString()}{' '}
+                        {(ticket[4].result / BigInt(10 ** decimals)).toString()}{' '}
                         {ticket[3].result.toString() === mUSDT_TOKEN.toString()
                           ? 'USDT'
                           : 'USDC'}
@@ -651,6 +672,23 @@ export const Mint: React.FC<IProps> = ({
   const [isMinting, setIsMinting] = useState(false);
   const { switchChainAsync } = useSwitchChain();
   const { composeClient, ceramic } = useCeramicContext();
+  const [decimals, setDecimals] = useState<number>(18);
+
+  useEffect(() => {
+    const fetchDecimals = async () => {
+      if (mintTicket) {
+        const decimalValue = (await client.readContract({
+          address: mintTicket.ticket[3]?.result,
+          abi: ERC20_ABI,
+          functionName: 'decimals',
+        })) as number;
+        setDecimals(decimalValue);
+      }
+    };
+
+    fetchDecimals();
+  }, [mintTicket]);
+
   const handleMintTicket = async (
     ticketAddress: Address,
     tokenAddress: Address,
@@ -885,7 +923,7 @@ export const Mint: React.FC<IProps> = ({
                     </Typography>
                     <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
                       {(
-                        mintTicket.ticket[4].result / BigInt(10 ** 18)
+                        mintTicket.ticket[4].result / BigInt(10 ** decimals)
                       ).toString()}{' '}
                       {mintTicket.ticket[3].result.toString() ===
                       mUSDT_TOKEN.toString()
@@ -926,7 +964,7 @@ export const Mint: React.FC<IProps> = ({
                   }}
                   disabled={isMinting}
                 >
-                  Mint Ticket
+                  Sign Transaction
                 </ZuButton>
               </Stack>
             </Stack>
@@ -1053,16 +1091,34 @@ export const Complete: React.FC<IProps> = ({
 }) => {
   const [view, setView] = useState<boolean>(true);
   const [showCopyToast, setShowCopyToast] = useState<boolean>(false);
+  const [decimals, setDecimals] = useState<number>(18);
+
+  useEffect(() => {
+    const fetchDecimals = async () => {
+      if (ticketMinted) {
+        const decimalValue = (await client.readContract({
+          address: ticketMinted[3]?.result,
+          abi: ERC20_ABI,
+          functionName: 'decimals',
+        })) as number;
+        setDecimals(decimalValue);
+      }
+    };
+
+    fetchDecimals();
+  }, [ticketMinted]);
 
   const truncateHash = (hash: any, startLength = 6, endLength = 6) => {
     if (!hash) return '';
     return `${hash.slice(0, startLength)}...${hash.slice(-endLength)}`;
   };
+
   const onClose = () => {
     if (handleClose) {
       handleClose();
     }
   };
+
   return (
     <Stack spacing="20px" padding="20px">
       <Snackbar
@@ -1130,7 +1186,9 @@ export const Complete: React.FC<IProps> = ({
                     Contributing Amount to Mint:
                   </Typography>
                   <Typography variant="bodyBB" sx={{ opacity: 0.8 }}>
-                    {(ticketMinted[4].result / BigInt(10 ** 18)).toString()}{' '}
+                    {(
+                      ticketMinted[4].result / BigInt(10 ** decimals)
+                    ).toString()}{' '}
                     {ticketMinted[3].result.toString() ===
                     mUSDT_TOKEN.toString()
                       ? 'USDT'
