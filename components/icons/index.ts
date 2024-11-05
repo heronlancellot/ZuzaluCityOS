@@ -1,3 +1,4 @@
+import { AdminIcon } from './AdminIcon';
 import { HomeIcon } from './Home';
 import { SearchIcon } from './Search';
 import { StreamIcon } from './Stream';
@@ -100,6 +101,7 @@ import { QrCodeIcon } from './QrCodeIcon';
 import { HeartLoveIcon } from './HeartLoveIcon';
 import { CalendarTimeIcon } from './CalendarTimeIcon';
 export {
+  AdminIcon,
   HomeIcon,
   SearchIcon,
   StreamIcon,
