@@ -234,8 +234,7 @@ export const Verify: React.FC<IProps> = ({
                   return (
                     normalizedContractAddress === contractAddress &&
                     contract.type === 'Attendee' &&
-                    contract.checkin === '1' &&
-                    contract.status === 'available'
+                    contract.checkin === '1'
                   );
                 },
               ) ?? null;
@@ -423,8 +422,7 @@ export const Tickets: React.FC<IProps> = ({
           return (
             normalizedContractAddress === contractAddress &&
             contract.type === 'Attendee' &&
-            contract.checkin === '1' &&
-            contract.status === 'available'
+            contract.checkin === '1'
           );
         },
       ) ?? null;
