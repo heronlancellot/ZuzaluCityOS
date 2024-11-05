@@ -8,7 +8,15 @@ import {
   TrashIcon,
   XMarkIcon,
 } from '@/components/icons';
-import { Box, Divider, Link, Menu, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Divider,
+  Link,
+  Menu,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs/AdapterDayjs';
 import { ZuButton } from '@/components/core';
@@ -21,6 +29,10 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import dynamic from 'next/dynamic';
 import { useDialog } from '@/components/dialog/DialogContext';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { supabase } from '@/utils/supabase/client';
+import { useCeramicContext } from '@/context/CeramicContext';
+import FormFooter from '@/components/form/FormFooter';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -45,12 +57,39 @@ export default function ViewEvent({
 }: ViewEventProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+  const { ceramic } = useCeramicContext();
+  const userDID = ceramic.did?.parent.toString().toLowerCase() || '';
+
+  const { data: rsvpData, refetch: refetchRSVP } = useQuery({
+    queryKey: ['getRSVPData', event.id],
+    queryFn: () => {
+      return supabase
+        .from('rsvp_sideEvents')
+        .select('*')
+        .eq('sideEventID', event.uuid);
+    },
+    select: (data: any) => data.data ?? [],
+    enabled: !!event.uuid,
+  });
+
+  const rsvpMutation = useMutation({
+    mutationFn: async () => {
+      return supabase.from('rsvp_sideEvents').insert({
+        sideEventID: event.uuid,
+        userDID,
+      });
+    },
+    onSuccess: () => {
+      refetchRSVP();
+    },
+  });
+
   const { showDialog } = useDialog();
 
   const dateContent = useMemo(() => {
-    const { startDate, endDate, timezone } = event;
-    const start = dayjs(startDate);
-    const end = dayjs(endDate);
+    const { start_date, end_date, timezone } = event;
+    const start = dayjs(start_date).tz(timezone);
+    const end = dayjs(end_date).tz(timezone);
     if (start.isSame(end, 'day')) {
       return (
         <Stack direction="row" gap="10px" alignItems="center">
@@ -111,7 +150,9 @@ export default function ViewEvent({
         </Typography>
       </Stack>
     );
-  }, [event.startDate, event.timezone]);
+  }, [event]);
+
+  const creator = JSON.parse(event.creator);
 
   const handleMenuClose = useCallback(() => {
     setAnchorEl(null);
@@ -139,7 +180,9 @@ export default function ViewEvent({
     }
   }, []);
 
-  const creator = JSON.parse(event.creator);
+  const handleRSVP = useCallback(() => {
+    rsvpMutation.mutate();
+  }, [rsvpMutation]);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -274,18 +317,18 @@ export default function ViewEvent({
               </Stack>
             </Menu>
           </Stack>
-          {event.imageUrl && (
-            <Image
-              src={event.imageUrl}
+          {event.image_url && (
+            <img
+              src={event.image_url}
               alt="event"
               height={338}
-              width={1200}
-              style={{ width: '100%', height: 'auto' }}
+              width="100%"
+              // style={{ width: '100%' }}
             />
           )}
           {dateContent}
           <Typography fontSize={20} fontWeight={700} lineHeight={1.2}>
-            {event.title}
+            {event.name}
           </Typography>
           <Stack
             p="10px"
@@ -293,7 +336,7 @@ export default function ViewEvent({
             borderRadius="10px"
             gap="10px"
           >
-            {event.location && (
+            {event.location_name && (
               <Stack direction="row" gap="6px" alignItems="center">
                 <MapIcon size={4.5} style={{ opacity: 0.5 }} />
                 <Typography
@@ -301,21 +344,21 @@ export default function ViewEvent({
                   lineHeight={1.4}
                   sx={{ opacity: 0.8 }}
                 >
-                  {event.location}
+                  {event.location_name}
                 </Typography>
               </Stack>
             )}
-            {event.link && (
+            {event.location_url && (
               <Stack direction="row" gap="6px" alignItems="center">
                 <LinkIcon size={4.5} style={{ opacity: 0.5 }} />
                 <Link
-                  href={event.link}
+                  href={event.location_url}
                   target="_blank"
                   fontSize={13}
                   lineHeight={1.4}
                   sx={{ opacity: 0.8 }}
                 >
-                  {event.link}
+                  {event.location_url}
                 </Link>
               </Stack>
             )}
@@ -368,7 +411,7 @@ export default function ViewEvent({
                 Attending:
               </Typography>
               <Typography fontSize={13} lineHeight={1.4} sx={{ opacity: 0.8 }}>
-                0
+                {rsvpData?.length || 0}
               </Typography>
             </Stack>
             <ZuButton
@@ -377,11 +420,20 @@ export default function ViewEvent({
                 backgroundColor: '#383838',
                 width: '100%',
               }}
-              startIcon={<TicketIcon size={5} />}
-              //   disabled={disabled}
-              //   onClick={handleConfirm}
+              startIcon={
+                !rsvpMutation.isPending ? <TicketIcon size={5} /> : null
+              }
+              disabled={
+                rsvpMutation.isPending ||
+                rsvpData?.some((rsvp: any) => rsvp.userDID === userDID)
+              }
+              onClick={handleRSVP}
             >
-              RSVP
+              {rsvpMutation.isPending ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                'RSVP'
+              )}
             </ZuButton>
           </Stack>
         </Box>

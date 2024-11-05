@@ -16,9 +16,8 @@ import { TimezoneSelector } from '@/components/select/TimezoneSelector';
 import {
   decodeOutputData,
   encodeOutputData,
-  useEditorStore,
 } from '@/components/editor/useEditorStore';
-import { ZuInput, ZuSelect, ZuSwitch } from 'components/core';
+import { ZuInput, ZuSwitch } from 'components/core';
 import {
   FormLabel,
   FormLabelDesc,
@@ -45,8 +44,13 @@ const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
 import dayjs from 'dayjs';
 import { CalEvent } from '@/types';
 import SelectCheckItem from '@/components/select/selectCheckItem';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
@@ -94,6 +98,7 @@ interface EventFormProps {
   event?: CalEvent;
   categories: string[];
   handleClose: () => void;
+  refetch: () => void;
 }
 
 const CreateEventForm: React.FC<EventFormProps> = ({
@@ -102,6 +107,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
   editType,
   categories,
   handleClose,
+  refetch,
 }) => {
   const { options } = useTimezoneSelect({ timezones: allTimezones });
 
@@ -137,8 +143,6 @@ const CreateEventForm: React.FC<EventFormProps> = ({
 
   const { profile, ceramic } = useCeramicContext();
 
-  const queryClient = useQueryClient();
-
   const createEventMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const {
@@ -156,27 +160,32 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         locationName,
         locationUrl,
       } = data;
-      const currentStartTime = isAllDay
-        ? dayjs(startDate).startOf('day')
-        : startTime ?? dayjs();
-      const currentEndTime = isAllDay
-        ? dayjs(endDate).endOf('day')
-        : endTime ?? dayjs();
+
+      const selectedTimezone = timezone.value || dayjs.tz.guess();
+
+      const startDateTime = isAllDay
+        ? dayjs(startDate).tz(selectedTimezone).startOf('day')
+        : dayjs(startDate)
+            .tz(selectedTimezone)
+            .hour(startTime!.hour())
+            .minute(startTime!.minute());
+
+      const endDateTime = isAllDay
+        ? dayjs(endDate).tz(selectedTimezone).endOf('day')
+        : dayjs(endDate)
+            .tz(selectedTimezone)
+            .hour(endTime!.hour())
+            .minute(endTime!.minute());
+
       return supabase.from('sideEvents').insert({
         name,
         description: encodeOutputData(description),
         category: categories.join(','),
         image_url: imageUrl,
         is_all_day: isAllDay,
-        start_date: dayjs(startDate)
-          .hour(currentStartTime.hour())
-          .minute(currentStartTime.minute())
-          .toISOString(),
-        end_date: dayjs(endDate)
-          .hour(currentEndTime.hour())
-          .minute(currentEndTime.minute())
-          .toISOString(),
-        timezone: timezone.value || dayjs.tz.guess(),
+        start_date: startDateTime.toISOString(),
+        end_date: endDateTime.toISOString(),
+        timezone: selectedTimezone,
         format,
         location_name: locationName,
         location_url: locationUrl,
@@ -185,7 +194,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+      refetch();
       reset();
       handleClose();
     },
@@ -200,7 +209,6 @@ const CreateEventForm: React.FC<EventFormProps> = ({
 
   const onFormSubmit = useCallback(
     async (data: FormData) => {
-      console.log(data);
       createEventMutation.mutate(data);
     },
     [createEventMutation],
@@ -215,14 +223,14 @@ const CreateEventForm: React.FC<EventFormProps> = ({
 
   useEffect(() => {
     if (event) {
-      setValue('name', event.title);
+      setValue('name', event.name);
       event.description && setValue('description', event.description);
-      event.imageUrl && setValue('imageUrl', event.imageUrl);
-      setValue('isAllDay', event.isAllDay);
-      setValue('startDate', dayjs(event.startDate));
-      setValue('endDate', dayjs(event.endDate));
-      setValue('startTime', dayjs(event.startDate));
-      setValue('endTime', dayjs(event.endDate));
+      event.image_url && setValue('imageUrl', event.image_url);
+      setValue('isAllDay', event.is_all_day);
+      setValue('startDate', dayjs(event.start_date));
+      setValue('endDate', dayjs(event.end_date));
+      setValue('startTime', dayjs(event.start_date));
+      setValue('endTime', dayjs(event.end_date));
       setValue(
         'timezone',
         options.find(
@@ -230,8 +238,8 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         ) as ITimezoneOption,
       );
       setValue('format', event.format);
-      setValue('locationName', event.location);
-      setValue('locationUrl', event.link);
+      setValue('locationName', event.location_name);
+      setValue('locationUrl', event.location_url);
     }
   }, []);
 

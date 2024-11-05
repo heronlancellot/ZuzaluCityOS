@@ -508,16 +508,18 @@ export interface ZupassConfigItem {
 }
 
 export interface CalEvent {
-  title: string;
+  id: number;
+  name: string;
   description?: string;
-  imageUrl?: string;
-  isAllDay: boolean;
-  startDate: string;
-  endDate: string;
+  image_url?: string;
+  is_all_day: boolean;
+  start_date: string;
+  end_date: string;
   creator: string;
   timezone: string;
   format: string;
-  link?: string;
-  location?: string;
+  location_name?: string;
+  location_url?: string;
   recurring: string;
+  uuid: string;
 }
