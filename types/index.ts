@@ -510,6 +510,7 @@ export interface ZupassConfigItem {
 export interface CalEvent {
   id: number;
   name: string;
+  category: string;
   description?: string;
   image_url?: string;
   is_all_day: boolean;

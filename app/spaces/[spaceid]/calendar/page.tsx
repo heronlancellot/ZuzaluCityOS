@@ -25,7 +25,7 @@ dayjs.extend(timezone);
 
 const Calendar = () => {
   const params = useParams();
-  const { ceramic } = useCeramicContext();
+  const { ceramic, composeClient } = useCeramicContext();
   const spaceId = params.spaceid.toString();
 
   const [open, setOpen] = useState(false);
@@ -35,14 +35,12 @@ const Calendar = () => {
   const [currentCategory, setCurrentCategory] = useState('All');
   const [currentEvent, setCurrentEvent] = useState<any>(null);
 
-  const { composeClient } = useCeramicContext();
-
   const {
     data: spaceData,
     refetch: refetchSpace,
     isLoading: isLoadingSpace,
   } = useQuery({
-    queryKey: ['getSpaceByID', spaceId],
+    queryKey: ['getSpaceByID', spaceId, ceramic?.did?.parent.toString()],
     queryFn: () => {
       return composeClient.executeQuery(getSpaceEventsQuery(), {
         id: spaceId,
@@ -53,26 +51,6 @@ const Calendar = () => {
       return space;
     },
   });
-
-  useEffect(() => {
-    if (spaceData) {
-      const admins =
-        spaceData?.admins?.map((admin) => admin.id.toLowerCase()) || [];
-      const superAdmins =
-        spaceData?.superAdmin?.map((superAdmin) =>
-          superAdmin.id.toLowerCase(),
-        ) || [];
-      const members =
-        spaceData?.members?.map((member) => member.id.toLowerCase()) || [];
-      const userDID = ceramic?.did?.parent.toString().toLowerCase() || '';
-      if (admins.includes(userDID) || superAdmins.includes(userDID)) {
-        setIsAdmin(true);
-      }
-      if (members.includes(userDID)) {
-        setIsMember(true);
-      }
-    }
-  }, [spaceData]);
 
   const calendarConfig = useMemo(() => {
     if (spaceData && spaceData.customAttributes) {
@@ -91,7 +69,7 @@ const Calendar = () => {
   const canAccessCalendar = isAdmin || isMember;
 
   const { data: eventsData, refetch: refetchEvents } = useQuery({
-    queryKey: ['calendar', spaceId],
+    queryKey: ['calendar', spaceId, ceramic?.did?.parent.toString()],
     queryFn: () => {
       return supabase.from('sideEvents').select('*').eq('space_id', spaceId);
     },
@@ -301,6 +279,36 @@ const Calendar = () => {
     handleCategory,
   ]);
 
+  useEffect(() => {
+    if (spaceData) {
+      const admins =
+        spaceData?.admins?.map((admin) => admin.id.toLowerCase()) || [];
+      const superAdmins =
+        spaceData?.superAdmin?.map((superAdmin) =>
+          superAdmin.id.toLowerCase(),
+        ) || [];
+      const members =
+        spaceData?.members?.map((member) => member.id.toLowerCase()) || [];
+      const userDID = ceramic?.did?.parent.toString().toLowerCase() || '';
+      if (admins.includes(userDID) || superAdmins.includes(userDID)) {
+        setIsAdmin(true);
+      }
+      if (members.includes(userDID)) {
+        setIsMember(true);
+      }
+    }
+  }, [spaceData]);
+
+  useEffect(() => {
+    if (currentEvent) {
+      eventsData?.forEach((event: any) => {
+        if (event.id === currentEvent.id) {
+          setCurrentEvent(event);
+        }
+      });
+    }
+  }, [currentEvent, eventsData]);
+
   return (
     <Stack direction="row" width={'100%'}>
       <SubSidebar
@@ -327,6 +335,8 @@ const Calendar = () => {
             <ViewEvent
               handleEdit={setType}
               event={currentEvent}
+              isAdmin={isAdmin}
+              refetch={refetchEvents}
               handleClose={handleFormClose}
             />
           )}

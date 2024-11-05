@@ -48,9 +48,11 @@ import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(isSameOrAfter);
 
 const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
@@ -61,7 +63,22 @@ const schema = Yup.object().shape({
   description: Yup.mixed(),
   isAllDay: Yup.boolean(),
   startDate: Yup.mixed().dayjs().required('Start date is required'),
-  endDate: Yup.mixed().dayjs().required('End date is required'),
+  endDate: Yup.mixed()
+    .dayjs()
+    .required('End date is required')
+    .test(
+      'is-after-start',
+      'End date must be after start date',
+      function (endDate) {
+        const startDate = this.parent.startDate;
+        if (!startDate || !endDate) return true;
+
+        const startDayjs = dayjs(startDate);
+        const endDayjs = dayjs(endDate);
+
+        return endDayjs.isSameOrAfter(startDayjs, 'day');
+      },
+    ),
   startTime: Yup.mixed()
     .dayjs()
     .when('isAllDay', {
@@ -70,9 +87,30 @@ const schema = Yup.object().shape({
     }),
   endTime: Yup.mixed()
     .dayjs()
-    .when('isAllDay', {
-      is: false,
-      then: (schema) => schema.required('End time is required'),
+    .when(['isAllDay', 'startTime', 'startDate', 'endDate'], {
+      is: (isAllDay: boolean, startTime: any, startDate: any, endDate: any) => {
+        return !isAllDay && startTime && startDate && endDate;
+      },
+      then: (schema) =>
+        schema
+          .required('End time is required')
+          .test(
+            'is-after-start-time',
+            'End time must be after start time',
+            function (endTime) {
+              const { startTime, startDate, endDate } = this.parent;
+              if (!startTime || !endTime) return true;
+
+              const start = dayjs(startDate)
+                .hour(dayjs(startTime).hour())
+                .minute(dayjs(startTime).minute());
+              const end = dayjs(endDate)
+                .hour(dayjs(endTime).hour())
+                .minute(dayjs(endTime).minute());
+
+              return end.isAfter(start);
+            },
+          ),
     }),
   timezone: Yup.object().shape({
     value: Yup.string(),
@@ -80,14 +118,18 @@ const schema = Yup.object().shape({
   recurring: Yup.string(),
   imageUrl: Yup.string(),
   format: Yup.string(),
-  locationName: Yup.string().when('format', {
-    is: (format: string) => format === 'in-person' || format === 'hybrid',
-    then: (schema) => schema.required('Location name is required'),
-  }),
-  locationUrl: Yup.string().when('format', {
-    is: (format: string) => format === 'online' || format === 'hybrid',
-    then: (schema) => schema.required('Location URL is required'),
-  }),
+  locationName: Yup.string()
+    .when('format', {
+      is: (format: string) => format === 'in-person' || format === 'hybrid',
+      then: (schema) => schema.required('Location name is required'),
+    })
+    .nullable(),
+  locationUrl: Yup.string()
+    .when('format', {
+      is: (format: string) => format === 'online' || format === 'hybrid',
+      then: (schema) => schema.required('Location URL is required'),
+    })
+    .nullable(),
 });
 
 type FormData = Yup.InferType<typeof schema>;
@@ -104,21 +146,13 @@ interface EventFormProps {
 const CreateEventForm: React.FC<EventFormProps> = ({
   spaceId,
   event,
-  editType,
   categories,
   handleClose,
   refetch,
 }) => {
   const { options } = useTimezoneSelect({ timezones: allTimezones });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    reset,
-  } = useForm<FormData>({
+  const { control, handleSubmit, setValue, watch, reset } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
       format: 'in-person',
@@ -141,9 +175,9 @@ const CreateEventForm: React.FC<EventFormProps> = ({
   const [blockClickModal, setBlockClickModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  const { profile, ceramic } = useCeramicContext();
+  const { profile } = useCeramicContext();
 
-  const createEventMutation = useMutation({
+  const eventMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const {
         name,
@@ -177,7 +211,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
             .hour(endTime!.hour())
             .minute(endTime!.minute());
 
-      return supabase.from('sideEvents').insert({
+      const eventData = {
         name,
         description: encodeOutputData(description),
         category: categories.join(','),
@@ -191,7 +225,13 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         location_url: locationUrl,
         space_id: spaceId,
         creator: JSON.stringify(profile),
-      });
+      };
+
+      if (event) {
+        return supabase.from('sideEvents').update(eventData).eq('id', event.id);
+      } else {
+        return supabase.from('sideEvents').insert(eventData);
+      }
     },
     onSuccess: () => {
       refetch();
@@ -209,9 +249,9 @@ const CreateEventForm: React.FC<EventFormProps> = ({
 
   const onFormSubmit = useCallback(
     async (data: FormData) => {
-      createEventMutation.mutate(data);
+      eventMutation.mutate(data);
     },
-    [createEventMutation],
+    [eventMutation],
   );
 
   const handleDialogClose = useCallback(() => {
@@ -224,13 +264,14 @@ const CreateEventForm: React.FC<EventFormProps> = ({
   useEffect(() => {
     if (event) {
       setValue('name', event.name);
+      setValue('categories', event.category.split(','));
       event.description && setValue('description', event.description);
       event.image_url && setValue('imageUrl', event.image_url);
       setValue('isAllDay', event.is_all_day);
-      setValue('startDate', dayjs(event.start_date));
-      setValue('endDate', dayjs(event.end_date));
-      setValue('startTime', dayjs(event.start_date));
-      setValue('endTime', dayjs(event.end_date));
+      setValue('startDate', dayjs(event.start_date).tz(event.timezone));
+      setValue('endDate', dayjs(event.end_date).tz(event.timezone));
+      setValue('startTime', dayjs(event.start_date).tz(event.timezone));
+      setValue('endTime', dayjs(event.end_date).tz(event.timezone));
       setValue(
         'timezone',
         options.find(
@@ -409,7 +450,9 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                     <Controller
                       name="isAllDay"
                       control={control}
-                      render={({ field }) => <ZuSwitch {...field} />}
+                      render={({ field }) => {
+                        return <ZuSwitch {...field} checked={field.value} />;
+                      }}
                     />
                     <Typography fontSize={16} lineHeight={1.2} fontWeight={600}>
                       All Day
@@ -631,9 +674,9 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         >
           <Box p="20px" bgcolor="#222">
             <FormFooter
-              confirmText="Create Event"
-              disabled={createEventMutation.isPending}
-              isLoading={createEventMutation.isPending}
+              confirmText={event ? 'Update Event' : 'Create Event'}
+              disabled={eventMutation.isPending}
+              isLoading={eventMutation.isPending}
               handleClose={handleClose}
               handleConfirm={handleSubmit(onFormSubmit)}
             />

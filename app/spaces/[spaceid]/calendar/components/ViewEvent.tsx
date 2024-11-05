@@ -46,14 +46,18 @@ const EditorPreview = dynamic(
 
 interface ViewEventProps {
   event: CalEvent;
+  isAdmin: boolean;
   handleClose: () => void;
   handleEdit: (type: string) => void;
+  refetch: () => void;
 }
 
 export default function ViewEvent({
   event,
+  isAdmin,
   handleClose,
   handleEdit,
+  refetch,
 }: ViewEventProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -165,20 +169,26 @@ export default function ViewEvent({
     [],
   );
 
-  const handleMenuClick = useCallback((type: 'edit' | 'delete') => {
-    setAnchorEl(null);
-    if (type === 'edit') {
-      handleEdit('edit');
-    } else if (type === 'delete') {
-      showDialog({
-        title: 'Delete Event',
-        message: 'Are you sure you want to delete this event?',
-        onConfirm: () => {
-          //   handleEdit('delete');
-        },
-      });
-    }
-  }, []);
+  const handleMenuClick = useCallback(
+    (type: 'edit' | 'delete') => {
+      setAnchorEl(null);
+      if (type === 'edit') {
+        handleEdit('edit');
+      } else if (type === 'delete') {
+        showDialog({
+          title: 'Delete Event',
+          message: 'Are you sure you want to delete this event?',
+          confirmText: 'Delete',
+          onConfirm: async () => {
+            await supabase.from('sideEvents').delete().eq('id', event.id);
+            handleClose();
+            refetch();
+          },
+        });
+      }
+    },
+    [event.id, handleClose, handleEdit, refetch, showDialog],
+  );
 
   const handleRSVP = useCallback(() => {
     rsvpMutation.mutate();
@@ -207,123 +217,133 @@ export default function ViewEvent({
             paddingBottom: '125px',
           }}
         >
-          <Stack
-            padding="10px"
-            bgcolor="#ffc77d1a"
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            width="100%"
-            border="1px solid rgba(255, 199, 125, .1)"
-            borderRadius={'8px'}
-          >
-            <Typography
-              fontSize={'14px'}
-              lineHeight={'160%'}
-              color={'rgba(255, 199, 125, 1)'}
-              fontWeight={600}
+          {isAdmin && (
+            <Stack
+              padding="10px"
+              bgcolor="#ffc77d1a"
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              width="100%"
+              border="1px solid rgba(255, 199, 125, .1)"
+              borderRadius={'8px'}
             >
-              You are organizing this event
-            </Typography>
-            <ZuButton
-              startIcon={<Cog6Icon size={5} color="currentColor" />}
-              sx={{
-                padding: '6px 10px',
-                backgroundColor: 'rgba(255, 199, 125, 0.05)',
-                gap: '10px',
-                '& > span': {
-                  margin: '0px',
-                },
-                color: 'rgba(255, 199, 125, 1)',
-                fontSize: '14px',
-                fontWeight: 600,
-              }}
-              onClick={handleManageClick}
-            >
-              Manage
-            </ZuButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              slotProps={{
-                paper: {
-                  style: {
-                    backgroundColor: 'rgba(34, 34, 34, 0.8)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    zIndex: 9999,
-                    padding: '2px 10px',
-                    width: '200px',
-                    marginTop: '8px',
-                    backdropFilter: 'blur(10px)',
+              <Typography
+                fontSize={'14px'}
+                lineHeight={'160%'}
+                color={'rgba(255, 199, 125, 1)'}
+                fontWeight={600}
+              >
+                You are organizing this event
+              </Typography>
+              <ZuButton
+                startIcon={<Cog6Icon size={5} color="currentColor" />}
+                sx={{
+                  padding: '6px 10px',
+                  backgroundColor: 'rgba(255, 199, 125, 0.05)',
+                  gap: '10px',
+                  '& > span': {
+                    margin: '0px',
                   },
-                },
-              }}
-            >
-              <Stack flexDirection="column" sx={{ gap: '10px' }}>
-                {[
-                  {
-                    title: 'Edit Event',
+                  color: 'rgba(255, 199, 125, 1)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                }}
+                onClick={handleManageClick}
+              >
+                Manage
+              </ZuButton>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                slotProps={{
+                  paper: {
+                    style: {
+                      backgroundColor: 'rgba(34, 34, 34, 0.8)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      zIndex: 9999,
+                      padding: '2px 10px',
+                      width: '200px',
+                      marginTop: '8px',
+                      backdropFilter: 'blur(10px)',
+                    },
                   },
-                ].map((item) => (
-                  <Stack
-                    key={item.title}
-                    direction="row"
-                    gap="10px"
-                    alignItems="center"
-                    p="6px"
-                    borderRadius="8px"
-                    sx={{
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      },
-                    }}
-                    onClick={() => handleMenuClick('edit')}
-                  >
-                    <PencilIcon size={4} />
-                    <Typography fontSize={13} lineHeight={1.4}>
-                      Edit Event
-                    </Typography>
-                  </Stack>
-                ))}
-                <Divider />
-                {[
-                  {
-                    title: 'Edit Event',
-                  },
-                ].map((item) => (
-                  <Stack
-                    key={item.title}
-                    direction="row"
-                    gap="10px"
-                    alignItems="center"
-                    p="6px"
-                    borderRadius="8px"
-                    sx={{
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                      },
-                    }}
-                    onClick={() => handleMenuClick('delete')}
-                  >
-                    <TrashIcon size={4} color="#FF5E5E" />
-                    <Typography fontSize={13} lineHeight={1.4} color="#FF5E5E">
-                      Delete Event
-                    </Typography>
-                  </Stack>
-                ))}
-              </Stack>
-            </Menu>
-          </Stack>
+                }}
+              >
+                <Stack flexDirection="column" sx={{ gap: '10px' }}>
+                  {[
+                    {
+                      title: 'Edit Event',
+                    },
+                  ].map((item) => (
+                    <Stack
+                      key={item.title}
+                      direction="row"
+                      gap="10px"
+                      alignItems="center"
+                      p="6px"
+                      borderRadius="8px"
+                      sx={{
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        },
+                      }}
+                      onClick={() => handleMenuClick('edit')}
+                    >
+                      <PencilIcon size={4} />
+                      <Typography fontSize={13} lineHeight={1.4}>
+                        Edit Event
+                      </Typography>
+                    </Stack>
+                  ))}
+                  <Divider />
+                  {[
+                    {
+                      title: 'Edit Event',
+                    },
+                  ].map((item) => (
+                    <Stack
+                      key={item.title}
+                      direction="row"
+                      gap="10px"
+                      alignItems="center"
+                      p="6px"
+                      borderRadius="8px"
+                      sx={{
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        },
+                      }}
+                      onClick={() => handleMenuClick('delete')}
+                    >
+                      <TrashIcon size={4} color="#FF5E5E" />
+                      <Typography
+                        fontSize={13}
+                        lineHeight={1.4}
+                        color="#FF5E5E"
+                      >
+                        Delete Event
+                      </Typography>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Menu>
+            </Stack>
+          )}
           {event.image_url && (
-            <img
+            <Image
               src={event.image_url}
               alt="event"
+              width={1200}
               height={338}
-              width="100%"
-              // style={{ width: '100%' }}
+              style={{
+                width: '100%',
+                height: 338,
+                objectFit: 'contain',
+              }}
             />
           )}
           {dateContent}
@@ -424,8 +444,9 @@ export default function ViewEvent({
                 !rsvpMutation.isPending ? <TicketIcon size={5} /> : null
               }
               disabled={
-                rsvpMutation.isPending ||
-                rsvpData?.some((rsvp: any) => rsvp.userDID === userDID)
+                rsvpMutation.isPending || rsvpData
+                  ? rsvpData.some((rsvp: any) => rsvp.userDID === userDID)
+                  : true
               }
               onClick={handleRSVP}
             >
