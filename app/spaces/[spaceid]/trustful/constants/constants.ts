@@ -51,7 +51,7 @@ export enum Role {
 export enum ROLES {
   ROOT = '0x79e553c6f53701daa99614646285e66adb98ff0fcc1ef165dd2718e5c873bee6',
   MANAGER = '0x241ecf16d79d0f8dbfb92cbc07fe17840425976cf0667f022fe9877caa831b08',
-  VILLAGER = '0xd0a9af7d104b9b3afa727f6e92a7e308d10a3408478e161aba393651814986e8',
+  VILLAGER = '0x7e8ac59880745312f8754f56b69cccc1c6b2112d567ccf50e4e6dc2e39a7c67a',
 }
 
 export interface Schemas {
