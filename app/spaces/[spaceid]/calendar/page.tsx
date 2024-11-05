@@ -237,7 +237,7 @@ const Calendar = () => {
               </Box>
             ))}
           </Stack>
-          <CalendarView />
+          <CalendarView spaceId={spaceId} />
         </>
       );
     }
@@ -267,6 +267,7 @@ const Calendar = () => {
     handleType,
     isAdmin,
     isLoadingSpace,
+    spaceId,
   ]);
 
   return (

@@ -45,7 +45,7 @@ const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
 import dayjs from 'dayjs';
 import { CalEvent } from '@/types';
 import SelectCheckItem from '@/components/select/selectCheckItem';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/utils/supabase/client';
 
 const schema = Yup.object().shape({
@@ -137,6 +137,8 @@ const CreateEventForm: React.FC<EventFormProps> = ({
 
   const { profile, ceramic } = useCeramicContext();
 
+  const queryClient = useQueryClient();
+
   const createEventMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const {
@@ -183,6 +185,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
       });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
       reset();
       handleClose();
     },
@@ -360,11 +363,6 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                       value={decodeOutputData(description ?? '')}
                       onChange={handleDescriptionChange}
                     />
-                    {errors?.description && (
-                      <FormHelperText error>
-                        {errors?.description.message}
-                      </FormHelperText>
-                    )}
                   </Stack>
                   <Stack spacing="10px">
                     <FormLabel>Event Image</FormLabel>
