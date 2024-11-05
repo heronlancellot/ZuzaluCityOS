@@ -41,6 +41,16 @@ export const MyBadgeDetails = () => {
   const { switchChain } = useSwitchChain();
   const actualURL = `/spaces/${params.spaceid}/trustful/my-badges`;
 
+  const toastSwitchRightNetwork = () => {
+    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
+      toast.error(
+        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
+      );
+      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
+      return;
+    }
+  };
+
   useEffect(() => {
     if (villagerAttestationCount === 0) {
       toast.error('You have not checked in. Please check-in first.');
@@ -86,13 +96,7 @@ export const MyBadgeDetails = () => {
     response: any,
     isConfirm: boolean | null,
   ) => {
-    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
-      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
-      return;
-    }
+    toastSwitchRightNetwork();
     if (response instanceof Error) {
       setLoadingConfirm(false);
       setLoadingDeny(false);
@@ -139,13 +143,7 @@ export const MyBadgeDetails = () => {
 
   // Submit attestation
   const handleAttest = async (isConfirm: boolean) => {
-    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
-      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
-      return;
-    }
+    toastSwitchRightNetwork();
 
     if (!canProcessAttestation()) return;
 
@@ -174,14 +172,7 @@ export const MyBadgeDetails = () => {
 
   // Submit revoke
   const handleRevoke = async () => {
-    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
-
-      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
-      return;
-    }
+    toastSwitchRightNetwork();
     if (!canProcessAttestation()) return;
     const response = await revoke(
       address as `0x${string}`,
