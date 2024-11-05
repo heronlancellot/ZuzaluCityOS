@@ -443,6 +443,7 @@ export default function ViewEvent({
                 color: '#fff',
                 backgroundColor: '#383838',
                 width: '100%',
+                height: '40px',
               }}
               startIcon={
                 !rsvpMutation.isPending ? <TicketIcon size={5} /> : null

@@ -26,6 +26,7 @@ export default function FormFooter({
         sx={{
           flex: 1,
           width: isMobile ? '100%' : 'auto',
+          height: '40px',
         }}
         disabled={disabled || isLoading}
         startIcon={<XMarkIcon />}
@@ -39,6 +40,7 @@ export default function FormFooter({
           backgroundColor: 'rgba(103, 219, 255, 0.10)',
           flex: 1,
           width: isMobile ? '100%' : 'auto',
+          height: '40px',
         }}
         startIcon={!isLoading ? <PlusCircleIcon color="#67DBFF" /> : null}
         disabled={disabled || isLoading}

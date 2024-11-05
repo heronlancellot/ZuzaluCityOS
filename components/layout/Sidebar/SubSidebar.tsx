@@ -240,14 +240,12 @@ const SubSidebar: React.FC<SubSidebarProps> = ({
             content="Events"
             isActive={pathname === `/spaces/${spaceId}/events`}
           />
-          {isAdmin && (
-            <SidebarButton
-              icon={<AnnouncementsIcon />}
-              content="Calendar"
-              isActive={pathname === `/spaces/${spaceId}/calendar`}
-              onClick={() => router.push(`/spaces/${spaceId}/calendar`)}
-            />
-          )}
+          <SidebarButton
+            icon={<AnnouncementsIcon />}
+            content="Calendar"
+            isActive={pathname === `/spaces/${spaceId}/calendar`}
+            onClick={() => router.push(`/spaces/${spaceId}/calendar`)}
+          />
           {isAdmin && (
             <SidebarButton
               icon={<TableIcon />}
