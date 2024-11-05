@@ -125,6 +125,7 @@ const schema = Yup.object().shape({
     })
     .nullable(),
   locationUrl: Yup.string()
+    .url('Please enter a valid URL')
     .when('format', {
       is: (format: string) => format === 'online' || format === 'hybrid',
       then: (schema) => schema.required('Location URL is required'),
@@ -421,7 +422,19 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                     <Controller
                       name="imageUrl"
                       control={control}
-                      render={({ field }) => <FormUploader {...field} />}
+                      render={({ field }) => (
+                        <FormUploader
+                          {...field}
+                          crop={{
+                            size: { width: 620, height: 338 },
+                            aspectRatio: 16 / 9,
+                          }}
+                          previewStyle={{
+                            width: 310,
+                            height: 169,
+                          }}
+                        />
+                      )}
                     />
                   </Stack>
                 </Box>
