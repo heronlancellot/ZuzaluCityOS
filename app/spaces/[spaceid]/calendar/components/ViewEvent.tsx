@@ -401,8 +401,12 @@ export default function ViewEvent({
             </Stack>
           </Stack>
           <Divider />
-          {event.description && (
+          {event.description ? (
             <EditorPreview collapsable={false} value={event.description} />
+          ) : (
+            <Typography fontSize={16} lineHeight={1.6} sx={{ opacity: 0.8 }}>
+              No Description Provided
+            </Typography>
           )}
         </Stack>
 

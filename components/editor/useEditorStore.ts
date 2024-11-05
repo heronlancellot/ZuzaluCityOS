@@ -5,7 +5,7 @@ import { once } from 'lodash';
 export const decodeOutputData = (value: string | OutputData): OutputData => {
   if (typeof value !== 'string') return value;
   try {
-    return JSON.parse(value.replaceAll('\\"', '"')) as OutputData;
+    return JSON.parse(value) as OutputData;
   } catch (e) {
     console.error('Failed to parse output data', e);
     return { time: 0, blocks: [] };
@@ -14,8 +14,7 @@ export const decodeOutputData = (value: string | OutputData): OutputData => {
 
 export const encodeOutputData = (data: OutputData) => {
   if (!data) return JSON.stringify({});
-  // FIXME: This is a temporary solution to fix the issue with the double quotes
-  return JSON.stringify(data).replaceAll('"', '\\"');
+  return JSON.stringify(data);
 };
 
 export const getOutputDataLength = (blocks?: OutputBlockData[]) => {
