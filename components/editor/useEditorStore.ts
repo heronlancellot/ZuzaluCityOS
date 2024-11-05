@@ -5,7 +5,7 @@ import { once } from 'lodash';
 export const decodeOutputData = (value: string | OutputData): OutputData => {
   if (typeof value !== 'string') return value;
   try {
-    return JSON.parse(value) as OutputData;
+    return JSON.parse(value.replaceAll('\\"', '"')) as OutputData;
   } catch (e) {
     console.error('Failed to parse output data', e);
     return { time: 0, blocks: [] };
