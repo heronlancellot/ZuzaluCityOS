@@ -3,6 +3,7 @@
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { useParams, useRouter } from 'next/navigation';
 import {
+  AdminIcon,
   BadgeIcon,
   HeartLoveIcon,
   LoginIcon,
@@ -10,11 +11,14 @@ import {
   QrCodeIcon,
   ThankYouIcon,
 } from '@/components/icons';
+import { useTrustful } from '@/context/TrustfulContext';
+import { Role } from '../constants/constants';
 // import { WalletContext } from '@/lib/context/WalletContext';
 
 export const TheFooterNavbar = () => {
   const params = useParams();
   const { push } = useRouter();
+  const { userRole } = useTrustful();
   // const { villagerAttestationCount } = useContext(WalletContext);
   const villagerAttestationCount = Number(1);
   const checkInStatus =
@@ -109,6 +113,21 @@ export const TheFooterNavbar = () => {
               {checkInStatus}
             </Text>
           </Box>
+          {userRole?.role == Role.ROOT && (
+            <Box
+              className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'share' ? 'border-[#B1EF42]' : 'border-transparent'}`}
+              onClick={() => push(`${actualURL}/admin`)}
+            >
+              <AdminIcon
+                className={`w-5 h-5 text-white ${params.slug == 'share' ? 'opacity-100' : 'opacity-50'}`}
+              />
+              <Text
+                className={`text-slate-50 ${params.slug == 'share' ? 'opacity-100' : 'opacity-50'} text-sm font-medium leading-none`}
+              >
+                Admin
+              </Text>
+            </Box>
+          )}
         </Flex>
       )}
     </Box>

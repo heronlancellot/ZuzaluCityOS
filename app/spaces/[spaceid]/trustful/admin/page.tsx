@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -9,21 +10,22 @@ import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { getUserRole } from '@/services/user/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
-import { GiveBadge } from './components/GiveBadge';
 import { Address } from 'viem';
-import { Role, ROLES } from './constants/constants';
-import { hasRole } from './service';
+import { AdminSection } from './components/AdminSection';
+import { Role, ROLES } from '../constants/constants';
+import { hasRole } from '../service';
 
-const TrustfulPage = () => {
+const TrustfulAdminPage = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
+  console.log('params', params);
 
   const [space, setSpace] = useState<Space>();
   const [events, setEvents] = useState<Event[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState<boolean>(true);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const { composeClient, ceramic, profile } = useCeramicContext();
-  const { setUserRole } = useTrustful();
+  const { composeClient, ceramic, profile, username } = useCeramicContext();
+  const { setUserRole, userRole } = useTrustful();
 
   const getSpaceByID = async () => {
     setIsEventsLoading(true);
@@ -123,6 +125,7 @@ const TrustfulPage = () => {
     }
   }, [profile]);
 
+  //TODO: REFACTOR THIS WHEN API RETURNS ALSO LOOKING THE CONTRACT HASROLE
   useEffect(() => {
     const fetchUserRole = async () => {
       if (address) {
@@ -130,7 +133,6 @@ const TrustfulPage = () => {
           .then(async (data) => {
             console.log('User role:', data);
             if (data && data?.role) {
-              //TODO: Check if the endpoint is returning correctly and if needed to check for Role.NO_ROLE ( double check confirmation here)
               if (data.role == Role.NO_ROLE) {
                 const isRoot = await hasRole(ROLES.ROOT, address as Address);
                 const isManager = await hasRole(
@@ -141,6 +143,9 @@ const TrustfulPage = () => {
                   ROLES.VILLAGER,
                   address as Address,
                 );
+                console.log('isManagert', isManager);
+                console.log('isVillager', isVillager);
+                console.log('isRoot', isRoot);
                 if (isRoot) {
                   setUserRole({
                     address: address as Address,
@@ -195,11 +200,11 @@ const TrustfulPage = () => {
             padding: '20px',
           }}
         >
-          <GiveBadge />
+          <AdminSection />
         </Box>
       </Stack>
     </Stack>
   );
 };
 
-export default TrustfulPage;
+export default TrustfulAdminPage;
