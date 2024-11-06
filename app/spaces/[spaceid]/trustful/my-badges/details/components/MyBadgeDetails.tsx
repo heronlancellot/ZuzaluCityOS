@@ -20,14 +20,17 @@ import { useTrustful } from '@/context/TrustfulContext';
 import { BadgeStatus, BadgeTagIcon } from '../../components/BadgeTagIcon';
 import { getEllipsedAddress } from '@/utils/format';
 import { isDev, TRUSTFUL_SCHEMAS } from '../../../constants/constants';
-import { AttestationRequestData, submitAttest } from '../../../service';
+import {
+  AttestationRequestData,
+  submitAttest,
+} from '../../../service/smart-contract';
 import { HeartLoveIcon, UserIcon } from '@/components/icons';
 import { BadgeDetailsNavigation } from '../../../components';
 import { CopyToClipboardButton } from '../../../components/CopyToClipboardButton';
 import { OutboundLinkButton } from '../../../components/OutboundLink';
 import { TheFooterNavbar } from '../../../components/TheFooterNavbar';
 import { TheHeader } from '../../../components/TheHeader';
-import { revoke } from '../../../service/revoke';
+import { revoke } from '../../../service/smart-contract/revoke';
 import toast from 'react-hot-toast';
 
 export const MyBadgeDetails = () => {
@@ -40,6 +43,16 @@ export const MyBadgeDetails = () => {
   const villagerAttestationCount = Number(1);
   const { switchChain } = useSwitchChain();
   const actualURL = `/spaces/${params.spaceid}/trustful/my-badges`;
+
+  const toastSwitchRightNetwork = () => {
+    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
+      toast.error(
+        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
+      );
+      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
+      return;
+    }
+  };
 
   useEffect(() => {
     if (villagerAttestationCount === 0) {
@@ -86,13 +99,7 @@ export const MyBadgeDetails = () => {
     response: any,
     isConfirm: boolean | null,
   ) => {
-    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
-      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
-      return;
-    }
+    toastSwitchRightNetwork();
     if (response instanceof Error) {
       setLoadingConfirm(false);
       setLoadingDeny(false);
@@ -139,13 +146,7 @@ export const MyBadgeDetails = () => {
 
   // Submit attestation
   const handleAttest = async (isConfirm: boolean) => {
-    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
-      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
-      return;
-    }
+    toastSwitchRightNetwork();
 
     if (!canProcessAttestation()) return;
 
@@ -174,14 +175,7 @@ export const MyBadgeDetails = () => {
 
   // Submit revoke
   const handleRevoke = async () => {
-    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
-
-      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
-      return;
-    }
+    toastSwitchRightNetwork();
     if (!canProcessAttestation()) return;
     const response = await revoke(
       address as `0x${string}`,

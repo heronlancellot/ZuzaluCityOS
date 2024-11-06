@@ -11,9 +11,11 @@ import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { getUserRole } from '@/app/spaces/[spaceid]/trustful/service/backend/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
 import { Address } from 'viem';
-import { ShareSection } from './components/ShareSection';
+import { AdminSection } from './components/AdminSection';
+import { Role, ROLES } from '../constants/constants';
+import { hasRole } from '../service/smart-contract';
 
-const TrustfulSharePage = () => {
+const TrustfulAdminPage = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
   console.log('params', params);
@@ -123,17 +125,49 @@ const TrustfulSharePage = () => {
     }
   }, [profile]);
 
+  //TODO: REFACTOR THIS WHEN API RETURNS ALSO LOOKING THE CONTRACT HASROLE
   useEffect(() => {
     const fetchUserRole = async () => {
       if (address) {
         await getUserRole(address as Address)
-          .then((data) => {
+          .then(async (data) => {
             console.log('User role:', data);
             if (data && data?.role) {
-              setUserRole({
-                address: address as Address,
-                role: data.role,
-              });
+              if (data.role == Role.NO_ROLE) {
+                const isRoot = await hasRole(ROLES.ROOT, address as Address);
+                const isManager = await hasRole(
+                  ROLES.MANAGER,
+                  address as Address,
+                );
+                const isVillager = await hasRole(
+                  ROLES.VILLAGER,
+                  address as Address,
+                );
+                console.log('isManagert', isManager);
+                console.log('isVillager', isVillager);
+                console.log('isRoot', isRoot);
+                if (isRoot) {
+                  setUserRole({
+                    address: address as Address,
+                    role: Role.ROOT,
+                  });
+                } else if (isManager) {
+                  setUserRole({
+                    address: address as Address,
+                    role: Role.MANAGER,
+                  });
+                } else if (isVillager) {
+                  setUserRole({
+                    address: address as Address,
+                    role: Role.VILLAGER,
+                  });
+                }
+              } else {
+                setUserRole({
+                  address: address as Address,
+                  role: data.role,
+                });
+              }
             }
           })
           .catch((error) => console.error('Failed to fetch events:', error));
@@ -166,11 +200,11 @@ const TrustfulSharePage = () => {
             padding: '20px',
           }}
         >
-          <ShareSection />
+          <AdminSection />
         </Box>
       </Stack>
     </Stack>
   );
 };
 
-export default TrustfulSharePage;
+export default TrustfulAdminPage;

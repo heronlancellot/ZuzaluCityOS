@@ -17,7 +17,7 @@ export const CypherHouseSpaceId =
 export const TestApplicationSpaceId =
   'kjzl6kcym7w8y7drgmopt1aufcut7p9cbwyoaa0ht9vl8sgs5q39blhgsbeyb83';
 
-const RESOLVER_CONTRACT_SCROLL = '0xeD4544F10D347e326140dBB869b6f4120DAf2c7B';
+const RESOLVER_CONTRACT_SCROLL = '0x0A16dD89b4F06F111977D0F3bBab6165F08A5362';
 
 const RESOLVER_CONTRACT_SCROLL_SEPOLIA =
   '0x882977D73d7B2E67F088853B9065d4FD887e6bA0';
@@ -51,7 +51,7 @@ export enum Role {
 export enum ROLES {
   ROOT = '0x79e553c6f53701daa99614646285e66adb98ff0fcc1ef165dd2718e5c873bee6',
   MANAGER = '0x241ecf16d79d0f8dbfb92cbc07fe17840425976cf0667f022fe9877caa831b08',
-  VILLAGER = '0xd0a9af7d104b9b3afa727f6e92a7e308d10a3408478e161aba393651814986e8',
+  VILLAGER = '0x7e8ac59880745312f8754f56b69cccc1c6b2112d567ccf50e4e6dc2e39a7c67a',
 }
 
 export interface Schemas {

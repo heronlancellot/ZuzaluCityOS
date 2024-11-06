@@ -1,26 +1,21 @@
 import { getWalletClient } from '@wagmi/core';
-import { encodeFunctionData, type TransactionReceipt } from 'viem';
-import {
-  sendTransaction,
-  estimateGas,
-  waitForTransactionReceipt,
-} from 'viem/actions';
+import { Address, encodeFunctionData, type TransactionReceipt } from 'viem';
+import { sendTransaction } from 'viem/actions';
 
 import { client, config } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
-export async function setSchema({
+export async function revokeRole({
   from,
-  uid,
-  action,
+  role,
+  account,
   msgValue,
 }: {
-  from: `0x${string}`;
-  uid: `0x${string}`;
-  action: number;
+  from: Address;
+  role: Address;
+  account: Address;
   msgValue: bigint;
 }): Promise<TransactionReceipt | Error> {
-  const actionAsBigInt = BigInt(action);
   const walletClient = await getWalletClient(config);
   let gasLimit;
 
@@ -28,22 +23,22 @@ export async function setSchema({
     abi: [
       {
         inputs: [
-          { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
-          { internalType: 'uint256', name: 'action', type: 'uint256' },
+          { internalType: 'bytes32', name: 'role', type: 'bytes32' },
+          { internalType: 'address', name: 'account', type: 'address' },
         ],
-        name: 'setSchema',
+        name: 'revokeRole',
         outputs: [],
         stateMutability: 'nonpayable',
         type: 'function',
       },
     ],
-    args: [uid, actionAsBigInt],
+    args: [role, account],
   });
 
   try {
     gasLimit = client.estimateGas({
-      account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
+      account: from as Address,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as Address,
       data: data,
       value: msgValue,
     });
@@ -53,8 +48,8 @@ export async function setSchema({
 
   try {
     const transactionHash = await sendTransaction(walletClient, {
-      account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
+      account: from as Address,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as Address,
       gasLimit: gasLimit,
       data: data,
       value: msgValue,

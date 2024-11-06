@@ -1,5 +1,5 @@
 import { client } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { Address } from 'viem';
 
 export async function hasRole(

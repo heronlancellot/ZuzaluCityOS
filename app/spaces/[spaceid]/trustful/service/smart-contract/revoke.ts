@@ -1,28 +1,24 @@
 import { getWalletClient } from '@wagmi/core';
-import { encodeFunctionData, type TransactionReceipt } from 'viem';
-import {
-  sendTransaction,
-  estimateGas,
-  waitForTransactionReceipt,
-} from 'viem/actions';
+import { Address, encodeFunctionData, type TransactionReceipt } from 'viem';
+import { sendTransaction } from 'viem/actions';
 
 import { client, config } from '@/context/WalletContext';
-import { EAS_CONTRACT_SCROLL } from '../constants/constants';
+import { EAS_CONTRACT_SCROLL } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 export interface RevocationRequestData {
-  uid: `0x${string}`;
+  uid: Address;
   value: bigint;
 }
 
 export interface RevocationRequest {
-  schema: `0x${string}`;
+  schema: Address;
   data: RevocationRequestData;
 }
 
 export async function revoke(
-  from: `0x${string}`,
-  schemaUID: `0x${string}`,
-  uid: `0x${string}`,
+  from: Address,
+  schemaUID: Address,
+  uid: Address,
   value: bigint,
 ): Promise<TransactionReceipt | Error> {
   const walletClient = await getWalletClient(config);

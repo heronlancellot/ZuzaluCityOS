@@ -1,7 +1,5 @@
-import { readContract } from 'viem/actions';
-
-import { client, config } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
+import { client } from '@/context/WalletContext';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 export async function getAllAttestationTitles(): Promise<string[] | Error> {
   const data = {

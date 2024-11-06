@@ -16,7 +16,7 @@ import {
   Textarea,
 } from '@chakra-ui/react';
 import { watchAccount } from '@wagmi/core';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
 import { isAddress, encodeAbiParameters, parseAbiParameters } from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
@@ -34,10 +34,9 @@ import { isBytes32 } from '@/utils/format';
 import { AddressDisplay } from './AddressDisplay';
 import {
   AttestationRequestData,
-  fetchENSData,
   hasRole,
   submitAttest,
-} from '../service';
+} from '../service/smart-contract';
 import {
   BadgeTitle,
   ZUVILLAGE_BADGE_TITLES,
@@ -52,6 +51,7 @@ import { config } from '@/context/WalletContext';
 import { TheHeader } from './TheHeader';
 import { TheFooterNavbar } from './TheFooterNavbar';
 import toast from 'react-hot-toast';
+import { fetchENSData } from '../service/backend';
 
 export enum GiveBadgeStepAddress {
   INSERT_ADDRESS = 'INSERT_ADDRESS',
@@ -63,7 +63,7 @@ export const GiveBadge = () => {
   const { address, chainId } = useAccount();
   const { push } = useRouter();
   const unwatch = watchAccount(config, {
-    onChange() { },
+    onChange() {},
   });
   const {
     addressStep,
@@ -237,12 +237,12 @@ export const GiveBadge = () => {
   // Changes the continue arrow color based on the status of a valid input address
   const iconColor =
     (inputAddress && isAddress(inputAddress)) ||
-      (badgeInputAddress && isAddress(badgeInputAddress?.address))
+    (badgeInputAddress && isAddress(badgeInputAddress?.address))
       ? 'text-[#000000  ]'
       : 'text-[#F5FFFFB2]';
   const iconBg =
     (inputAddress && isAddress(inputAddress)) ||
-      (badgeInputAddress && isAddress(badgeInputAddress?.address))
+    (badgeInputAddress && isAddress(badgeInputAddress?.address))
       ? 'bg-[#B1EF42B2]'
       : 'bg-[#37383A]';
 
