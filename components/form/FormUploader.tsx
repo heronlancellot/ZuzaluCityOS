@@ -1,12 +1,5 @@
-import {
-  Uploader3,
-  Uploader3FileStatus,
-  UploadFile,
-  UploadResult,
-} from '@lxdao/uploader3';
 import { Box, Button } from '@mui/material';
 import { PreviewFile } from '@/components';
-import { useUploaderPreview } from '@/components/PreviewFile/useUploaderPreview';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface IProps {
@@ -119,7 +112,7 @@ const uploadImage = async (base64: string, api: string): Promise<string> => {
 };
 
 export default function FormUploader({
-  accept = ['.gif', '.jpeg', '.gif', '.png'],
+  accept = ['.jpeg', '.gif', '.png'],
   api = '/api/file/upload',
   multiple = false,
   value,
