@@ -123,6 +123,29 @@ const TrustfulPage = () => {
     }
   }, [profile]);
 
+  const getUserRoleByContract = async () => {
+    const isVillager = await hasRole(ROLES.VILLAGER, address as Address);
+    const isManager = await hasRole(ROLES.MANAGER, address as Address);
+    const isRoot = await hasRole(ROLES.ROOT, address as Address);
+
+    if (isVillager) {
+      setUserRole({
+        address: address as Address,
+        role: Role.VILLAGER,
+      });
+    } else if (isManager) {
+      setUserRole({
+        address: address as Address,
+        role: Role.MANAGER,
+      });
+    } else if (isRoot) {
+      setUserRole({
+        address: address as Address,
+        role: Role.ROOT,
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchUserRole = async () => {
       if (address) {
@@ -132,32 +155,9 @@ const TrustfulPage = () => {
             if (data && data?.role) {
               //TODO: Check if the endpoint is returning correctly and if needed to check for Role.NO_ROLE ( double check confirmation here)
               if (data.role == Role.NO_ROLE) {
-                const isRoot = await hasRole(ROLES.ROOT, address as Address);
-                const isManager = await hasRole(
-                  ROLES.MANAGER,
-                  address as Address,
-                );
-                const isVillager = await hasRole(
-                  ROLES.VILLAGER,
-                  address as Address,
-                );
-                if (isRoot) {
-                  setUserRole({
-                    address: address as Address,
-                    role: Role.ROOT,
-                  });
-                } else if (isManager) {
-                  setUserRole({
-                    address: address as Address,
-                    role: Role.MANAGER,
-                  });
-                } else if (isVillager) {
-                  setUserRole({
-                    address: address as Address,
-                    role: Role.VILLAGER,
-                  });
-                }
+                await getUserRoleByContract();
               } else {
+                alert('nao tem eh nada');
                 setUserRole({
                   address: address as Address,
                   role: data.role,
@@ -165,7 +165,10 @@ const TrustfulPage = () => {
               }
             }
           })
-          .catch((error) => console.error('Failed to fetch events:', error));
+          .catch(async (error) => {
+            console.error('Failed to fetch events:', error);
+            await getUserRoleByContract();
+          });
       }
     };
     fetchUserRole();

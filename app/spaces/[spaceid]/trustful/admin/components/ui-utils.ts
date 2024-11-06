@@ -34,11 +34,33 @@ export enum ADMIN_ACTION {
   REVOKE_MANAGER = 'Revoke Manager',
   SET_ATTESTATION_TITLE = 'Create Badge',
   SET_SCHEMA = 'Set Schema Action',
+  REMOVE_SESSION = 'Remove session',
+  JOIN_SESSION = 'Join session',
+  CREATE_SESSION = 'Create session',
 }
 
 export interface AdminActions {
   action: ADMIN_ACTION;
 }
+
+export const VILLAGER_OPTIONS: AdminActions[] = [
+  {
+    action: ADMIN_ACTION.JOIN_SESSION,
+  },
+  {
+    action: ADMIN_ACTION.CREATE_SESSION,
+  },
+];
+
+export const MANAGER_OPTIONS: AdminActions[] = [
+  {
+    action: ADMIN_ACTION.REVOKE_MANAGER,
+  },
+  {
+    action: ADMIN_ACTION.SET_ATTESTATION_TITLE,
+  },
+  ...VILLAGER_OPTIONS,
+];
 
 export const ADMIN_OPTIONS: AdminActions[] = [
   {
@@ -56,13 +78,6 @@ export const ADMIN_OPTIONS: AdminActions[] = [
   {
     action: ADMIN_ACTION.SET_SCHEMA,
   },
-];
-
-export const MANAGER_OPTIONS: AdminActions[] = [
-  {
-    action: ADMIN_ACTION.REVOKE_MANAGER,
-  },
-  {
-    action: ADMIN_ACTION.SET_ATTESTATION_TITLE,
-  },
+  ...MANAGER_OPTIONS,
+  ...VILLAGER_OPTIONS,
 ];

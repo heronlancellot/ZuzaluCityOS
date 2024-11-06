@@ -10,6 +10,7 @@ import {
   Button,
   Textarea,
   Box,
+  Input,
 } from '@chakra-ui/react';
 import { BeatLoader } from 'react-spinners';
 import { Address, isAddress } from 'viem';
@@ -25,12 +26,11 @@ import { ID_CHECK_IN_QUERY } from '../../constants/schemaQueries';
 import {
   grantRole,
   hasRole,
-  fetchEASData,
   revoke,
   revokeRole,
   setAttestationTitle,
   setSchema,
-} from '@/app/spaces/[spaceid]/trustful/service';
+} from '@/app/spaces/[spaceid]/trustful/service/smart-contract';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
 import toast from 'react-hot-toast';
@@ -42,6 +42,8 @@ import {
   ACTIONS_OPTIONS,
 } from './ui-utils';
 import { InputAddressUser } from '../../components/InputAddressUser';
+import { joinSession } from '@/app/spaces/[spaceid]/trustful/service/backend/joinSession';
+import { fetchEASData } from '../../service/backend';
 
 export const DropdownMenuAdmin = () => {
   const { address, chainId } = useAccount();
@@ -54,7 +56,14 @@ export const DropdownMenuAdmin = () => {
   );
   const [adminAction, setAdminAction] = useState<ADMIN_ACTION | null>(null);
   const [isloading, setIsLoading] = useState<boolean>(false);
-  const [attestationTitleText, setAttestationTitleText] = useState<string>('');
+
+  const [inputValuesTextArea, setInputValuesTextArea] = useState<{
+    [key: string]: string;
+  }>({});
+  const [sessionValue, setSessionValue] = useState<{
+    [key: string]: string;
+  }>({});
+
   const [attestationBadgeIsValid, setAttestationBadgeIsValid] =
     useState<boolean>(false);
   const [schemaUID, setSchemaUID] = useState<string | `0x${string}`>('');
@@ -70,6 +79,10 @@ export const DropdownMenuAdmin = () => {
   useEffect(() => {
     setRole(null);
   }, [adminAction]);
+
+  useEffect(() => {
+    console.log('inputValuesTextArea', inputValuesTextArea);
+  }, [inputValuesTextArea]);
 
   /**
    * Displays an error toast message if the user is connected to an unsupported network
@@ -107,22 +120,15 @@ export const DropdownMenuAdmin = () => {
    * - MANAGER
    * - VILLAGER
    */
-  const checkIfUserAlreadyHasTheRole = async (address: Address) => {
-    const isRoot = await hasRole(ROLES.ROOT, address as Address);
-    const isManager = await hasRole(ROLES.MANAGER, address as Address);
-    const isVillager = await hasRole(ROLES.VILLAGER, address as Address);
-    if (role == ROLES.ROOT && isRoot) {
+  const checkIfUserAlreadyHasTheRole = async (
+    address: Address,
+    role: ROLES,
+  ) => {
+    const userHasRole = await hasRole(role, address as Address);
+    if (userHasRole) {
       setIsLoading(false);
       toast.error('Address already has this role.');
-      return;
-    } else if (role == ROLES.MANAGER && isManager) {
-      setIsLoading(false);
-      toast.error('Address already has this role.');
-      return;
-    } else if (role == ROLES.VILLAGER && isVillager) {
-      setIsLoading(false);
-      toast.error('Address already has this role.');
-      return;
+      return true;
     }
   };
 
@@ -134,7 +140,14 @@ export const DropdownMenuAdmin = () => {
       return;
     }
 
-    await checkIfUserAlreadyHasTheRole(validAddress.address as Address);
+    const isUserAlreadyHasTHeRole = await checkIfUserAlreadyHasTheRole(
+      validAddress.address as Address,
+      role,
+    );
+    if (isUserAlreadyHasTHeRole) {
+      return;
+    }
+
     const response = await grantRole({
       from: address,
       role: role,
@@ -237,6 +250,38 @@ export const DropdownMenuAdmin = () => {
     setIsLoading(false);
   };
 
+  const handleRemoveSession = async () => {
+    if (!address) {
+      setIsLoading(false);
+      toast.error('Please connect first. No address found.');
+      return;
+    }
+
+    // const response = await removeSession({
+    //   from: address,
+    //   role: role,
+    //   account: validAddress.address as `0x${string}`,
+    //   msgValue: BigInt(0),
+    // });
+
+    // if (response instanceof Error) {
+    //   setIsLoading(false);
+    //   toast.error(`Transaction Rejected: ${response.message}`);
+    //   return;
+    // }
+
+    // if (response.status !== 'success') {
+    //   setIsLoading(false);
+    //   toast.error(`Transaction Rejected: Contract execution reverted.`);
+    //   return;
+    // }
+
+    setIsLoading(false);
+    // toast.success(
+    //   `Badge sent at tx: ${`https://scrollscan.com//tx/${response.transactionHash}`}`,
+    // );
+  };
+
   /**Manager  */
   const handleAttestationTitle = async () => {
     if (!address) {
@@ -249,7 +294,7 @@ export const DropdownMenuAdmin = () => {
     const response = await setAttestationTitle({
       from: address,
       isValid: attestationBadgeIsValid,
-      title: attestationTitleText,
+      title: inputValuesTextArea['attestationTitle'],
       value: BigInt(0),
     });
 
@@ -283,6 +328,71 @@ export const DropdownMenuAdmin = () => {
     } else if (selectedRoleValue === 'No') {
       setAttestationBadgeIsValid(false);
     }
+  };
+
+  const handleJoinSession = async () => {
+    if (!address || !userRole) {
+      setIsLoading(false);
+      toast.error('Please connect first. No address found.');
+      return;
+    }
+
+    const response = await joinSession({
+      role: userRole.role,
+      sessionId: Number(sessionValue['sessionId']),
+      userAddress: userRole.address,
+    });
+
+    console.log('response ', response);
+
+    if (response instanceof Error) {
+      setIsLoading(false);
+      toast.error(`Transaction Rejected: ${response.message}`);
+      return;
+    }
+
+    // if (response.status !== 'success') {
+    //   setIsLoading(false);
+    //   toast.error(`Transaction Rejected: Contract execution reverted.`);
+    //   return;
+    // }
+
+    setIsLoading(false);
+    // toast.success(
+    //   `Badge sent at tx: ${`https://scrollscan.com//tx/${response.transactionHash}`}`,
+    // );
+  };
+
+  const handleCreateSession = async () => {
+    if (!address) {
+      setIsLoading(false);
+      toast.error('Please connect first. No address found.');
+      return;
+    }
+
+    // const response = await removeSession({
+    //   from: address,
+    //   role: role,
+    //   account: validAddress.address as `0x${string}`,
+    //   msgValue: BigInt(0),
+    // });
+
+    // if (response instanceof Error) {
+    //   setIsLoading(false);
+    //   toast.error(`Transaction Rejected: ${response.message}`);
+    //   return;
+    // }
+
+    // if (response.status !== 'success') {
+    //   setIsLoading(false);
+    //   toast.error(`Transaction Rejected: Contract execution reverted.`);
+    //   return;
+    // }
+
+    setIsLoading(false);
+    // toast.success(
+    //   `Badge sent at tx: ${`https://scrollscan.com//tx/${response.transactionHash}`}`,
+    // );
   };
 
   const handleRoleSelectChange = (
@@ -358,8 +468,9 @@ export const DropdownMenuAdmin = () => {
     toast.success(`Badge sent at tx: ${transactionResponse.transactionHash}`);
   };
 
-  // Get the current title and move to state. It also updates the textarea height based on the content
-  const handleTextareaChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputValuesTextareaChange = (
+    event: ChangeEvent<HTMLTextAreaElement>,
+  ) => {
     const textareaLineHeight = 22;
     const scrollHeight = event.target.scrollHeight - 16;
 
@@ -367,7 +478,24 @@ export const DropdownMenuAdmin = () => {
     if (currentRows >= 2) {
       event.target.rows = currentRows;
     }
-    setAttestationTitleText(event.target.value);
+
+    const { name, value } = event.target;
+    setInputValuesTextArea((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
+  };
+
+  /**Session
+   * - sessionId
+   *
+   */
+  const handleSessionValueChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setSessionValue((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
   };
 
   const handleActionSelectChange = (
@@ -387,6 +515,11 @@ export const DropdownMenuAdmin = () => {
       }
     });
   };
+  // event
+  // name + hostAddress(endereco do usuario) -> create-session
+
+  // space
+  //
 
   /*
    * Renders the appropriate admin action component based on the provided ADMIN_ACTION.
@@ -560,7 +693,7 @@ export const DropdownMenuAdmin = () => {
         className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
       >
         <Flex className="w-full flex-col">
-          <Flex className="gap-4 pb-4 justify-start items-center">
+          <Flex className="gap-4 pb-4 justify-start items-center text-black">
             <Textarea
               className="text-black text-base font-normal leading-snug"
               color="white"
@@ -569,9 +702,14 @@ export const DropdownMenuAdmin = () => {
                 className: 'text-black',
               }}
               focusBorderColor={'#B1EF42'}
-              value={attestationTitleText}
-              onChange={handleTextareaChange}
-              rows={attestationTitleText.length > 50 ? 3 : 1}
+              value={inputValuesTextArea['attestationTitle'] || ''}
+              name="attestationTitle"
+              onChange={handleInputValuesTextareaChange}
+              rows={
+                (inputValuesTextArea['attestationTitle'] || '').length > 50
+                  ? 3
+                  : 1
+              }
               minH="unset"
               resize="none"
             />
@@ -590,7 +728,7 @@ export const DropdownMenuAdmin = () => {
           </Flex>
           <Box>
             <Flex className="pb-4 gap-4 items-center">
-              <Text className="flex min-w-[80px] text-black opacity-70 text-sm font-normal leading-tight">
+              <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
                 Badge Validity:
                 <br />
                 {`Yes = Can be emitted/created/attested on the contract.`}
@@ -604,7 +742,7 @@ export const DropdownMenuAdmin = () => {
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
             isLoading={isloading}
-            isDisabled={!attestationTitleText}
+            isDisabled={!inputValuesTextArea['attestationTitle']}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
               setIsLoading(true);
@@ -679,6 +817,197 @@ export const DropdownMenuAdmin = () => {
             onClick={() => {
               setIsLoading(true);
               handleSetSchema();
+            }}
+          >
+            <CheckIcon className="w-[16px] h-[16px]" />
+            Confirm
+          </Button>
+        </Flex>
+      </Card>
+    ),
+    [ADMIN_ACTION.REMOVE_SESSION]: (
+      <Card
+        background={'#F5FFFF0D'}
+        className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
+      >
+        <Flex className="w-full flex-col">
+          <Flex className="gap-4 pb-4 justify-start items-center">
+            <Textarea
+              style={{ color: 'black' }}
+              className="text-black text-base font-normal leading-snug"
+              color="white"
+              placeholder="Set the Session Title..."
+              _placeholder={{
+                className: 'text-black',
+              }}
+              focusBorderColor={'#B1EF42'}
+              value={inputValuesTextArea['removeSession'] || ''}
+              name="removeSession"
+              onChange={handleInputValuesTextareaChange}
+              rows={
+                (inputValuesTextArea['removeSession'] || '').length > 50 ? 3 : 1
+              }
+              minH="unset"
+              resize="none"
+            />
+          </Flex>
+          <InputAddressUser
+            label="Address to Session Owner"
+            onInputChange={(value: string) => setInputAddress(value)}
+            inputAddress={String(inputAddress)}
+          />
+          <Box>
+            <Flex className="pb-4 gap-4 items-center">
+              <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
+                &#x26A0;WARNING&#x26A0;
+                <br />
+                {`This will remove the session from the contract and the user will not be able to access it anymore.`}
+                <br />
+                {`Are you sure you want to proceed?`}
+              </Text>
+            </Flex>
+          </Box>
+          <Button
+            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) || !inputValuesTextArea['removeSession'] ? 'cursor-not-allowed opacity-10' : ''}`}
+            _hover={{ bg: '#B1EF42' }}
+            _active={{ bg: '#B1EF42' }}
+            isLoading={isloading}
+            isDisabled={
+              !isAddress(inputAddress.toString()) ||
+              !inputValuesTextArea['removeSession']
+            }
+            spinner={<BeatLoader size={8} color="white" />}
+            onClick={() => {
+              !isAddress(inputAddress.toString()) ||
+                (!inputValuesTextArea['removeSession'] &&
+                  toast.error(
+                    'Please enter a valid address and set the session title to remove',
+                  ));
+              setIsLoading(true);
+              handleRemoveSession();
+            }}
+          >
+            <CheckIcon className="w-[16px] h-[16px]" />
+            Confirm
+          </Button>
+        </Flex>
+      </Card>
+    ),
+    [ADMIN_ACTION.JOIN_SESSION]: (
+      <Card
+        background={'#F5FFFF0D'}
+        className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
+      >
+        <Flex className="w-full flex-col">
+          <Flex className="gap-4 pb-4 justify-start items-center">
+            <Input
+              style={{ color: 'black' }}
+              name="joinSession"
+              placeholder="Session id"
+              onChange={handleSessionValueChange}
+              value={sessionValue['joinSession'] || 0}
+              type="number"
+              min={1}
+            />
+          </Flex>
+          {/** The villager can join the sesssion only with the sessionId */}
+          {userRole && userRole.role == Role.MANAGER && Role.ROOT && (
+            <InputAddressUser
+              label="User Address"
+              onInputChange={(value: string) => setInputAddress(value)}
+              inputAddress={String(inputAddress)}
+            />
+          )}
+          <Box>
+            <Flex className="pb-4 gap-4 items-center">
+              <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
+                &#x26A0;WARNING&#x26A0;
+                <br />
+                {`Do you wanna join this user in session ${sessionValue['joinSession']}?`}
+                <br />
+              </Text>
+            </Flex>
+          </Box>
+          <Button
+            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) ? 'cursor-not-allowed opacity-10' : ''}`}
+            _hover={{ bg: '#B1EF42' }}
+            _active={{ bg: '#B1EF42' }}
+            isLoading={isloading}
+            isDisabled={!isAddress(inputAddress.toString())}
+            spinner={<BeatLoader size={8} color="white" />}
+            onClick={() => {
+              !isAddress(inputAddress.toString()) &&
+                toast.error('Please enter a valid address.');
+              setIsLoading(true);
+              handleJoinSession();
+            }}
+          >
+            <CheckIcon className="w-[16px] h-[16px]" />
+            Confirm
+          </Button>
+        </Flex>
+      </Card>
+    ),
+    [ADMIN_ACTION.CREATE_SESSION]: (
+      <Card
+        background={'#F5FFFF0D'}
+        className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
+      >
+        <Flex className="w-full flex-col">
+          <Flex className="gap-4 pb-4 justify-start items-center">
+            <Textarea
+              style={{ color: 'black' }}
+              className="text-black text-base font-normal leading-snug"
+              color="white"
+              placeholder="Set the Session Title..."
+              _placeholder={{
+                className: 'text-black',
+              }}
+              focusBorderColor={'#B1EF42'}
+              value={inputValuesTextArea['removeSession'] || ''}
+              name="removeSession"
+              onChange={handleInputValuesTextareaChange}
+              rows={
+                (inputValuesTextArea['removeSession'] || '').length > 50 ? 3 : 1
+              }
+              minH="unset"
+              resize="none"
+            />
+          </Flex>
+          <InputAddressUser
+            label="Address to Session Owner"
+            onInputChange={(value: string) => setInputAddress(value)}
+            inputAddress={String(inputAddress)}
+          />
+          <Box>
+            <Flex className="pb-4 gap-4 items-center">
+              <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
+                &#x26A0;WARNING&#x26A0;
+                <br />
+                {`This will remove the session from the contract and the user will not be able to access it anymore.`}
+                <br />
+                {`Are you sure you want to proceed?`}
+              </Text>
+            </Flex>
+          </Box>
+          <Button
+            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) || !inputValuesTextArea['removeSession'] ? 'cursor-not-allowed opacity-10' : ''}`}
+            _hover={{ bg: '#B1EF42' }}
+            _active={{ bg: '#B1EF42' }}
+            isLoading={isloading}
+            isDisabled={
+              !isAddress(inputAddress.toString()) ||
+              !inputValuesTextArea['removeSession']
+            }
+            spinner={<BeatLoader size={8} color="white" />}
+            onClick={() => {
+              !isAddress(inputAddress.toString()) ||
+                (!inputValuesTextArea['removeSession'] &&
+                  toast.error(
+                    'Please enter a valid address and set the session title to remove',
+                  ));
+              setIsLoading(true);
+              handleRemoveSession();
             }}
           >
             <CheckIcon className="w-[16px] h-[16px]" />
