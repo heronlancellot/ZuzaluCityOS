@@ -25,7 +25,7 @@ export async function submitAttest(
   attestationRequestData: AttestationRequestData,
 ): Promise<TransactionReceipt | Error> {
   const walletClient = await getWalletClient(config);
-  let gasLimit;
+  // let gasLimit;
 
   const AttestationRequest: AttestationRequest = {
     schema: schemaUID,
@@ -75,22 +75,22 @@ export async function submitAttest(
     args: [AttestationRequest],
   });
 
-  try {
-    gasLimit = await client.estimateGas({
-      account: from as Address,
-      to: EAS_CONTRACT_SCROLL as Address,
-      data: data,
-      value: attestationRequestData.value,
-    });
-  } catch (error) {
-    return Error('Error estimating gas.');
-  }
+  // try {
+  //   gasLimit = await client.estimateGas({
+  //     account: from as Address,
+  //     to: EAS_CONTRACT_SCROLL as Address,
+  //     data: data,
+  //     value: attestationRequestData.value,
+  //   });
+  // } catch (error) {
+  //   return Error('Error estimating gas.');
+  // }
 
   try {
     const transactionHash = await sendTransaction(walletClient, {
       account: from as `0x${string}`,
       to: EAS_CONTRACT_SCROLL as `0x${string}`,
-      gasLimit: gasLimit,
+      // gasLimit: gasLimit,
       data: data,
       value: attestationRequestData.value,
       chain: walletClient.chain,
