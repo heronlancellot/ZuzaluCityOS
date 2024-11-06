@@ -21,7 +21,11 @@ export const RESOLVER_CONTRACT_SCROLL_ABI = [
   { inputs: [], name: 'InvalidRefUID', type: 'error' },
   { inputs: [], name: 'InvalidRevocability', type: 'error' },
   { inputs: [], name: 'InvalidRole', type: 'error' },
+  { inputs: [], name: 'InvalidSession', type: 'error' },
+  { inputs: [], name: 'NotHostOfTheSession', type: 'error' },
   { inputs: [], name: 'NotPayable', type: 'error' },
+  { inputs: [], name: 'SessionAlreadyEnded', type: 'error' },
+  { inputs: [], name: 'Unauthorized', type: 'error' },
   {
     anonymous: false,
     inputs: [
@@ -83,11 +87,71 @@ export const RESOLVER_CONTRACT_SCROLL_ABI = [
     type: 'event',
   },
   {
-    inputs: [],
-    name: 'ATTENDEE_ROLE',
-    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
-    stateMutability: 'view',
-    type: 'function',
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'bytes32',
+        name: 'sessionId',
+        type: 'bytes32',
+      },
+      { indexed: true, internalType: 'address', name: 'host', type: 'address' },
+      { indexed: false, internalType: 'string', name: 'title', type: 'string' },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'startTime',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'endTime',
+        type: 'uint256',
+      },
+    ],
+    name: 'sessionClosed',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'bytes32',
+        name: 'sessionId',
+        type: 'bytes32',
+      },
+      { indexed: true, internalType: 'address', name: 'host', type: 'address' },
+      { indexed: false, internalType: 'string', name: 'title', type: 'string' },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'startTime',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'endTime',
+        type: 'uint256',
+      },
+    ],
+    name: 'sessionCreated',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: 'bytes32',
+        name: 'sessionId',
+        type: 'bytes32',
+      },
+    ],
+    name: 'sessionRemoved',
+    type: 'event',
   },
   {
     inputs: [],
@@ -106,6 +170,13 @@ export const RESOLVER_CONTRACT_SCROLL_ABI = [
   {
     inputs: [],
     name: 'ROOT_ROLE',
+    outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'VILLAGER_ROLE',
     outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
     stateMutability: 'view',
     type: 'function',
@@ -159,6 +230,23 @@ export const RESOLVER_CONTRACT_SCROLL_ABI = [
     type: 'function',
   },
   {
+    inputs: [{ internalType: 'bytes32', name: 'sessionId', type: 'bytes32' }],
+    name: 'closeSession',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: 'duration', type: 'uint256' },
+      { internalType: 'string', name: 'sessionTitle', type: 'string' },
+    ],
+    name: 'createSession',
+    outputs: [{ internalType: 'bytes32', name: 'sessionId', type: 'bytes32' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'getAllAttestationTitles',
     outputs: [{ internalType: 'string[]', name: '', type: 'string[]' }],
@@ -169,6 +257,28 @@ export const RESOLVER_CONTRACT_SCROLL_ABI = [
     inputs: [{ internalType: 'bytes32', name: 'role', type: 'bytes32' }],
     name: 'getRoleAdmin',
     outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'string', name: 'sessionTitle', type: 'string' },
+      { internalType: 'address', name: 'sessionOwner', type: 'address' },
+    ],
+    name: 'getSession',
+    outputs: [
+      {
+        components: [
+          { internalType: 'address', name: 'host', type: 'address' },
+          { internalType: 'string', name: 'title', type: 'string' },
+          { internalType: 'uint256', name: 'startTime', type: 'uint256' },
+          { internalType: 'uint256', name: 'endTime', type: 'uint256' },
+        ],
+        internalType: 'struct IResolver.Session',
+        name: '',
+        type: 'tuple',
+      },
+    ],
     stateMutability: 'view',
     type: 'function',
   },
@@ -197,6 +307,42 @@ export const RESOLVER_CONTRACT_SCROLL_ABI = [
     name: 'isPayable',
     outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
     stateMutability: 'pure',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        components: [
+          { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
+          { internalType: 'bytes32', name: 'schema', type: 'bytes32' },
+          { internalType: 'uint64', name: 'time', type: 'uint64' },
+          { internalType: 'uint64', name: 'expirationTime', type: 'uint64' },
+          { internalType: 'uint64', name: 'revocationTime', type: 'uint64' },
+          { internalType: 'bytes32', name: 'refUID', type: 'bytes32' },
+          { internalType: 'address', name: 'recipient', type: 'address' },
+          { internalType: 'address', name: 'attester', type: 'address' },
+          { internalType: 'bool', name: 'revocable', type: 'bool' },
+          { internalType: 'bytes', name: 'data', type: 'bytes' },
+        ],
+        internalType: 'struct Attestation[]',
+        name: 'attestations',
+        type: 'tuple[]',
+      },
+      { internalType: 'uint256[]', name: 'values', type: 'uint256[]' },
+    ],
+    name: 'multiAttest',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'string', name: 'sessionTitle', type: 'string' },
+      { internalType: 'address', name: 'sessionOwner', type: 'address' },
+    ],
+    name: 'removeSesison',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function',
   },
   {
