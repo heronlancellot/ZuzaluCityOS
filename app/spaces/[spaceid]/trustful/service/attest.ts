@@ -1,10 +1,6 @@
 import { getWalletClient } from '@wagmi/core';
 import { Address, encodeFunctionData, type TransactionReceipt } from 'viem';
-import {
-  sendTransaction,
-  estimateGas,
-  waitForTransactionReceipt,
-} from 'viem/actions';
+import { sendTransaction } from 'viem/actions';
 
 import { client, config } from '@/context/WalletContext';
 import { EAS_CONTRACT_SCROLL } from '../constants/constants';
@@ -16,8 +12,6 @@ export interface AttestationRequestData {
   refUID: Address;
   data: Address;
   value: bigint;
-  // attester: Address; // TODO: CHECK IF NEED THIS
-  // revocationTime: bigint; // TODO: CHECK IF NEED THIS
 }
 
 export interface AttestationRequest {
@@ -44,38 +38,41 @@ export async function submitAttest(
         inputs: [
           {
             components: [
-              { internalType: 'bytes32', name: 'uid', type: 'bytes32' },
               { internalType: 'bytes32', name: 'schema', type: 'bytes32' },
-              { internalType: 'uint64', name: 'time', type: 'uint64' },
               {
-                internalType: 'uint64',
-                name: 'expirationTime',
-                type: 'uint64',
+                components: [
+                  {
+                    internalType: 'address',
+                    name: 'recipient',
+                    type: 'address',
+                  },
+                  {
+                    internalType: 'uint64',
+                    name: 'expirationTime',
+                    type: 'uint64',
+                  },
+                  { internalType: 'bool', name: 'revocable', type: 'bool' },
+                  { internalType: 'bytes32', name: 'refUID', type: 'bytes32' },
+                  { internalType: 'bytes', name: 'data', type: 'bytes' },
+                  { internalType: 'uint256', name: 'value', type: 'uint256' },
+                ],
+                internalType: 'struct AttestationRequestData',
+                name: 'data',
+                type: 'tuple',
               },
-              {
-                internalType: 'uint64',
-                name: 'revocationTime',
-                type: 'uint64',
-              },
-              { internalType: 'bytes32', name: 'refUID', type: 'bytes32' },
-              { internalType: 'address', name: 'recipient', type: 'address' },
-              { internalType: 'address', name: 'attester', type: 'address' },
-              { internalType: 'bool', name: 'revocable', type: 'bool' },
-              { internalType: 'bytes', name: 'data', type: 'bytes' },
             ],
-            internalType: 'struct Attestation',
-            name: 'attestation',
+            internalType: 'struct AttestationRequest',
+            name: 'request',
             type: 'tuple',
           },
         ],
         name: 'attest',
-        outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+        outputs: [{ internalType: 'bytes32', name: '', type: 'bytes32' }],
         stateMutability: 'payable',
         type: 'function',
       },
     ],
-
-    args: [AttestationRequest], //TODO: ADJUST THE ARGS HERE
+    args: [AttestationRequest],
   });
 
   try {
@@ -91,8 +88,8 @@ export async function submitAttest(
 
   try {
     const transactionHash = await sendTransaction(walletClient, {
-      account: from as Address,
-      to: EAS_CONTRACT_SCROLL as Address,
+      account: from as `0x${string}`,
+      to: EAS_CONTRACT_SCROLL as `0x${string}`,
       gasLimit: gasLimit,
       data: data,
       value: attestationRequestData.value,
@@ -106,6 +103,7 @@ export async function submitAttest(
 
     return transactionReceipt;
   } catch (error) {
+    console.log('Error sending transaction: ', error);
     return Error('Error sending transaction.');
   }
 }
