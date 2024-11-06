@@ -14,8 +14,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const body = await req.json();
   const { data: imageData = '', type } =
-    (await req.json()) as Uploader3Connector.PostImageFile;
+    body as Uploader3Connector.PostImageFile;
 
   if (!imageData || !type) {
     return Response.json(
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
 
   try {
     const formData = new FormData();
-    formData.append('file', buffer, { contentType: type });
+    formData.append('file', buffer);
     const res = await fetch('https://node.lighthouse.storage/api/v0/add', {
       method: 'POST',
       body: formData,
