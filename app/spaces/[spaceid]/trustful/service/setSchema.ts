@@ -1,13 +1,9 @@
 import { getWalletClient } from '@wagmi/core';
-import { encodeFunctionData, type TransactionReceipt } from 'viem';
-import {
-  sendTransaction,
-  estimateGas,
-  waitForTransactionReceipt,
-} from 'viem/actions';
+import { Address, encodeFunctionData, type TransactionReceipt } from 'viem';
+import { sendTransaction } from 'viem/actions';
 
 import { client, config } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 export async function setSchema({
   from,
@@ -15,8 +11,8 @@ export async function setSchema({
   action,
   msgValue,
 }: {
-  from: `0x${string}`;
-  uid: `0x${string}`;
+  from: Address;
+  uid: Address;
   action: number;
   msgValue: bigint;
 }): Promise<TransactionReceipt | Error> {
@@ -42,8 +38,8 @@ export async function setSchema({
 
   try {
     gasLimit = client.estimateGas({
-      account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
+      account: from as Address,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as Address,
       data: data,
       value: msgValue,
     });
@@ -53,8 +49,8 @@ export async function setSchema({
 
   try {
     const transactionHash = await sendTransaction(walletClient, {
-      account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
+      account: from as Address,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as Address,
       gasLimit: gasLimit,
       data: data,
       value: msgValue,

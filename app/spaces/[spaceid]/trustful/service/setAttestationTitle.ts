@@ -1,13 +1,9 @@
 import { getWalletClient } from '@wagmi/core';
-import { encodeFunctionData, type TransactionReceipt } from 'viem';
-import {
-  sendTransaction,
-  estimateGas,
-  waitForTransactionReceipt,
-} from 'viem/actions';
+import { Address, encodeFunctionData, type TransactionReceipt } from 'viem';
+import { sendTransaction } from 'viem/actions';
 
 import { client, config } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 export async function setAttestationTitle({
   from,
@@ -15,7 +11,7 @@ export async function setAttestationTitle({
   isValid,
   value,
 }: {
-  from: `0x${string}`;
+  from: Address;
   title: string;
   isValid: boolean;
   value: bigint;
@@ -41,8 +37,8 @@ export async function setAttestationTitle({
 
   try {
     gasLimit = client.estimateGas({
-      account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
+      account: from as Address,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as Address,
       data: data,
       value: value,
     });
@@ -52,8 +48,8 @@ export async function setAttestationTitle({
 
   try {
     const transactionHash = await sendTransaction(walletClient, {
-      account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
+      account: from as Address,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as Address,
       gasLimit: gasLimit,
       data: data,
       value: value,

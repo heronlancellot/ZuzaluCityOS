@@ -1,9 +1,9 @@
 import { getWalletClient } from '@wagmi/core';
-import { encodeFunctionData, type TransactionReceipt } from 'viem';
+import { Address, encodeFunctionData, type TransactionReceipt } from 'viem';
 import { sendTransaction } from 'viem/actions';
 
 import { client, config } from '@/context/WalletContext';
-import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../constants/constants';
+import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 export async function revokeRole({
   from,
@@ -11,9 +11,9 @@ export async function revokeRole({
   account,
   msgValue,
 }: {
-  from: `0x${string}`;
-  role: `0x${string}`;
-  account: `0x${string}`;
+  from: Address;
+  role: Address;
+  account: Address;
   msgValue: bigint;
 }): Promise<TransactionReceipt | Error> {
   const walletClient = await getWalletClient(config);
@@ -37,8 +37,8 @@ export async function revokeRole({
 
   try {
     gasLimit = client.estimateGas({
-      account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
+      account: from as Address,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as Address,
       data: data,
       value: msgValue,
     });
@@ -48,8 +48,8 @@ export async function revokeRole({
 
   try {
     const transactionHash = await sendTransaction(walletClient, {
-      account: from as `0x${string}`,
-      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as `0x${string}`,
+      account: from as Address,
+      to: RESOLVER_CONTRACT_SCROLL_TRUSTFUL as Address,
       gasLimit: gasLimit,
       data: data,
       value: msgValue,
