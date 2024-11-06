@@ -63,7 +63,7 @@ export const GiveBadge = () => {
   const { address, chainId } = useAccount();
   const { push } = useRouter();
   const unwatch = watchAccount(config, {
-    onChange() {},
+    onChange() { },
   });
   const {
     addressStep,
@@ -80,14 +80,13 @@ export const GiveBadge = () => {
   const { switchChain } = useSwitchChain();
   const [badgeReceiverAddress, setBadgeReceiverAddress] =
     useState<EthereumAddress | null>(null);
-  const [inputAddress, setInputAddress] = useState<string>();
+  const [inputAddress, setInputAddress] = useState<string>('');
   const [inputBadge, setInputBadge] = useState<BadgeTitle>();
   const [commentBadge, setCommentBadge] = useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
   const [text, setText] = useState<string>('');
   const searchParams = useSearchParams();
   const addressShared = searchParams.get('address');
-  const param = useParams();
 
   /** Commented for now. 
    * TODO: Check if 'Checkin/Pre-Checkin' is needed.
@@ -115,7 +114,6 @@ export const GiveBadge = () => {
       setAddressStep(GiveBadgeStepAddress.INSERT_ADDRESS);
       setBadgeInputAddress(null);
       setBadgeReceiverAddress(null);
-      setInputAddress('');
       setInputBadge(undefined);
       setCommentBadge('');
       setText('');
@@ -239,12 +237,12 @@ export const GiveBadge = () => {
   // Changes the continue arrow color based on the status of a valid input address
   const iconColor =
     (inputAddress && isAddress(inputAddress)) ||
-    (badgeInputAddress && isAddress(badgeInputAddress?.address))
+      (badgeInputAddress && isAddress(badgeInputAddress?.address))
       ? 'text-[#000000  ]'
       : 'text-[#F5FFFFB2]';
   const iconBg =
     (inputAddress && isAddress(inputAddress)) ||
-    (badgeInputAddress && isAddress(badgeInputAddress?.address))
+      (badgeInputAddress && isAddress(badgeInputAddress?.address))
       ? 'bg-[#B1EF42B2]'
       : 'bg-[#37383A]';
 
