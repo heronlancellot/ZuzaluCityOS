@@ -309,9 +309,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
             eventRegistration.scrollPassTickets
               ?.filter(
                 (ticket) =>
-                  ticket.type === 'Attendee' &&
-                  ticket.checkin === '1' &&
-                  ticket.status === 'available',
+                  ticket.type === 'Attendee' && ticket.checkin === '1',
               )
               .map((ticket) => ticket.contractAddress) || [];
 
