@@ -20,14 +20,17 @@ import { useTrustful } from '@/context/TrustfulContext';
 import { BadgeStatus, BadgeTagIcon } from '../../components/BadgeTagIcon';
 import { getEllipsedAddress } from '@/utils/format';
 import { isDev, TRUSTFUL_SCHEMAS } from '../../../constants/constants';
-import { AttestationRequestData, submitAttest } from '../../../service';
+import {
+  AttestationRequestData,
+  submitAttest,
+} from '../../../service/smart-contract';
 import { HeartLoveIcon, UserIcon } from '@/components/icons';
 import { BadgeDetailsNavigation } from '../../../components';
 import { CopyToClipboardButton } from '../../../components/CopyToClipboardButton';
 import { OutboundLinkButton } from '../../../components/OutboundLink';
 import { TheFooterNavbar } from '../../../components/TheFooterNavbar';
 import { TheHeader } from '../../../components/TheHeader';
-import { revoke } from '../../../service/revoke';
+import { revoke } from '../../../service/smart-contract/revoke';
 import toast from 'react-hot-toast';
 
 export const MyBadgeDetails = () => {

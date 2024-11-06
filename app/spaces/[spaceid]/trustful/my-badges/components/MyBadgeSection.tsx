@@ -10,10 +10,10 @@ import toast from 'react-hot-toast';
 import { BadgeCard, BadgeData, Schema } from './BadgeCard';
 import { BadgeStatus } from './BadgeTagIcon';
 import { TRUSTFUL_SCHEMAS } from '../../constants/constants';
-import { fetchEASData } from '../../service';
 import { BADGE_QUERY } from '../../constants/schemaQueries';
 import { TheFooterNavbar } from '../../components/TheFooterNavbar';
 import { TheHeader } from '../../components/TheHeader';
+import { fetchEASData } from '../../service';
 
 interface Attestation {
   decodedDataJson: string;

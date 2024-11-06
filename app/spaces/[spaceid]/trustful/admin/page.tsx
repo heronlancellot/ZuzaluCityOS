@@ -8,12 +8,12 @@ import { Stack, Box } from '@mui/material';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
-import { getUserRole } from '@/services/user/getUserRole';
+import { getUserRole } from '@/app/spaces/[spaceid]/trustful/service/backend/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
 import { Address } from 'viem';
 import { AdminSection } from './components/AdminSection';
 import { Role, ROLES } from '../constants/constants';
-import { hasRole } from '../service';
+import { hasRole } from '../service/smart-contract';
 
 const TrustfulAdminPage = () => {
   const params = useParams();
