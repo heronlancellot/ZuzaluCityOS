@@ -16,9 +16,14 @@ import { scroll, scrollSepolia } from 'viem/chains';
 import {
   isDev,
   Role,
+  ROLES,
   TRUSTFUL_SCHEMAS,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
-import { getAllAttestationTitles } from '@/app/spaces/[spaceid]/trustful/service';
+import {
+  getAllAttestationTitles,
+  getUserRole,
+  hasRole,
+} from '@/app/spaces/[spaceid]/trustful/service';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import toast from 'react-hot-toast';
 
@@ -188,6 +193,55 @@ export const TrustfulContextProvider: React.FC<
 
     setInputBadgeTitleList(filteredBadges.sort());
   };
+
+  useEffect(() => {
+    const fetchUserRoleByContract = async () => {
+      const isRoot = await hasRole(ROLES.ROOT, address as Address);
+      if (isRoot) {
+        setUserRole({
+          address: address as Address,
+          role: Role.ROOT,
+        });
+        return;
+      }
+      const isManager = await hasRole(ROLES.MANAGER, address as Address);
+      if (isManager) {
+        setUserRole({
+          address: address as Address,
+          role: Role.MANAGER,
+        });
+        return;
+      }
+      const isVillager = await hasRole(ROLES.VILLAGER, address as Address);
+      if (isVillager) {
+        setUserRole({
+          address: address as Address,
+          role: Role.VILLAGER,
+        });
+        return;
+      }
+    };
+
+    const fetchUserRole = async () => {
+      if (address) {
+        try {
+          const getUserRoleByEndpoint = await getUserRole(address as Address);
+          if (getUserRoleByEndpoint && getUserRoleByEndpoint?.role) {
+            setUserRole({
+              address: address as Address,
+              role: getUserRoleByEndpoint.role,
+            });
+            return;
+          }
+        } catch (error) {
+          console.error('Failed to fetch user role from endpoint:', error);
+          await fetchUserRoleByContract();
+        }
+      }
+    };
+
+    fetchUserRole();
+  }, [address, chainId]);
 
   return (
     <TrustfulContext.Provider value={TrustfulContextData}>

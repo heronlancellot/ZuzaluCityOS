@@ -19,7 +19,7 @@ export const getUserRole = async (
         },
       },
     );
-    console.log('respnse', response);
+    console.log('response GetUserRole', response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
