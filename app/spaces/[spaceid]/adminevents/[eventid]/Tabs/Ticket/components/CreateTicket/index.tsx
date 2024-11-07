@@ -43,6 +43,7 @@ import { Uploader3, SelectedFile } from '@lxdao/uploader3';
 import { PreviewFile } from '@/components';
 import { useUploaderPreview } from '@/components/PreviewFile/useUploaderPreview';
 import { ButtonGroup } from '../Common';
+import FormUploader from '@/components/form/FormUploader';
 
 interface IProps {
   setIsConfirm?: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -442,12 +443,11 @@ export const CreateTicket = ({
   setIsMintCloseTime,
   setEndDate,
   setEndTime,
+  ticketImageURL,
   setTicketImageURL,
   handleBack,
   handleNext,
 }: IProps) => {
-  const avatarUploader = useUploaderPreview();
-
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Stack padding="20px 30px" spacing="30px">
@@ -590,38 +590,9 @@ export const CreateTicket = ({
               Recommend min of 200 * 200px (1:1 Ratio)
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <Uploader3
-                accept={['.gif', '.jpeg', '.gif', '.png']}
-                api={'/api/file/upload'}
-                multiple={false}
-                crop={{
-                  size: { width: 400, height: 400 },
-                  aspectRatio: 1,
-                }} // must be false when accept is svg
-                onUpload={(file) => {
-                  avatarUploader.setFile(file);
-                }}
-                onComplete={(file) => {
-                  avatarUploader.setFile(file);
-                }}
-              >
-                <Button
-                  component="span"
-                  sx={{
-                    color: 'white',
-                    borderRadius: '10px',
-                    backgroundColor: '#373737',
-                    border: '1px solid #383838',
-                  }}
-                >
-                  Upload Image
-                </Button>
-              </Uploader3>
-              <PreviewFile
-                sx={{ width: '200px', height: '200px' }}
-                src={avatarUploader.getUrl()}
-                errorMessage={avatarUploader.errorMessage()}
-                isLoading={avatarUploader.isLoading()}
+              <FormUploader
+                value={ticketImageURL}
+                onChange={setTicketImageURL}
               />
             </Box>
           </Stack>
@@ -828,8 +799,6 @@ export const CreateTicket = ({
         <ButtonGroup
           handleBack={handleBack!}
           handleNext={() => {
-            const newImageURL = avatarUploader.getUrl();
-            setTicketImageURL(newImageURL);
             handleNext?.();
           }}
         />

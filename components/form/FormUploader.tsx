@@ -8,7 +8,7 @@ interface IProps {
   multiple?: boolean;
   value?: string;
   previewStyle?: React.CSSProperties;
-  onChange: (url: string | undefined) => void;
+  onChange: (url: string) => void;
 }
 
 const compressImage = (
@@ -24,7 +24,6 @@ const compressImage = (
       const img = new Image();
       img.src = event.target?.result as string;
       img.onload = () => {
-        // 计算新的尺寸
         let width = img.width;
         let height = img.height;
         if (width > maxWidth) {
@@ -36,7 +35,6 @@ const compressImage = (
           height = maxHeight;
         }
 
-        // 创建 Canvas 并绘制压缩后的图片
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
@@ -112,7 +110,7 @@ const uploadImage = async (base64: string, api: string): Promise<string> => {
 };
 
 export default function FormUploader({
-  accept = ['.jpeg', '.gif', '.png'],
+  accept = ['.jpg', '.jpeg', '.gif', '.png'],
   api = '/api/file/upload',
   multiple = false,
   value,

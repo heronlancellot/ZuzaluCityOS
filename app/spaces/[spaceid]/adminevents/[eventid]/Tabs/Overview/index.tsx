@@ -65,6 +65,7 @@ dayjs.extend(timezone);
 type FormData = Yup.InferType<typeof schema>;
 
 import dynamic from 'next/dynamic';
+import FormUploader from '@/components/form/FormUploader';
 const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
   ssr: false,
 });
@@ -119,6 +120,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
 
   const descriptionEditorStore = useEditorStore();
   const avatarUploader = useUploaderPreview();
+  const [imageUrl, setImageUrl] = useState('');
   const { options } = useTimezoneSelect({ timezones: allTimezones });
   const [selectedTimezone, setSelectedTimezone] = useState<ITimezoneOption>(
     {} as ITimezoneOption,
@@ -183,7 +185,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
           .replace(/\\\\/g, '\\')
           .replace(/\\"/g, '"'),
       );
-      avatarUploader.setUrl(event.imageUrl);
+      setImageUrl(event.imageUrl ?? '');
       setStartTime(dayjs(event.startTime));
       setEndTime(dayjs(event.endTime));
       setSelectedTimezone(
@@ -277,7 +279,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
           spaceId: spaceId,
           profileId: profileId,
           imageUrl:
-            avatarUploader.getUrl() ||
+            imageUrl ||
             'https://bafkreifje7spdjm5tqts5ybraurrqp4u6ztabbpefp4kepyzcy5sk2uel4.ipfs.nftstorage.link',
           startTime: dayjs(startTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]'),
           endTime: dayjs(endTime).utc().format('YYYY-MM-DDTHH:mm:ss[Z]'),
@@ -425,43 +427,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
                     gap: '10px',
                   }}
                 >
-                  <Uploader3
-                    accept={['.gif', '.jpeg', '.gif', '.png']}
-                    api={'/api/file/upload'}
-                    multiple={false}
-                    crop={{
-                      size: { width: 400, height: 400 },
-                      aspectRatio: 1,
-                    }} // must be false when accept is svg
-                    onUpload={(file) => {
-                      avatarUploader.setFile(file);
-                    }}
-                    onComplete={(file) => {
-                      avatarUploader.setFile(file);
-                    }}
-                  >
-                    <Button
-                      component="span"
-                      sx={{
-                        color: 'white',
-                        borderRadius: '10px',
-                        backgroundColor: '#373737',
-                        border: '1px solid #383838',
-                      }}
-                    >
-                      Upload Image
-                    </Button>
-                  </Uploader3>
-                  <PreviewFile
-                    sx={{
-                      width: '200px',
-                      height: '200px',
-                      borderRadius: '10px',
-                    }}
-                    src={avatarUploader.getUrl()}
-                    errorMessage={avatarUploader.errorMessage()}
-                    isLoading={avatarUploader.isLoading()}
-                  />
+                  <FormUploader value={imageUrl} onChange={setImageUrl} />
                 </Box>
               </Stack>
               <Stack spacing="10px" padding="20px">

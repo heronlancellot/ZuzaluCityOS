@@ -28,6 +28,7 @@ import { covertNameToUrlName } from '@/utils/format';
 import { createUrl } from '@/services/url';
 
 import dynamic from 'next/dynamic';
+import FormUploader from '@/components/form/FormUploader';
 const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
   ssr: false,
 });
@@ -53,8 +54,8 @@ const Create = () => {
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState<string>('');
   const [tagline, setTagline] = useState<string>('');
-  const avatarUploader = useUploaderPreview();
-  const bannerUploader = useUploaderPreview();
+  const [avatar, setAvatar] = useState('');
+  const [banner, setBanner] = useState('');
   const descriptionEditorStore = useEditorStore();
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
@@ -175,10 +176,10 @@ const Create = () => {
               superAdmin: adminId,
               profileId: profileId,
               avatar:
-                avatarUploader.getUrl() ||
+                avatar ||
                 'https://nftstorage.link/ipfs/bafybeifcplhgttja4hoj5vx4u3x7ucft34acdpiaf62fsqrobesg5bdsqe',
               banner:
-                bannerUploader.getUrl() ||
+                banner ||
                 'https://nftstorage.link/ipfs/bafybeifqan4j2n7gygwkmekcty3dsp7v4rxbjimpo7nrktclwxgxreiyay',
               category: categories.join(', '),
             },
@@ -349,42 +350,14 @@ const Create = () => {
                   gap: '10px',
                 }}
               >
-                <Uploader3
-                  accept={['.gif', '.jpeg', '.gif', '.png']}
-                  api={'/api/file/upload'}
-                  multiple={false}
-                  crop={{
-                    size: { width: 400, height: 400 },
-                    aspectRatio: 1,
-                  }} // must be false when accept is svg
-                  onUpload={(file) => {
-                    avatarUploader.setFile(file);
-                  }}
-                  onComplete={(file) => {
-                    avatarUploader.setFile(file);
-                  }}
-                >
-                  <Button
-                    component="span"
-                    sx={{
-                      color: 'white',
-                      borderRadius: '10px',
-                      backgroundColor: '#373737',
-                      border: '1px solid #383838',
-                    }}
-                  >
-                    Upload Image
-                  </Button>
-                </Uploader3>
-                <PreviewFile
-                  sx={{
+                <FormUploader
+                  value={avatar}
+                  onChange={setAvatar}
+                  previewStyle={{
                     width: '150px',
                     height: '150px',
-                    borderRadius: '60%',
+                    borderRadius: '50%',
                   }}
-                  src={avatarUploader.getUrl()}
-                  errorMessage={avatarUploader.errorMessage()}
-                  isLoading={avatarUploader.isLoading()}
                 />
               </Box>
             </Stack>
@@ -402,38 +375,14 @@ const Create = () => {
                   gap: '10px',
                 }}
               >
-                <Uploader3
-                  accept={['.gif', '.jpeg', '.gif', '.png']}
-                  api={'/api/file/upload'}
-                  multiple={false}
-                  crop={{
-                    size: { width: 600, height: 400 },
-                    aspectRatio: 740 / 200,
+                <FormUploader
+                  value={banner}
+                  onChange={setBanner}
+                  previewStyle={{
+                    width: '100%',
+                    height: '200px',
+                    borderRadius: '10px',
                   }}
-                  onUpload={(file) => {
-                    bannerUploader.setFile(file);
-                  }}
-                  onComplete={(file) => {
-                    bannerUploader.setFile(file);
-                  }}
-                >
-                  <Button
-                    component="span"
-                    sx={{
-                      color: 'white',
-                      borderRadius: '10px',
-                      backgroundColor: '#373737',
-                      border: '1px solid #383838',
-                    }}
-                  >
-                    Upload Image
-                  </Button>
-                </Uploader3>
-                <PreviewFile
-                  sx={{ width: '100%', height: '200px', borderRadius: '10px' }}
-                  src={bannerUploader.getUrl()}
-                  errorMessage={bannerUploader.errorMessage()}
-                  isLoading={bannerUploader.isLoading()}
                 />
               </Box>
             </Stack>
