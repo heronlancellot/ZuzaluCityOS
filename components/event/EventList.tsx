@@ -28,13 +28,16 @@ export default function EventList({
       ongoing: [] as Event[],
       upcoming: [] as Event[],
       past: [] as Event[],
+      legacy: [] as Event[],
     };
 
     events.forEach((event) => {
       const startTime = dayjs(event.startTime);
       const endTime = dayjs(event.endTime);
 
-      if (startTime.isBefore(now) && endTime.isAfter(now)) {
+      if (event.source === 'Legacy') {
+        groupedEvents.legacy.push(event);
+      } else if (startTime.isBefore(now) && endTime.isAfter(now)) {
         groupedEvents.ongoing.push(event);
       } else if (startTime.isAfter(now)) {
         groupedEvents.upcoming.push(event);
@@ -67,7 +70,6 @@ export default function EventList({
         });
         groupedEvents[key] = value;
       });
-      console.log(events);
       return groupedEvents;
     };
 
@@ -75,10 +77,12 @@ export default function EventList({
       ongoing: {} as { [key: string]: Event[] },
       upcoming: {} as { [key: string]: Event[] },
       past: {} as { [key: string]: Event[] },
+      legacy: {} as { [key: string]: Event[] },
     };
     data.ongoing = getData(groupedEvents.ongoing);
     data.upcoming = getData(groupedEvents.upcoming);
     data.past = getData(groupedEvents.past);
+    data.legacy = getData(groupedEvents.legacy);
 
     return data;
   }, [events]);
@@ -116,62 +120,70 @@ export default function EventList({
           { title: 'Ongoing Event', key: 'ongoing' },
           { title: 'Upcoming Event', key: 'upcoming' },
           { title: 'Past Event', key: 'past' },
-        ].map((item) => (
-          <>
-            <Box
-              key={item.key}
-              sx={{
-                backgroundColor: 'rgba(34, 34, 34, 0.9)',
-                backdropFilter: 'blur(10px)',
-                position: 'sticky',
-                top: `${top}px`,
-                zIndex: 100,
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
-              <Box display="flex" justifyContent="space-between">
-                <Box display="flex" alignItems="center" gap="10px">
-                  <EventIcon />
-                  <Typography color="white" variant="subtitleLB">
-                    {item.title}
-                  </Typography>
-                </Box>
-                {hasAllButton && (
-                  <Link
-                    href={'/events'}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      textDecoration: 'blink',
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap="10px">
-                      <Typography color="white" variant="bodyB">
-                        View All Events
-                      </Typography>
-                      <RightArrowCircleIcon />
-                    </Box>
-                  </Link>
-                )}
-              </Box>
-            </Box>
-            {Object.entries(
-              eventsData[item.key as keyof typeof eventsData],
-            ).map(([month, eventsList]) => {
-              return (
-                <Fragment key={month}>
-                  <EventCardMonthGroup>{month}</EventCardMonthGroup>
-                  {(eventsList as Event[]).map(
-                    (event: Event, index: number) => (
-                      <EventCard key={`EventCard-${index}`} event={event} />
-                    ),
+          { title: 'Legacy Event', key: 'legacy' },
+        ].map((item) => {
+          if (
+            Object.keys(eventsData[item.key as keyof typeof eventsData])
+              .length === 0
+          )
+            return null;
+          return (
+            <>
+              <Box
+                key={item.key}
+                sx={{
+                  backgroundColor: 'rgba(34, 34, 34, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  position: 'sticky',
+                  top: `${top}px`,
+                  zIndex: 100,
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <Box display="flex" justifyContent="space-between">
+                  <Box display="flex" alignItems="center" gap="10px">
+                    <EventIcon />
+                    <Typography color="white" variant="subtitleLB">
+                      {item.title}
+                    </Typography>
+                  </Box>
+                  {hasAllButton && (
+                    <Link
+                      href={'/events'}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        textDecoration: 'blink',
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" gap="10px">
+                        <Typography color="white" variant="bodyB">
+                          View All Events
+                        </Typography>
+                        <RightArrowCircleIcon />
+                      </Box>
+                    </Link>
                   )}
-                </Fragment>
-              );
-            })}
-          </>
-        ))
+                </Box>
+              </Box>
+              {Object.entries(
+                eventsData[item.key as keyof typeof eventsData],
+              ).map(([month, eventsList]) => {
+                return (
+                  <Fragment key={month}>
+                    <EventCardMonthGroup>{month}</EventCardMonthGroup>
+                    {(eventsList as Event[]).map(
+                      (event: Event, index: number) => (
+                        <EventCard key={`EventCard-${index}`} event={event} />
+                      ),
+                    )}
+                  </Fragment>
+                );
+              })}
+            </>
+          );
+        })
       )}
     </Box>
   );

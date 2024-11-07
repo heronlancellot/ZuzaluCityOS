@@ -176,8 +176,8 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
             fontWeight={300}
             fontSize={'14px'}
           >
-            {formatTimestamp(event.startTime)} -{' '}
-            {formatTimestamp(event.endTime)}
+            {dayjs(event.startTime).utc().format('MMMM D')} -{' '}
+            {dayjs(event.endTime).utc().format('MMMM D')}
           </Typography>
         </Box>
         <Box display="flex" flexDirection="column">

@@ -237,7 +237,10 @@ const Home: React.FC = () => {
             input: {
               where: {
                 startTime: {
-                  equalTo: selectedDate.format('YYYY-MM-DD') + 'T00:00:00Z',
+                  lessThanOrEqualTo:
+                    selectedDate.format('YYYY-MM-DD') + 'T23:59:59Z',
+                  greaterThanOrEqualTo:
+                    selectedDate.format('YYYY-MM-DD') + 'T00:00:00Z',
                 },
               },
             },
@@ -441,39 +444,6 @@ const Home: React.FC = () => {
                     >
                       Sort & Filter Events
                     </Typography>
-                    {/*<Box
-                        display="flex"
-                        gap="4px"
-                        padding="2px"
-                        borderRadius="10px"
-                        bgcolor="#2d2d2d"
-                      >
-                        <Button
-                          sx={{
-                            flex: 1,
-                            backgroundColor: isPast ? '#2d2d2d' : '#424242',
-                            borderRadius: '8px',
-                            color: 'white',
-                            fontFamily: 'Inter',
-                          }}
-                          onClick={() => setIsPast(false)}
-                        >
-                          Upcoming
-                        </Button>
-                        <Button
-                          sx={{
-                            flex: 1,
-                            backgroundColor: isPast ? '#424242' : '#2d2d2d',
-                            borderRadius: '8px',
-                            color: 'white',
-                            fontFamily: 'Inter',
-                          }}
-                          onClick={() => setIsPast(true)}
-                        >
-                          Past
-                        </Button>
-                      </Box>
-                      */}
                     <Box>
                       <ZuCalendar
                         onChange={(val) => {
@@ -503,7 +473,7 @@ const Home: React.FC = () => {
                               })
 
                               .map((event) => {
-                                return dayjs(event.startTime).date();
+                                return dayjs(event.startTime).utc().date();
                               }),
                           } as any,
                         }}
