@@ -40,6 +40,7 @@ import {
   ADMIN_OPTIONS,
   MANAGER_OPTIONS,
   ACTIONS_OPTIONS,
+  VILLAGER_OPTIONS,
 } from './ui-utils';
 import { InputAddressUser } from '../../components/InputAddressUser';
 import { joinSession } from '@/app/spaces/[spaceid]/trustful/service/backend/joinSession';
@@ -75,6 +76,10 @@ export const DropdownMenuAdmin = () => {
       setValidAddress(new EthereumAddress(inputAddress));
     }
   }, [inputAddress]);
+
+  useEffect(() => {
+    console.log('userRole', userRole);
+  }, [userRole]);
 
   useEffect(() => {
     setRole(null);
@@ -1054,6 +1059,20 @@ export const DropdownMenuAdmin = () => {
                 {MANAGER_OPTIONS.map((admin, index) => (
                   <option key={index} value={admin.action}>
                     {admin.action}
+                  </option>
+                ))}
+              </Select>
+            ) : userRole.role === Role.VILLAGER ? (
+              <Select
+                placeholder="Select option"
+                className="flex text-black opacity-70 font-normal leading-tight"
+                color="white"
+                onChange={(e) => handleActionSelectChange(e, Role.MANAGER)}
+                focusBorderColor={'#B1EF42'}
+              >
+                {VILLAGER_OPTIONS.map((villager, index) => (
+                  <option key={index} value={villager.action}>
+                    {villager.action}
                   </option>
                 ))}
               </Select>
