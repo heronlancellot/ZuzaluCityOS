@@ -1,37 +1,23 @@
 'use client';
 import SlotDates from '@/components/calendar/SlotDate';
-import {
-  EventCard,
-  EventCardMonthGroup,
-  EventCardSkeleton,
-  groupEventsByMonth,
-} from '@/components/cards/EventCard';
 import { SpaceCardSkeleton } from '@/components/cards/SpaceCard';
 import { ZuCalendar } from '@/components/core';
-import { dashboardEvent, isDev, prodShowSpaceId } from '@/constant';
+import { dashboardEvent } from '@/constant';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, EventData, Space, SpaceData } from '@/types';
 import { Dayjs, dayjs } from '@/utils/dayjs';
-import {
-  Box,
-  Skeleton,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import Carousel from 'components/Carousel';
-import { EventIcon, RightArrowCircleIcon, SpaceIcon } from 'components/icons';
+import { RightArrowCircleIcon, SpaceIcon } from 'components/icons';
 import { Sidebar } from 'components/layout';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { Fragment, useEffect, useMemo, useState } from 'react';
-import { EventComingSoonCard } from '@/components/cards/ComingSoonCard';
+import React, { useEffect, useState } from 'react';
 import { getSpacesQuery } from '@/services/space';
 import Banner from './components/Banner';
 import { supabase } from '@/utils/supabase/client';
-import { LegacyEvent } from '@/types';
+import EventList from '@/components/event/EventList';
 
 const Home: React.FC = () => {
   const theme = useTheme();
@@ -51,20 +37,7 @@ const Home: React.FC = () => {
     dayjs(new Date()),
   );
 
-  const {
-    ceramic,
-    composeClient,
-    isAuthenticated,
-    authenticate,
-    logout,
-    showAuthPrompt,
-    hideAuthPrompt,
-    isAuthPromptVisible,
-    newUser,
-    profile,
-    username,
-    createProfile,
-  } = useCeramicContext();
+  const { ceramic, composeClient } = useCeramicContext();
 
   const getSpaces = async () => {
     try {
@@ -365,33 +338,6 @@ const Home: React.FC = () => {
     });
   }, [dateForCalendar]);
 
-  const eventsData = useMemo(() => {
-    const data = groupEventsByMonth(events);
-    let keys = Object.keys(data).sort((a, b) => {
-      const dateA = dayjs(a, 'MMMM YYYY');
-      const dateB = dayjs(b, 'MMMM YYYY');
-      return dateA.isBefore(dateB) ? 1 : -1;
-    });
-
-    const invalidDateIndex = keys.findIndex((key) => key === 'Invalid Date');
-    if (invalidDateIndex !== -1) {
-      const invalidDate = keys.splice(invalidDateIndex, 1)[0];
-      keys.push(invalidDate);
-    }
-
-    const groupedEvents: { [key: string]: Event[] } = {};
-    keys.forEach((key) => {
-      const value = data[key];
-      value.sort((a, b) => {
-        const dateA = dayjs(a.startTime);
-        const dateB = dayjs(b.startTime);
-        return dateA.isAfter(dateB) ? 1 : -1;
-      });
-      groupedEvents[key] = value;
-    });
-    return groupedEvents;
-  }, [events]);
-
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box width={'100vw'} minHeight={'calc(100vh - 50px)'}>
@@ -474,90 +420,7 @@ const Home: React.FC = () => {
               )}
             </Box>
             <Box display="flex" gap="20px" marginTop="20px">
-              <Box
-                position="relative"
-                flexGrow={1}
-                display="flex"
-                flexDirection="column"
-                gap="20px"
-                sx={{ inset: '0' }}
-              >
-                <Box
-                  sx={{
-                    backgroundColor: 'rgba(34, 34, 34, 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    position: 'sticky',
-                    top: '-30px',
-                    zIndex: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <Box display="flex" justifyContent="space-between">
-                    <Box display="flex" alignItems="center" gap="10px">
-                      <EventIcon />
-                      <Typography color="white" variant="subtitleLB">
-                        Events
-                      </Typography>
-                    </Box>
-                    <Link
-                      href={'/events'}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        textDecoration: 'blink',
-                      }}
-                    >
-                      <Box display="flex" alignItems="center" gap="10px">
-                        <Typography color="white" variant="bodyB">
-                          View All Events
-                        </Typography>
-                        <RightArrowCircleIcon />
-                      </Box>
-                    </Link>
-                  </Box>
-                </Box>
-                {isEventsLoading ? (
-                  <>
-                    <EventCardMonthGroup>
-                      <Skeleton width={60}></Skeleton>
-                    </EventCardMonthGroup>
-                    <EventCardSkeleton />
-                    <EventCardSkeleton />
-                    <EventCardSkeleton />
-                    <EventCardSkeleton />
-                    <EventCardSkeleton />
-                  </>
-                ) : events.length === 0 ? (
-                  <Box
-                    display={'flex'}
-                    height={200}
-                    alignItems={'center'}
-                    justifyContent={'center'}
-                  >
-                    <Typography color={'#ccc'}>
-                      No data at the moment
-                    </Typography>
-                  </Box>
-                ) : (
-                  <>
-                    {Object.entries(eventsData).map(([month, eventsList]) => {
-                      return (
-                        <Fragment key={month}>
-                          <EventCardMonthGroup>{month}</EventCardMonthGroup>
-                          {eventsList.map((event, index) => (
-                            <EventCard
-                              key={`EventCard-${index}`}
-                              event={event}
-                            />
-                          ))}
-                        </Fragment>
-                      );
-                    })}
-                    {/*<EventComingSoonCard />*/}
-                  </>
-                )}
-              </Box>
+              <EventList events={events} isLoading={isEventsLoading} />
               <Box>
                 {!isTablet && (
                   <Box

@@ -111,6 +111,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
               : 'rgba(255, 255, 255, 0.05)',
         },
         opacity: event.source === 'Legacy' ? 0.6 : 1,
+        borderRadius: '10px',
       }}
       width={'100%'}
       boxSizing={'border-box'}
