@@ -10,8 +10,9 @@ import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
 import { DropdownMenuAdminSession } from './components/DropdownMenuAdminSession';
+import { CardEventDetails } from './components/CardEventDetails';
 
-const TrustfulPage = () => {
+const TrustfulPageEventId = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
   console.log('params', params);
@@ -146,14 +147,11 @@ const TrustfulPage = () => {
           }}
         >
           <DropdownMenuAdminSession />
-          {/* <CardEventDetails />  could be card Events Details*/}
-          <button>Go to Sessions</button>
-          <button>Create Sessions in ADMIN</button>
-          <text> veja mais detalhes desse evento nessa pagina ! </text>
+          <CardEventDetails />
         </Box>
       </Stack>
     </Stack>
   );
 };
 
-export default TrustfulPage;
+export default TrustfulPageEventId;

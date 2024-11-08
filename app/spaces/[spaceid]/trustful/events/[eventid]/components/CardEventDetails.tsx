@@ -3,15 +3,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, Text } from '@chakra-ui/react';
-import { getSession, GetSessionResponse } from '../../../service';
-// import { useTrustful } from '@/context/TrustfulContext';
+import {
+  getSession,
+  getEventById,
+  GetSessionResponse,
+  Event,
+} from '../../../service';
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
 
-export const CardSessions = () => {
-  const [sessions, setSessions] = useState<GetSessionResponse[] | undefined>(
-    [],
+export const CardEventDetails = () => {
+  const [eventDetails, setEventDetails] = useState<Event | undefined>(
+    undefined,
   );
   const params = useParams();
   const spaceId = params.spaceid.toString();
@@ -21,39 +25,56 @@ export const CardSessions = () => {
   const { address } = useAccount();
 
   useEffect(() => {
-    const fetchAllEvents = async () => {
+    const fetchEventById = async () => {
+      if (!address) {
+        toast.error('Please connect first. No address found.');
+        return;
+      }
       try {
-        const sessionsData = await getSession({
+        const eventsData = await getEventById({
+          spaceId: Number(spaceId),
           userAddress: address as Address,
-          eventid: Number(params.eventid),
         });
-        if (sessionsData) {
-          setSessions([sessionsData]);
+        if (eventsData) {
+          setEventDetails(eventsData);
         }
+        console.log('eventsData', eventsData);
       } catch (error) {
         console.log('error', error);
       }
     };
-    fetchAllEvents();
-  }, []);
+    fetchEventById();
+  }, [address, spaceId]); //TODO: ADD eventcreated here
 
   return (
     <>
-      {/* {sessions && sessions.length > 0 && (
+      {eventDetails && (
         <Card
           background={'#F5FFFF0D'}
           className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
         >
           <Text className="text-white mb-2 font-medium leading-none">
-            Events
+            Event Details
           </Text>
-          {sessions.map((session, index) => (
-            <Text key={index} className="text-white">
-              {session.sessions[index].name}
+
+          <Card
+            background={'#222222'}
+            className="mb-4 p-4 cursor-pointer"
+            onClick={() => push(`${actualURL}/${eventDetails.eventId}`)}
+          >
+            <Text className="text-white font-semibold text-lg">
+              {eventDetails.name}
             </Text>
-          ))}
+            <Text className="text-gray-400">{eventDetails.description}</Text>
+            <Text className="text-gray-500 text-sm">
+              Space ID: {eventDetails.spaceId}
+            </Text>
+            <Text className="text-gray-500 text-sm">
+              Created at: {new Date(eventDetails.createdAt).toLocaleString()}
+            </Text>
+          </Card>
         </Card>
-      )} */}
+      )}
 
       <Card
         background={'#F5FFFF0D'}

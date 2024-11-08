@@ -5,7 +5,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, Text } from '@chakra-ui/react';
 // import { useTrustful } from '@/context/TrustfulContext';
 import toast from 'react-hot-toast';
-import { getSession, GetSessionResponse } from '../../../../../service';
+import {
+  getSession,
+  GetSessionResponse,
+} from '@/app/spaces/[spaceid]/trustful/service/backend';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
 

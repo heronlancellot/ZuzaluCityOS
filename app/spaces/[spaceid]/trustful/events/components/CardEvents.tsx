@@ -7,41 +7,62 @@ import { Card, Text } from '@chakra-ui/react';
 import { Address } from 'viem';
 import { useAccount } from 'wagmi';
 import toast from 'react-hot-toast';
-import { useTrustful } from '@/context/TrustfulContext';
 import { getAllEvents } from '../../service/backend/getAllEvents';
+import { getSession } from '../../service';
 
 export const CardEvents = () => {
-  const [events, setEvents] = useState<Event[] | undefined>([]);
+  const [events, setEvents] = useState<
+    (Event & { totalSessions?: number })[] | undefined
+  >([]);
   const params = useParams();
   const spaceId = params.spaceid.toString();
   const actualURL = `/spaces/${params.spaceid}/trustful/events`;
   const { push } = useRouter();
   const { address } = useAccount();
-  // const { eventCreated } = useTrustful();
 
   useEffect(() => {
-    const fetchAllEvents = async () => {
-      if (!address) {
-        toast.error('Please connect first. No address found.');
-        return;
-      }
+    if (!address) {
+      toast.error('Please connect first. No address found.');
+      return;
+    }
+
+    const fetchEventsWithSessions = async () => {
       try {
-        const eventsData = await getAllEvents({
+        const eventsData: Event[] | undefined = await getAllEvents({
           spaceId: Number(spaceId),
           userAddress: address as Address,
         });
-        console.log('eventsData', eventsData);
-        setEvents(eventsData);
+
+        const eventsWithSessions = eventsData
+          ? await Promise.all(
+              eventsData.map(async (event: Event) => {
+                const sessionData = await getSession({
+                  userAddress: address as Address,
+                  eventid: event.eventId,
+                });
+                return {
+                  ...event,
+                  totalSessions: sessionData?.total ?? 0,
+                };
+              }),
+            )
+          : [];
+
+        setEvents(eventsWithSessions);
       } catch (error) {
-        console.log('error', error);
+        console.error('Error fetching events or sessions:', error);
+        toast.error('An error occurred while loading events and sessions.');
       }
     };
-    fetchAllEvents();
-  }, [address, spaceId]); //TODO: ADD eventcreated here
+
+    fetchEventsWithSessions();
+  }, [address, spaceId]); // TODO: Adicionar dependências aqui conforme necessário
+
   console.log('events', events);
+
   return (
     <>
-      {events && events.length > 0 && (
+      {events && events.length > 0 ? (
         <Card
           background={'#F5FFFF0D'}
           className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
@@ -64,19 +85,27 @@ export const CardEvents = () => {
                 Space ID: {event.spaceId}
               </Text>
               <Text className="text-gray-500 text-sm">
+                Event ID: {event.eventId}
+              </Text>
+              <Text className="text-gray-500 text-sm">
                 Created at: {new Date(event.createdAt).toLocaleString()}
+              </Text>
+              <Text className="text-gray-500 text-sm">
+                Total Sessions: {event.totalSessions}
               </Text>
             </Card>
           ))}
         </Card>
+      ) : (
+        <Card
+          background={'#F5FFFF0D'}
+          className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
+        >
+          <Text className="text-white mb-2 font-medium leading-none">
+            Connect your account to check the Events!
+          </Text>
+        </Card>
       )}
-
-      <Card
-        background={'#F5FFFF0D'}
-        className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
-      >
-        Connect your acoount to check the Events !
-      </Card>
     </>
   );
 };

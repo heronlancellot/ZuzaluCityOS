@@ -37,8 +37,9 @@ import {
   createSession,
   deleteSession,
 } from '@/app/spaces/[spaceid]/trustful/service/backend/';
-import { Event, getAllEvents } from '../../../service/backend/getAllEvents';
+import { Event } from '../../../service/backend/getEventById';
 import { useParams } from 'next/navigation';
+import { getAllEvents } from '../../../service/backend/getAllEvents';
 
 export const DropdownMenuAdminSession = () => {
   const { address, chainId } = useAccount();

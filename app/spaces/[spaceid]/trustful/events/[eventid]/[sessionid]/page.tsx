@@ -9,11 +9,12 @@ import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
-import { Address } from 'viem';
-import { DropdownMenuAdminSessionSelected } from './components/DropdownMenuAdminSessionSelected';
-import { CardSessionDetails } from './components/CardSessionDetails';
+import {
+  CardSessionDetails,
+  DropdownMenuAdminSessionSelected,
+} from '@/app/spaces/[spaceid]/trustful/events/[eventid]/[sessionid]/components';
 
-const TrustfulPage = () => {
+const TrustfulPageSessionId = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
   console.log('params', params);
@@ -155,4 +156,4 @@ const TrustfulPage = () => {
   );
 };
 
-export default TrustfulPage;
+export default TrustfulPageSessionId;

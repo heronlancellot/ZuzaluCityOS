@@ -12,7 +12,7 @@ import { useTrustful } from '@/context/TrustfulContext';
 import { DropdownMenuAdminEvents } from '@/app/spaces/[spaceid]/trustful/events/components/DropdownMenuAdminEvents';
 import { CardEvents } from './components/CardEvents';
 
-const TrustfulPage = () => {
+const TrustfulPageEvents = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
   console.log('params', params);
@@ -154,4 +154,4 @@ const TrustfulPage = () => {
   );
 };
 
-export default TrustfulPage;
+export default TrustfulPageEvents;
