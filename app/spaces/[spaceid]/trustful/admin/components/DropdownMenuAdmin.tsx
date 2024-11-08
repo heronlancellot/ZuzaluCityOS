@@ -42,7 +42,7 @@ import {
   MANAGER_OPTIONS,
   ACTIONS_OPTIONS,
   VILLAGER_OPTIONS,
-} from './ui-utils';
+} from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
 import { InputAddressUser } from '@/app/spaces/[spaceid]/trustful/components/';
 import {
   joinSession,
@@ -991,6 +991,7 @@ export const DropdownMenuAdmin = () => {
               minH="unset"
               resize="none"
             />
+            <Text>eventId:</Text>
             <Input
               style={{ color: 'black' }}
               name="createSessionEventId"
@@ -1000,6 +1001,7 @@ export const DropdownMenuAdmin = () => {
               type="number"
               min={1}
             />
+            <Text>ZuCityId:</Text>
             <Input
               style={{ color: 'black' }}
               name="createSessionzucityId"
@@ -1010,6 +1012,7 @@ export const DropdownMenuAdmin = () => {
               min={1}
             />
           </Flex>
+          <Text>HostAddress:</Text>
           <InputAddressUser
             label="Address to host Address"
             onInputChange={(value: string) => setInputAddress(value)}
