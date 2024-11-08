@@ -59,6 +59,9 @@ export const MANAGER_OPTIONS: AdminActions[] = [
   {
     action: ADMIN_ACTION.SET_ATTESTATION_TITLE,
   },
+  {
+    action: ADMIN_ACTION.REVOKE_ROLE, // This Revoke Role has some filters to not show the possibility to revoke the ROOT role
+  },
   ...VILLAGER_OPTIONS,
 ];
 

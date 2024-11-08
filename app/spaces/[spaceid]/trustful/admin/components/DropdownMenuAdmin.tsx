@@ -21,8 +21,8 @@ import {
   Role,
   ROLES,
   TRUSTFUL_SCHEMAS,
-} from '../../constants/constants';
-import { ID_CHECK_IN_QUERY } from '../../constants/schemaQueries';
+} from '@/app/spaces/[spaceid]/trustful/constants/constants';
+import { ID_CHECK_IN_QUERY } from '@/app/spaces/[spaceid]/trustful/constants/schemaQueries';
 import {
   grantRole,
   hasRole,
@@ -42,9 +42,11 @@ import {
   ACTIONS_OPTIONS,
   VILLAGER_OPTIONS,
 } from './ui-utils';
-import { InputAddressUser } from '../../components/InputAddressUser';
-import { joinSession } from '@/app/spaces/[spaceid]/trustful/service/backend/joinSession';
-import { fetchEASData } from '../../service/backend';
+import { InputAddressUser } from '@/app/spaces/[spaceid]/trustful/components/';
+import {
+  joinSession,
+  fetchEASData,
+} from '@/app/spaces/[spaceid]/trustful/service/backend/';
 
 export const DropdownMenuAdmin = () => {
   const { address, chainId } = useAccount();
@@ -606,13 +608,25 @@ export const DropdownMenuAdmin = () => {
               onChange={handleRoleSelectChange}
               focusBorderColor={'#B1EF42'}
             >
-              {Object.entries(ROLES_OPTIONS).map(
-                ([roleName, roleValue], index) => (
-                  <option key={index} value={roleValue}>
-                    {roleName}
-                  </option>
-                ),
-              )}
+              {userRole && userRole.role === Role.ROOT
+                ? Object.entries(ROLES_OPTIONS).map(
+                    ([roleName, roleValue], index) => (
+                      <option key={index} value={roleValue}>
+                        {roleName}
+                      </option>
+                    ),
+                  )
+                : userRole &&
+                  userRole.role === Role.MANAGER &&
+                  Object.entries(ROLES_OPTIONS)
+                    .filter(
+                      ([_, roleValue]) => roleValue !== ROLES_OPTIONS.ROOT,
+                    )
+                    .map(([roleName, roleValue], index) => (
+                      <option key={index} value={roleValue}>
+                        {roleName}
+                      </option>
+                    ))}
             </Select>
           </Flex>
           <InputAddressUser
