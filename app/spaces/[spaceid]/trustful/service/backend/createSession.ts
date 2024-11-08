@@ -13,34 +13,44 @@ interface createSessionResponse {
   endAt: Date;
 }
 
+interface User {
+  address: Address;
+  role: Role;
+}
+
 interface createSessionRequest {
+  user: User;
   name: string;
   hostAddress: Address;
   eventId: number;
   zucityId?: number | null;
 }
 
-export const createSession = async (
-  userAddress: Address,
-  role: Role,
-): Promise<createSessionResponse | undefined> => {
-  if (role !== Role.MANAGER && role !== Role.ROOT) {
+export const createSession = async ({
+  user,
+  name,
+  hostAddress,
+  eventId,
+  zucityId,
+}: createSessionRequest): Promise<createSessionResponse | undefined> => {
+  if (user.role !== Role.MANAGER && user.role !== Role.ROOT) {
     toast.error('User Address is not a manager or root');
     return;
   }
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/session?userAddress=${userAddress}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/session?userAddress=${user.address}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: 'Session',
-          hostAddress: userAddress,
-          eventId: 1,
+          name: name,
+          hostAddress: hostAddress,
+          eventId: eventId,
+          zucityId: zucityId,
         } as createSessionRequest),
       },
     );

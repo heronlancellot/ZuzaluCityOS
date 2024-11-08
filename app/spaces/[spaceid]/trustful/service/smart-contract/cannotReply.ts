@@ -1,6 +1,4 @@
-import { readContract } from 'viem/actions';
-
-import { client, config } from '@/context/WalletContext';
+import { client } from '@/context/WalletContext';
 import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '../../constants/constants';
 
 export async function cannotReply(

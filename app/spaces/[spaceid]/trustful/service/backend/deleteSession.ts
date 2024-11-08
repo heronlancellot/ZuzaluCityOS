@@ -30,12 +30,8 @@ export const deleteSession = async ({
   if (role === Role.NO_ROLE) {
     toast.error("User Address doesn't have a role");
     return;
-  } else if (
-    role !== Role.MANAGER &&
-    role !== Role.ROOT &&
-    role !== Role.VILLAGER
-  ) {
-    toast.error('User Address is not a manager, root or villager');
+  } else if (role !== Role.ROOT) {
+    toast.error('User Address is not a root.');
     return;
   }
 
