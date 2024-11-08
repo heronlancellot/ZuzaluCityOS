@@ -11,6 +11,9 @@ import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
 import { DropdownMenuAdminEvents } from '@/app/spaces/[spaceid]/trustful/events/components/DropdownMenuAdminEvents';
 import { CardEvents } from './components/CardEvents';
+import { ChakraProvider } from '@chakra-ui/react';
+import chakraTheme from '@/theme/lib/chakra-ui';
+
 
 const TrustfulPageEvents = () => {
   const params = useParams();
@@ -146,7 +149,9 @@ const TrustfulPageEvents = () => {
             padding: '20px',
           }}
         >
-          <DropdownMenuAdminEvents />
+          <ChakraProvider theme={chakraTheme}>
+            <DropdownMenuAdminEvents />
+          </ChakraProvider>
           <CardEvents />
         </Box>
       </Stack>
