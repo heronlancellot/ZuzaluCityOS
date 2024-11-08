@@ -74,13 +74,8 @@ export const CardEvents = () => {
       <Card
         background={'#F5FFFF0D'}
         className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
-        onClick={() => {
-          const eventId = 123;
-          push(`${actualURL}/${eventId}`);
-        }}
       >
-        event Name:Blockchain Workshop description: workshop about blockchain
-        technology
+        Connect your acoount to check the Events !
       </Card>
     </>
   );
