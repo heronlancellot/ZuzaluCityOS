@@ -150,13 +150,15 @@ export const DropdownMenuAdminEvents = () => {
       >
         <Flex className="w-full flex-col">
           <Flex className="gap-4 pb-4 justify-start items-center">
+            <Text className='text-white'>
+              Name:
+            </Text>
             <Textarea
-              style={{ color: 'black' }}
-              className="text-black text-base font-normal leading-snug"
+              className='text-white'
               color="white"
               placeholder="Name..."
               _placeholder={{
-                className: 'text-black',
+                className: 'text-white',
               }}
               focusBorderColor={'#B1EF42'}
               value={inputValuesTextArea['createEventName'] || ''}
@@ -170,13 +172,15 @@ export const DropdownMenuAdminEvents = () => {
               minH="unset"
               resize="none"
             />
+            <Text className='text-white'>
+              Description:
+            </Text>
             <Textarea
-              style={{ color: 'black' }}
-              className="text-black text-base font-normal leading-snug"
+              className=" text-base font-normal leading-snug"
               color="white"
               placeholder="Description..."
               _placeholder={{
-                className: 'text-black',
+                className: 'text-white',
               }}
               focusBorderColor={'#B1EF42'}
               value={inputValuesTextArea['createEventDescription'] || ''}
@@ -184,19 +188,19 @@ export const DropdownMenuAdminEvents = () => {
               onChange={handleInputValuesTextareaChange}
               rows={
                 (inputValuesTextArea['createEventDescription'] || '').length >
-                50
+                  50
                   ? 3
                   : 1
               }
               minH="unset"
               resize="none"
             />
-            <Text>
-              spaceId: Passo por parametro ou coloco o valor aqui já
-              pré-definido
+            <Text className='text-white'>
+              spaceId:
             </Text>
             <Input
-              style={{ color: 'black' }}
+              className='text-white'
+              focusBorderColor={'#B1EF42'}
               name="createEventSpaceId"
               placeholder="Space id"
               onChange={handleInputValuesChange}
@@ -204,9 +208,10 @@ export const DropdownMenuAdminEvents = () => {
               type="number"
               min={1}
             />
-            <Text>ZuCityId:</Text>
+            <Text className='text-white'>ZuCityId:</Text>
             <Input
-              style={{ color: 'black' }}
+              className='text-white'
+              focusBorderColor={'#B1EF42'}
               name="createEventZucityId"
               placeholder="zucity Id"
               onChange={handleInputValuesChange}
@@ -256,13 +261,13 @@ export const DropdownMenuAdminEvents = () => {
             background={'#F5FFFF0D'}
             className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
           >
-            <Text className="text-white mb-2 font-medium leading-none">
+            <Text className="text-slate-50 mb-2 text-sm font-medium leading-none">
               Select a function
             </Text>
             {userRole.role === Role.ROOT || userRole.role === Role.MANAGER ? (
               <Select
                 placeholder="Select option"
-                className="flex text-black opacity-70 font-normal leading-tight"
+                className="flex opacity-70 font-normal leading-tight"
                 color="white"
                 onChange={handleActionSelectChange}
                 focusBorderColor={'#B1EF42'}
