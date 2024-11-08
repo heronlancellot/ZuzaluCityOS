@@ -512,6 +512,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
             ) : null}
 
             <EventName
+              eventId={eventId}
               avatar={eventData.space?.avatar}
               tagline={eventData.tagline}
               endTime={eventData.endTime}

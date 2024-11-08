@@ -303,7 +303,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
               wordBreak: 'break-word',
               maxWidth: '90%',
             }}
-            textTransform={session.format === 'online' ? 'uppercase' : 'none'}
+            textTransform={session.format !== 'online' ? 'uppercase' : 'none'}
           >
             {session.format === 'online' ? session.video_url : session.location}
           </Typography>
