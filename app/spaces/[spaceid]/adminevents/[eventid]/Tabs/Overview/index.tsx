@@ -161,9 +161,10 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
       const { data } = await supabase
         .from('locations')
         .select('*')
-        .eq('eventId', event?.id);
+        .eq('eventId', event?.id)
+        .single();
       if (data !== null) {
-        setLocations(data.map((item) => item.name));
+        setLocations(data.name.split(','));
       }
     } catch (err) {
       console.log(err);
@@ -574,16 +575,50 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
                 <Stack spacing="10px">
                   <FormLabel>Location</FormLabel>
                   {locations.map((location, index) => (
-                    <ZuInput
-                      value={location}
+                    <Stack
+                      direction="row"
+                      gap="10px"
+                      alignItems="center"
                       key={`Location_Index${index}`}
-                      placeholder="city, country"
-                      onChange={(e) => {
-                        let newLocations = locations;
-                        newLocations[index] = e.target.value;
-                        setLocations([...newLocations]);
-                      }}
-                    />
+                    >
+                      <ZuInput
+                        value={location}
+                        placeholder="city, country"
+                        onChange={(e) => {
+                          let newLocations = locations;
+                          newLocations[index] = e.target.value;
+                          setLocations([...newLocations]);
+                        }}
+                      />
+                      <Box
+                        display={'flex'}
+                        flexDirection={'column'}
+                        justifyContent={'flex-end'}
+                        sx={{ cursor: 'pointer' }}
+                        onClick={() => {
+                          const newLocations = locations.filter(
+                            (_, i) => i !== index,
+                          );
+                          setLocations(newLocations);
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            borderRadius: '10px',
+                            width: '40px',
+                            height: '40px',
+                            padding: '10px 14px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                          }}
+                        >
+                          <CancelIcon sx={{ fontSize: 20 }} />
+                        </Box>
+                      </Box>
+                    </Stack>
                   ))}
                 </Stack>
                 <ZuButton
@@ -644,6 +679,7 @@ const Overview = ({ event, refetch, setTabName }: PropTypes) => {
                         flexDirection={'row'}
                         gap={'10px'}
                         flex={1}
+                        alignItems="flex-start"
                       >
                         <Box flex={1}>
                           <Controller

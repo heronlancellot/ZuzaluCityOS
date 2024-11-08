@@ -424,63 +424,6 @@ export const EventForm: React.FC<EventFormProps> = ({
                 )}
               />
             </Stack>
-            {/*<Stack spacing="10px" padding="20px">
-              <FormLabel>Participant*</FormLabel>
-              <Controller
-                name="participant"
-                control={control}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <ZuInput
-                      {...field}
-                      type="number"
-                      placeholder="Type Participant"
-                    />
-                    {error && (
-                      <FormHelperText error>{error.message}</FormHelperText>
-                    )}
-                  </>
-                )}
-              />
-            </Stack>
-            <Stack spacing="10px" padding="20px">
-              <FormLabel>Max Participant*</FormLabel>
-              <Controller
-                name="max_participant"
-                control={control}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <ZuInput
-                      {...field}
-                      type="number"
-                      placeholder="Type Max Participant"
-                    />
-                    {error && (
-                      <FormHelperText error>{error.message}</FormHelperText>
-                    )}
-                  </>
-                )}
-              />
-            </Stack>
-            <Stack spacing="10px" padding="20px">
-              <FormLabel>Min Participant*</FormLabel>
-              <Controller
-                name="min_participant"
-                control={control}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <ZuInput
-                      {...field}
-                      type="number"
-                      placeholder="Type Min Participant"
-                    />
-                    {error && (
-                      <FormHelperText error>{error.message}</FormHelperText>
-                    )}
-                  </>
-                )}
-              />
-            </Stack>*/}
           </Box>
         </Box>
         <Box display="flex" flexDirection="column" gap="20px" padding={3}>
@@ -510,15 +453,49 @@ export const EventForm: React.FC<EventFormProps> = ({
               <Stack spacing="10px">
                 <FormLabel>Location*</FormLabel>
                 {locations!.map((location, index) => (
-                  <ZuInput
+                  <Stack
+                    direction="row"
+                    gap="10px"
+                    alignItems="center"
                     key={`Location_Index${index}`}
-                    placeholder="city, country"
-                    onChange={(e) => {
-                      let newLocations = locations || [];
-                      newLocations[index] = e.target.value;
-                      setValue('locations', [...newLocations]);
-                    }}
-                  />
+                  >
+                    <ZuInput
+                      placeholder="city, country"
+                      onChange={(e) => {
+                        let newLocations = locations || [];
+                        newLocations[index] = e.target.value;
+                        setValue('locations', [...newLocations]);
+                      }}
+                    />
+                    <Box
+                      display={'flex'}
+                      flexDirection={'column'}
+                      justifyContent={'flex-end'}
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        const newLocations = locations!.filter(
+                          (_, i) => i !== index,
+                        );
+                        setValue('locations', [...newLocations]);
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          borderRadius: '10px',
+                          width: '40px',
+                          height: '40px',
+                          padding: '10px 14px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                        }}
+                      >
+                        <CancelIcon sx={{ fontSize: 20 }} />
+                      </Box>
+                    </Box>
+                  </Stack>
                 ))}
                 {errors.locations && (
                   <FormHelperText error>
