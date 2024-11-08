@@ -8,12 +8,14 @@ import EventCard, {
 } from '../cards/EventCard';
 import { Box, Link, Skeleton, Typography } from '@mui/material';
 import { EventIcon, RightArrowCircleIcon } from '../icons';
+import { useTheme } from '@mui/material';
 
 interface EventListProps {
   events: Event[];
   isLoading: boolean;
   hasAllButton?: boolean;
   top?: number;
+  headerStyle?: React.CSSProperties;
 }
 
 export default function EventList({
@@ -21,7 +23,9 @@ export default function EventList({
   isLoading,
   hasAllButton = true,
   top = -30,
+  headerStyle,
 }: EventListProps) {
+  const theme = useTheme();
   const eventsData = useMemo(() => {
     const now = dayjs();
     const groupedEvents = {
@@ -139,12 +143,21 @@ export default function EventList({
                   zIndex: 100,
                   display: 'flex',
                   flexDirection: 'column',
+                  ...headerStyle,
                 }}
               >
                 <Box display="flex" justifyContent="space-between">
                   <Box display="flex" alignItems="center" gap="10px">
                     <EventIcon />
-                    <Typography color="white" variant="subtitleLB">
+                    <Typography
+                      color="white"
+                      variant="subtitleLB"
+                      sx={{
+                        [theme.breakpoints.down('sm')]: {
+                          fontSize: '20px',
+                        },
+                      }}
+                    >
                       {item.title}
                     </Typography>
                   </Box>
@@ -158,7 +171,15 @@ export default function EventList({
                       }}
                     >
                       <Box display="flex" alignItems="center" gap="10px">
-                        <Typography color="white" variant="bodyB">
+                        <Typography
+                          color="white"
+                          variant="bodyB"
+                          sx={{
+                            [theme.breakpoints.down('sm')]: {
+                              fontSize: '14px',
+                            },
+                          }}
+                        >
                           View All Events
                         </Typography>
                         <RightArrowCircleIcon />

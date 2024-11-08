@@ -202,12 +202,16 @@ const SessionCard: React.FC<SessionCardProps> = ({
     }
   }, [session, userDID]);
 
+  console.log(session.video_url);
+
   return (
     <Stack
       onClick={() => handleClick()}
       direction="row"
       padding="10px 10px 20px 10px"
       borderRadius={'10px'}
+      width="100%"
+      overflow="hidden"
       sx={{
         ':hover': {
           backgroundColor: '#383838',
@@ -215,7 +219,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
         cursor: 'pointer',
       }}
     >
-      <Stack spacing="10px" flex={1}>
+      <Stack spacing="10px" flex={1} minWidth={0}>
         <Stack direction="row" spacing="10px" alignItems="center">
           {isLive && (
             <Typography
@@ -289,14 +293,28 @@ const SessionCard: React.FC<SessionCardProps> = ({
           <MapIcon size={4} />
           <Typography
             variant="caption"
-            sx={{ opacity: 0.5 }}
-            textTransform={'uppercase'}
+            sx={{
+              opacity: 0.5,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              wordBreak: 'break-word',
+              maxWidth: '90%',
+            }}
+            textTransform={session.format === 'online' ? 'uppercase' : 'none'}
           >
             {session.format === 'online' ? session.video_url : session.location}
           </Typography>
         </Stack>
       </Stack>
-      <Stack gap={'10px'} alignItems={'flex-end'}>
+      <Stack
+        gap={'10px'}
+        alignItems={'flex-end'}
+        minWidth={'fit-content'}
+        ml={1}
+      >
         {userDID && session.creatorDID === userDID && (
           <Stack
             direction={'row'}

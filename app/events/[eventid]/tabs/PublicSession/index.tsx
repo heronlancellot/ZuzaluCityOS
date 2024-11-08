@@ -673,7 +673,7 @@ const PublicSessions: React.FC<ISessions> = ({ eventData, option }) => {
         sx={{
           padding: '40px 20px',
           [theme.breakpoints.down('md')]: {
-            padding: '20px',
+            padding: '20px 10px',
           },
         }}
       >
@@ -718,7 +718,14 @@ const PublicSessions: React.FC<ISessions> = ({ eventData, option }) => {
                   </ZuButton>*/}
                   <ZuButton
                     startIcon={<TuneOutlinedIcon />}
-                    sx={{ width: '100%', flex: '1 0 0' }}
+                    sx={{
+                      width: '100%',
+                      flex: '1 0 0',
+                      [theme.breakpoints.down('sm')]: {
+                        minWidth: '100px',
+                        flex: 0,
+                      },
+                    }}
                     onClick={() => setShowFilterSessionPop(true)}
                   >
                     Filter

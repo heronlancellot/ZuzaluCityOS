@@ -61,17 +61,30 @@ const EventName = ({
         sx={{
           padding: '0px 10px 20px 10px',
           [theme.breakpoints.down('sm')]: {
-            padding: '0px 20px',
+            padding: '0',
           },
         }}
         gap={'10px'}
       >
-        <Stack padding={'10px'} gap={'20px'}>
+        <Stack
+          padding={'10px'}
+          gap={'20px'}
+          sx={{
+            [theme.breakpoints.down('sm')]: {
+              gap: '10px',
+            },
+          }}
+        >
           <Stack
             direction={'row'}
             gap={'10px'}
             alignItems={'center'}
-            sx={{ paddingTop: '20px' }}
+            sx={{
+              paddingTop: '20px',
+              [theme.breakpoints.down('sm')]: {
+                paddingTop: 0,
+              },
+            }}
           >
             <Stack direction="row" spacing="5px" alignItems="center">
               <Typography color="rgba(255, 255, 255, 0.80)" variant="caption">

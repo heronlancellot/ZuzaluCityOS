@@ -378,6 +378,11 @@ const Home: React.FC = () => {
                   position: 'sticky',
                   top: '-30px',
                   zIndex: 100,
+                  [theme.breakpoints.down('sm')]: {
+                    top: '-13px',
+                    padding: '10px 10px',
+                    margin: '0 -10px',
+                  },
                 }}
               >
                 <Box display="flex" alignItems="center" gap="10px">
@@ -422,8 +427,27 @@ const Home: React.FC = () => {
                 </Box>
               )}
             </Box>
-            <Box display="flex" gap="20px" marginTop="20px">
-              <EventList events={events} isLoading={isEventsLoading} />
+            <Box
+              display="flex"
+              gap="20px"
+              marginTop="20px"
+              sx={{
+                [theme.breakpoints.down('sm')]: {
+                  gap: 0,
+                },
+              }}
+            >
+              <EventList
+                events={events}
+                headerStyle={{
+                  [theme.breakpoints.down('sm')]: {
+                    top: '-13px',
+                    padding: '10px 10px',
+                    margin: '0 -10px',
+                  },
+                }}
+                isLoading={isEventsLoading}
+              />
               <Box>
                 {!isTablet && (
                   <Box
