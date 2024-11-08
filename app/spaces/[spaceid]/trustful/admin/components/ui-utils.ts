@@ -73,14 +73,7 @@ export const ADMIN_OPTIONS: AdminActions[] = [
     action: ADMIN_ACTION.REVOKE_ROLE,
   },
   {
-    action: ADMIN_ACTION.REVOKE_MANAGER,
-  },
-  {
-    action: ADMIN_ACTION.SET_ATTESTATION_TITLE,
-  },
-  {
     action: ADMIN_ACTION.SET_SCHEMA,
   },
   ...MANAGER_OPTIONS,
-  ...VILLAGER_OPTIONS,
 ];
