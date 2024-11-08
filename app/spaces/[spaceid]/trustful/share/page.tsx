@@ -8,7 +8,6 @@ import { Stack, Box } from '@mui/material';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
-import { getUserRole } from '@/app/spaces/[spaceid]/trustful/service/backend/getUserRole';
 import { useTrustful } from '@/context/TrustfulContext';
 import { Address } from 'viem';
 import { ShareSection } from './components/ShareSection';
@@ -122,25 +121,6 @@ const TrustfulSharePage = () => {
       return id?.[id?.length - 1];
     }
   }, [profile]);
-
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (address) {
-        await getUserRole(address as Address)
-          .then((data) => {
-            console.log('User role:', data);
-            if (data && data?.role) {
-              setUserRole({
-                address: address as Address,
-                role: data.role,
-              });
-            }
-          })
-          .catch((error) => console.error('Failed to fetch events:', error));
-      }
-    };
-    fetchUserRole();
-  }, [address]);
 
   return (
     <Stack direction="row" height="calc(100vh - 50px)" width="100%">

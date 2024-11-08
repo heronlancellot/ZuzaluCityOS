@@ -37,6 +37,7 @@ export enum ADMIN_ACTION {
   REMOVE_SESSION = 'Remove session',
   JOIN_SESSION = 'Join session',
   CREATE_SESSION = 'Create session',
+  WRAP_SESSION = 'Wrap session',
 }
 
 export interface AdminActions {
@@ -50,6 +51,9 @@ export const VILLAGER_OPTIONS: AdminActions[] = [
   {
     action: ADMIN_ACTION.CREATE_SESSION,
   },
+  {
+    action: ADMIN_ACTION.WRAP_SESSION,
+  },
 ];
 
 export const MANAGER_OPTIONS: AdminActions[] = [
@@ -58,6 +62,9 @@ export const MANAGER_OPTIONS: AdminActions[] = [
   },
   {
     action: ADMIN_ACTION.SET_ATTESTATION_TITLE,
+  },
+  {
+    action: ADMIN_ACTION.REVOKE_ROLE, // This Revoke Role has some filters to not show the possibility to revoke the ROOT role
   },
   ...VILLAGER_OPTIONS,
 ];
@@ -70,14 +77,10 @@ export const ADMIN_OPTIONS: AdminActions[] = [
     action: ADMIN_ACTION.REVOKE_ROLE,
   },
   {
-    action: ADMIN_ACTION.REVOKE_MANAGER,
-  },
-  {
-    action: ADMIN_ACTION.SET_ATTESTATION_TITLE,
-  },
-  {
     action: ADMIN_ACTION.SET_SCHEMA,
   },
+  {
+    action: ADMIN_ACTION.REMOVE_SESSION,
+  },
   ...MANAGER_OPTIONS,
-  ...VILLAGER_OPTIONS,
 ];

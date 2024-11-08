@@ -1,5 +1,30 @@
 export const isDev = process.env.NEXT_PUBLIC_ENV === 'dev';
 
+/** ID of the space enabled for Trustful to appear so far. */
+export const CypherHouseSpaceId =
+  'kjzl6kcym7w8y5ye1nxcz2o08c8pk9nd57bwqqax6wlfaimn5qsf6s3306jgj34';
+
+/** ID of the space to test the application. Should be removed soon when the CypherHouseSpaceId development code is in production */
+export const TestApplicationSpaceId =
+  'kjzl6kcym7w8y7drgmopt1aufcut7p9cbwyoaa0ht9vl8sgs5q39blhgsbeyb83';
+
+export enum Role {
+  ROOT = 'ROOT_ROLE',
+  MANAGER = 'MANAGER_ROLE',
+  VILLAGER = 'VILLAGER_ROLE',
+  NO_ROLE = 'NO_ROLE',
+}
+
+export interface BadgeTitle {
+  title: string;
+  uid: `0x${string}`;
+  allowComment: boolean;
+  revocable: boolean;
+  data: string;
+  allowedRole: string[];
+}
+
+/// NEW CONTRACTS -ZUCITY
 export const EAS_CONTRACT_SCROLL_MAINET =
   '0xC47300428b6AD2c7D03BB76D05A176058b47E6B0';
 export const EAS_CONTRACT_SCROLL_SEPOLIA =
@@ -8,14 +33,6 @@ export const EAS_CONTRACT_SCROLL_SEPOLIA =
 export const EAS_CONTRACT_SCROLL = isDev
   ? EAS_CONTRACT_SCROLL_SEPOLIA
   : EAS_CONTRACT_SCROLL_MAINET;
-
-/** ID of the space enabled for Trustful to appear so far. */
-export const CypherHouseSpaceId =
-  'kjzl6kcym7w8y5ye1nxcz2o08c8pk9nd57bwqqax6wlfaimn5qsf6s3306jgj34';
-
-/** ID of the space to test the application. Should be removed soon when the CypherHouseSpaceId development code is in production */
-export const TestApplicationSpaceId =
-  'kjzl6kcym7w8y7drgmopt1aufcut7p9cbwyoaa0ht9vl8sgs5q39blhgsbeyb83';
 
 const RESOLVER_CONTRACT_SCROLL = '0x0A16dD89b4F06F111977D0F3bBab6165F08A5362';
 
@@ -40,13 +57,6 @@ export const SCHEMA_UIDS = {
     ? '0x4a84dcaa2a5fffeb8dd99bfb2d12ef6fa0e233e9cfb11f2c8e08ad9714938ac8'
     : '0x3a12210b37dd53be53954015c7e163b9be5445f7f7d397b5d7cb14f77a5c5510',
 };
-
-export enum Role {
-  ROOT = 'ROOT_ROLE',
-  MANAGER = 'MANAGER_ROLE',
-  VILLAGER = 'VILLAGER_ROLE',
-  NO_ROLE = 'NO_ROLE',
-}
 
 export enum ROLES {
   ROOT = '0x79e553c6f53701daa99614646285e66adb98ff0fcc1ef165dd2718e5c873bee6',
@@ -87,15 +97,6 @@ export const TRUSTFUL_SCHEMAS: { [key: string]: Schemas } = {
     allowedRole: [ROLES.VILLAGER],
   },
 };
-
-export interface BadgeTitle {
-  title: string;
-  uid: `0x${string}`;
-  allowComment: boolean;
-  revocable: boolean;
-  data: string;
-  allowedRole: string[];
-}
 
 export const ZUVILLAGE_BADGE_TITLES: BadgeTitle[] = [
   {

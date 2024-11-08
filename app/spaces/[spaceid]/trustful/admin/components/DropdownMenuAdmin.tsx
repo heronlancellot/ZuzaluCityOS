@@ -21,12 +21,13 @@ import {
   Role,
   ROLES,
   TRUSTFUL_SCHEMAS,
-} from '../../constants/constants';
-import { ID_CHECK_IN_QUERY } from '../../constants/schemaQueries';
+} from '@/app/spaces/[spaceid]/trustful/constants/constants';
+import { ID_CHECK_IN_QUERY } from '@/app/spaces/[spaceid]/trustful/constants/schemaQueries';
 import {
   grantRole,
   hasRole,
   revoke,
+  removeSession,
   revokeRole,
   setAttestationTitle,
   setSchema,
@@ -40,10 +41,15 @@ import {
   ADMIN_OPTIONS,
   MANAGER_OPTIONS,
   ACTIONS_OPTIONS,
-} from './ui-utils';
-import { InputAddressUser } from '../../components/InputAddressUser';
-import { joinSession } from '@/app/spaces/[spaceid]/trustful/service/backend/joinSession';
-import { fetchEASData } from '../../service/backend';
+  VILLAGER_OPTIONS,
+} from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
+import { InputAddressUser } from '@/app/spaces/[spaceid]/trustful/components/';
+import {
+  joinSession,
+  fetchEASData,
+  createSession,
+  deleteSession,
+} from '@/app/spaces/[spaceid]/trustful/service/backend/';
 
 export const DropdownMenuAdmin = () => {
   const { address, chainId } = useAccount();
@@ -54,20 +60,20 @@ export const DropdownMenuAdmin = () => {
   const [validAddress, setValidAddress] = useState<EthereumAddress | null>(
     null,
   );
+  const [action, setAction] = useState<number>(0);
   const [adminAction, setAdminAction] = useState<ADMIN_ACTION | null>(null);
   const [isloading, setIsLoading] = useState<boolean>(false);
 
   const [inputValuesTextArea, setInputValuesTextArea] = useState<{
     [key: string]: string;
   }>({});
-  const [sessionValue, setSessionValue] = useState<{
+  const [inputValuesChange, setInputValuesChange] = useState<{
     [key: string]: string;
   }>({});
 
   const [attestationBadgeIsValid, setAttestationBadgeIsValid] =
     useState<boolean>(false);
   const [schemaUID, setSchemaUID] = useState<string | `0x${string}`>('');
-  const [action, setAction] = useState<number>(0);
 
   // Updates the validAddress when the inputAddress changes
   useEffect(() => {
@@ -77,12 +83,20 @@ export const DropdownMenuAdmin = () => {
   }, [inputAddress]);
 
   useEffect(() => {
+    console.log('userRole', userRole);
+  }, [userRole]);
+
+  useEffect(() => {
     setRole(null);
   }, [adminAction]);
 
   useEffect(() => {
     console.log('inputValuesTextArea', inputValuesTextArea);
   }, [inputValuesTextArea]);
+
+  useEffect(() => {
+    console.log('inputValuesChange', inputValuesChange);
+  }, [inputValuesChange]);
 
   /**
    * Displays an error toast message if the user is connected to an unsupported network
@@ -250,31 +264,35 @@ export const DropdownMenuAdmin = () => {
     setIsLoading(false);
   };
 
+  /**Root */
   const handleRemoveSession = async () => {
-    if (!address) {
+    if (!address || !userRole) {
       setIsLoading(false);
       toast.error('Please connect first. No address found.');
       return;
     }
 
-    // const response = await removeSession({
-    //   from: address,
-    //   role: role,
-    //   account: validAddress.address as `0x${string}`,
-    //   msgValue: BigInt(0),
-    // });
+    if (!validAddress) {
+      setIsLoading(false);
+      toast.error('Please enter a valid address.');
+      return;
+    }
 
-    // if (response instanceof Error) {
-    //   setIsLoading(false);
-    //   toast.error(`Transaction Rejected: ${response.message}`);
-    //   return;
-    // }
+    const responseSmartContract = await removeSession({
+      from: address,
+      sessionTitle: inputValuesTextArea['removeSessionTitle'],
+      sessionOwner: validAddress.address as Address,
+      msgValue: BigInt(0),
+    });
+    console.log('responseSmartContract', responseSmartContract);
 
-    // if (response.status !== 'success') {
-    //   setIsLoading(false);
-    //   toast.error(`Transaction Rejected: Contract execution reverted.`);
-    //   return;
-    // }
+    const responseBackend = await deleteSession({
+      role: userRole.role,
+      sessionId: Number(inputValuesChange['removeSessionId']),
+      userAddress: validAddress.address as Address,
+    });
+
+    console.log('responseBackend', responseBackend);
 
     setIsLoading(false);
     // toast.success(
@@ -330,6 +348,7 @@ export const DropdownMenuAdmin = () => {
     }
   };
 
+  /** VILLAGER */
   const handleJoinSession = async () => {
     if (!address || !userRole) {
       setIsLoading(false);
@@ -339,7 +358,7 @@ export const DropdownMenuAdmin = () => {
 
     const response = await joinSession({
       role: userRole.role,
-      sessionId: Number(sessionValue['sessionId']),
+      sessionId: Number(inputValuesChange['sessionId']),
       userAddress: userRole.address,
     });
 
@@ -351,48 +370,40 @@ export const DropdownMenuAdmin = () => {
       return;
     }
 
-    // if (response.status !== 'success') {
-    //   setIsLoading(false);
-    //   toast.error(`Transaction Rejected: Contract execution reverted.`);
-    //   return;
-    // }
-
     setIsLoading(false);
-    // toast.success(
-    //   `Badge sent at tx: ${`https://scrollscan.com//tx/${response.transactionHash}`}`,
-    // );
+    toast.success('Session joined successfully!');
   };
 
+  /** VILLAGER */
   const handleCreateSession = async () => {
     if (!address) {
       setIsLoading(false);
       toast.error('Please connect first. No address found.');
       return;
     }
+    if (!userRole || userRole.role == Role.NO_ROLE) {
+      setIsLoading(false);
+      toast.error('Please connect first. No userRole found.');
+      return;
+    }
+    console.log('validAddress', validAddress);
 
-    // const response = await removeSession({
-    //   from: address,
-    //   role: role,
-    //   account: validAddress.address as `0x${string}`,
-    //   msgValue: BigInt(0),
-    // });
+    const response = await createSession({
+      user: userRole,
+      name: inputValuesTextArea['createSessionName'],
+      eventId: Number(inputValuesChange['createSessionEventId']),
+      zucityId: Number(inputValuesChange['createSessionZucityId']),
+      hostAddress: validAddress?.address as Address,
+    });
 
-    // if (response instanceof Error) {
-    //   setIsLoading(false);
-    //   toast.error(`Transaction Rejected: ${response.message}`);
-    //   return;
-    // }
-
-    // if (response.status !== 'success') {
-    //   setIsLoading(false);
-    //   toast.error(`Transaction Rejected: Contract execution reverted.`);
-    //   return;
-    // }
+    if (response instanceof Error) {
+      setIsLoading(false);
+      toast.error(`Transaction Rejected: ${response.message}`);
+      return;
+    }
 
     setIsLoading(false);
-    // toast.success(
-    //   `Badge sent at tx: ${`https://scrollscan.com//tx/${response.transactionHash}`}`,
-    // );
+    toast.success('Session created successfully!');
   };
 
   const handleRoleSelectChange = (
@@ -486,13 +497,9 @@ export const DropdownMenuAdmin = () => {
     }));
   };
 
-  /**Session
-   * - sessionId
-   *
-   */
-  const handleSessionValueChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleInputValuesChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setSessionValue((prevValues) => ({
+    setInputValuesChange((prevValues) => ({
       ...prevValues,
       [name]: value,
     }));
@@ -515,11 +522,6 @@ export const DropdownMenuAdmin = () => {
       }
     });
   };
-  // event
-  // name + hostAddress(endereco do usuario) -> create-session
-
-  // space
-  //
 
   /*
    * Renders the appropriate admin action component based on the provided ADMIN_ACTION.
@@ -601,13 +603,25 @@ export const DropdownMenuAdmin = () => {
               onChange={handleRoleSelectChange}
               focusBorderColor={'#B1EF42'}
             >
-              {Object.entries(ROLES_OPTIONS).map(
-                ([roleName, roleValue], index) => (
-                  <option key={index} value={roleValue}>
-                    {roleName}
-                  </option>
-                ),
-              )}
+              {userRole && userRole.role === Role.ROOT
+                ? Object.entries(ROLES_OPTIONS).map(
+                    ([roleName, roleValue], index) => (
+                      <option key={index} value={roleValue}>
+                        {roleName}
+                      </option>
+                    ),
+                  )
+                : userRole &&
+                  userRole.role === Role.MANAGER &&
+                  Object.entries(ROLES_OPTIONS)
+                    .filter(
+                      ([_, roleValue]) => roleValue !== ROLES_OPTIONS.ROOT,
+                    )
+                    .map(([roleName, roleValue], index) => (
+                      <option key={index} value={roleValue}>
+                        {roleName}
+                      </option>
+                    ))}
             </Select>
           </Flex>
           <InputAddressUser
@@ -841,11 +855,13 @@ export const DropdownMenuAdmin = () => {
                 className: 'text-black',
               }}
               focusBorderColor={'#B1EF42'}
-              value={inputValuesTextArea['removeSession'] || ''}
-              name="removeSession"
+              value={inputValuesTextArea['removeSessionTitle'] || ''}
+              name="removeSessionTitle"
               onChange={handleInputValuesTextareaChange}
               rows={
-                (inputValuesTextArea['removeSession'] || '').length > 50 ? 3 : 1
+                (inputValuesTextArea['removeSessionTitle'] || '').length > 50
+                  ? 3
+                  : 1
               }
               minH="unset"
               resize="none"
@@ -874,12 +890,12 @@ export const DropdownMenuAdmin = () => {
             isLoading={isloading}
             isDisabled={
               !isAddress(inputAddress.toString()) ||
-              !inputValuesTextArea['removeSession']
+              !inputValuesTextArea['removeSessionTitle']
             }
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
               !isAddress(inputAddress.toString()) ||
-                (!inputValuesTextArea['removeSession'] &&
+                (!inputValuesTextArea['removeSessionTitle'] &&
                   toast.error(
                     'Please enter a valid address and set the session title to remove',
                   ));
@@ -904,8 +920,8 @@ export const DropdownMenuAdmin = () => {
               style={{ color: 'black' }}
               name="joinSession"
               placeholder="Session id"
-              onChange={handleSessionValueChange}
-              value={sessionValue['joinSession'] || 0}
+              onChange={handleInputValuesChange}
+              value={inputValuesChange['joinSession'] || 0}
               type="number"
               min={1}
             />
@@ -923,7 +939,7 @@ export const DropdownMenuAdmin = () => {
               <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
                 &#x26A0;WARNING&#x26A0;
                 <br />
-                {`Do you wanna join this user in session ${sessionValue['joinSession']}?`}
+                {`Do you wanna join this user in session ${inputValuesChange['joinSession']}?`}
                 <br />
               </Text>
             </Flex>
@@ -959,23 +975,46 @@ export const DropdownMenuAdmin = () => {
               style={{ color: 'black' }}
               className="text-black text-base font-normal leading-snug"
               color="white"
-              placeholder="Set the Session Title..."
+              placeholder="Set the Session Name..."
               _placeholder={{
                 className: 'text-black',
               }}
               focusBorderColor={'#B1EF42'}
-              value={inputValuesTextArea['removeSession'] || ''}
-              name="removeSession"
+              value={inputValuesTextArea['createSessionName'] || ''}
+              name="createSessionName"
               onChange={handleInputValuesTextareaChange}
               rows={
-                (inputValuesTextArea['removeSession'] || '').length > 50 ? 3 : 1
+                (inputValuesTextArea['createSessionName'] || '').length > 50
+                  ? 3
+                  : 1
               }
               minH="unset"
               resize="none"
             />
+            <Text>eventId:</Text>
+            <Input
+              style={{ color: 'black' }}
+              name="createSessionEventId"
+              placeholder="Event id"
+              onChange={handleInputValuesChange}
+              value={inputValuesChange['createSessionEventId'] || 0}
+              type="number"
+              min={1}
+            />
+            <Text>ZuCityId:</Text>
+            <Input
+              style={{ color: 'black' }}
+              name="createSessionzucityId"
+              placeholder="zucity Id"
+              onChange={handleInputValuesChange}
+              value={inputValuesChange['createSessionzucityId'] || 0}
+              type="number"
+              min={1}
+            />
           </Flex>
+          <Text>HostAddress:</Text>
           <InputAddressUser
-            label="Address to Session Owner"
+            label="Address to host Address"
             onInputChange={(value: string) => setInputAddress(value)}
             inputAddress={String(inputAddress)}
           />
@@ -984,7 +1023,58 @@ export const DropdownMenuAdmin = () => {
               <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
                 &#x26A0;WARNING&#x26A0;
                 <br />
-                {`This will remove the session from the contract and the user will not be able to access it anymore.`}
+                {`This will create the session from the contract and the user will not be able to create another until this session be finished.`}
+                <br />
+                {`Are you sure you want to proceed?`}
+              </Text>
+            </Flex>
+          </Box>
+          <Button
+            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) || !inputValuesTextArea['createSessionName'] ? 'cursor-not-allowed opacity-10' : ''}`}
+            _hover={{ bg: '#B1EF42' }}
+            _active={{ bg: '#B1EF42' }}
+            isLoading={isloading}
+            isDisabled={
+              !isAddress(inputAddress.toString()) ||
+              !inputValuesChange['createSessionEventId']
+            }
+            spinner={<BeatLoader size={8} color="white" />}
+            onClick={() => {
+              !isAddress(inputAddress.toString()) ||
+                (!inputValuesChange['createSessionEventId'] &&
+                  toast.error('Please enter a valid address'));
+              setIsLoading(true);
+              handleCreateSession();
+            }}
+          >
+            <CheckIcon className="w-[16px] h-[16px]" />
+            Confirm
+          </Button>
+        </Flex>
+      </Card>
+    ),
+    [ADMIN_ACTION.WRAP_SESSION]: (
+      <Card
+        background={'#F5FFFF0D'}
+        className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
+      >
+        <Flex className="w-full flex-col">
+          <Flex className="gap-4 pb-4 justify-start items-center">
+            <Input
+              style={{ color: 'black' }}
+              name="wrapSessionId"
+              placeholder="Session id"
+              onChange={handleInputValuesChange}
+              value={inputValuesChange['wrapSessionId'] || 0}
+              type="text"
+            />
+          </Flex>
+          <Box>
+            <Flex className="pb-4 gap-4 items-center">
+              <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
+                &#x26A0;WARNING&#x26A0;
+                <br />
+                {`This will close the session from the contract and the user will not be able to access it anymore.`}
                 <br />
                 {`Are you sure you want to proceed?`}
               </Text>
@@ -997,14 +1087,14 @@ export const DropdownMenuAdmin = () => {
             isLoading={isloading}
             isDisabled={
               !isAddress(inputAddress.toString()) ||
-              !inputValuesTextArea['removeSession']
+              !inputValuesChange['wrapSessionId']
             }
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
               !isAddress(inputAddress.toString()) ||
-                (!inputValuesTextArea['removeSession'] &&
+                (!inputValuesChange['wrapSessionId'] &&
                   toast.error(
-                    'Please enter a valid address and set the session title to remove',
+                    'Please enter a valid sessionId to wrap the session',
                   ));
               setIsLoading(true);
               handleRemoveSession();
@@ -1057,7 +1147,23 @@ export const DropdownMenuAdmin = () => {
                   </option>
                 ))}
               </Select>
-            ) : null}
+            ) : userRole.role === Role.VILLAGER ? (
+              <Select
+                placeholder="Select option"
+                className="flex text-black opacity-70 font-normal leading-tight"
+                color="white"
+                onChange={(e) => handleActionSelectChange(e, Role.MANAGER)}
+                focusBorderColor={'#B1EF42'}
+              >
+                {VILLAGER_OPTIONS.map((villager, index) => (
+                  <option key={index} value={villager.action}>
+                    {villager.action}
+                  </option>
+                ))}
+              </Select>
+            ) : (
+              toast.error('No role found')
+            )}
           </Card>
           {adminAction && renderAdminAction[adminAction]}
         </>

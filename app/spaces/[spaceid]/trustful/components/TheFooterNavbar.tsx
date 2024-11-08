@@ -83,7 +83,7 @@ export const TheFooterNavbar = () => {
               </Text>
             </Box>
           )}
-          <Box
+          {/* <Box
             className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'checkout' || params.slug == 'checkin' ? 'border-[#B1EF42]' : 'border-transparent'}`}
             onClick={() => {
               if (checkInStatus === 'Check In') push(`${actualURL}/checkin`);
@@ -112,7 +112,7 @@ export const TheFooterNavbar = () => {
             >
               {checkInStatus}
             </Text>
-          </Box>
+          </Box> */}
           <Box
             className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'share' ? 'border-[#B1EF42]' : 'border-transparent'}`}
             onClick={() => push(`${actualURL}/admin`)}

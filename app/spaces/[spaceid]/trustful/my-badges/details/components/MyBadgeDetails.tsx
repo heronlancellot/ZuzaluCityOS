@@ -170,7 +170,7 @@ export const MyBadgeDetails = () => {
     );
     console.log('response', response);
     processAttestationResponse(response, isConfirm);
-    //fetchAttestationResponse();
+    // fetchAttestationResponse();
   };
 
   // Submit revoke
