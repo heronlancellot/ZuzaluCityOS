@@ -11,7 +11,7 @@ export const getUserRole = async (
   console.log('userAddress', userAddress);
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/users/role?address=${userAddress}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/users/role?userAddress=${userAddress}`,
       {
         method: 'GET',
         headers: {

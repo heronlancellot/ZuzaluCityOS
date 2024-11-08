@@ -2,15 +2,14 @@ import { Role } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import toast from 'react-hot-toast';
 import { Address } from 'viem';
 
-interface createSessionResponse {
-  sessionId: number;
-  name: string;
-  hostAddress: Address;
+interface createEventResponse {
   eventId: number;
   zucityId: number | null;
+  name: string;
+  description: string;
+  spaceId: number;
   createdAt: Date;
   updatedAt: Date;
-  endAt: Date;
 }
 
 interface User {
@@ -18,21 +17,21 @@ interface User {
   role: Role;
 }
 
-interface createSessionRequest {
+interface createEventsRequest {
   user: User;
   name: string;
-  hostAddress: Address;
-  eventId: number;
+  description: string;
+  spaceId: number;
   zucityId?: number | null;
 }
 
-export const createSession = async ({
+export const createEvents = async ({
   user,
   name,
-  hostAddress,
-  eventId,
+  description,
+  spaceId,
   zucityId,
-}: createSessionRequest): Promise<createSessionResponse | undefined> => {
+}: createEventsRequest): Promise<createEventResponse | undefined> => {
   if (user.role !== Role.MANAGER && user.role !== Role.ROOT) {
     toast.error('User Address is not a manager or root');
     return;
@@ -40,12 +39,13 @@ export const createSession = async ({
 
   console.log('user.address', user.address);
   console.log('name', name);
-  console.log('hostAddress', hostAddress);
-  console.log('eventId', eventId);
+  console.log('description', description);
+  console.log('spaceId', spaceId);
   console.log('zucityId', zucityId);
+
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions?userAddress=${user.address}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/events?userAddress=${user.address}`,
       {
         method: 'POST',
         headers: {
@@ -53,16 +53,16 @@ export const createSession = async ({
         },
         body: JSON.stringify({
           name: name,
-          hostAddress: hostAddress,
-          eventId: Number(eventId),
-          zucityId: Number(zucityId),
-        } as createSessionRequest),
+          description: description,
+          spaceId: spaceId,
+          zucityId: zucityId,
+        } as createEventsRequest),
       },
     );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data: createSessionResponse = await response.json();
+    const data: createEventResponse = await response.json();
     toast.success('Session created successfully!');
 
     return data;

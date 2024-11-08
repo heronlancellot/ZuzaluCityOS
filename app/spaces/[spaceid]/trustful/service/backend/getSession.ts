@@ -1,4 +1,3 @@
-import { Role } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import toast from 'react-hot-toast';
 import { Address } from 'viem';
 
@@ -13,7 +12,7 @@ type Session = {
   endAt: Date | null;
 };
 
-interface JoinSessionResponse {
+export interface GetSessionResponse {
   sessions: Session[];
   total: number;
   page: number;
@@ -22,9 +21,9 @@ interface JoinSessionResponse {
 
 interface getSessionRequest {
   userAddress: Address;
-  role: Role;
-  page: number;
-  limit: number;
+  eventid: number;
+  page?: number;
+  limit?: number;
   filters?: {
     eventId?: number;
     hostAddress?: string;
@@ -33,27 +32,17 @@ interface getSessionRequest {
   };
 }
 
+//TODO: Filter by id
 export const getSession = async ({
   userAddress,
-  role,
-  limit,
+  eventid,
   page,
-}: getSessionRequest): Promise<JoinSessionResponse | undefined> => {
-  if (role === Role.NO_ROLE) {
-    toast.error("User Address doesn't have a role");
-    return;
-  } else if (
-    role !== Role.MANAGER &&
-    role !== Role.ROOT &&
-    role !== Role.VILLAGER
-  ) {
-    toast.error('User Address is not a manager, root or villager');
-    return;
-  }
-
+  limit,
+  filters,
+}: getSessionRequest): Promise<GetSessionResponse | undefined> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions/`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions?page=1&limit=100&eventId=${eventid}&hostAddress=${userAddress}`,
       {
         method: 'GET',
         headers: {
@@ -64,7 +53,7 @@ export const getSession = async ({
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data: JoinSessionResponse = await response.json();
+    const data: GetSessionResponse = await response.json();
 
     return data;
   } catch (error) {
