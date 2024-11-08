@@ -9,9 +9,7 @@ import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
-import { Address } from 'viem';
 import { DropdownMenuAdminEvents } from '@/app/spaces/[spaceid]/trustful/events/components/DropdownMenuAdminEvents';
-import { getAllEvents } from '../service/backend/getAllEvents';
 import { CardEvents } from './components/CardEvents';
 
 const TrustfulPage = () => {

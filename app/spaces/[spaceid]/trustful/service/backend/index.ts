@@ -3,7 +3,7 @@ export * from './createSession';
 export * from './deleteSession';
 export * from './fetchEASData';
 export * from './fetchENSData';
-export * from './getAllEvents';
+export * from './getEventById';
 export * from './getSession';
 export * from './getSessionParticipants';
 export * from './getUserRole';

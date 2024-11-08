@@ -11,7 +11,7 @@ export type Event = {
   updatedAt: Date;
 };
 
-export const getAllEvents = async ({
+export const getEvenyByiDD = async ({
   userAddress,
   spaceId,
 }: {
@@ -19,13 +19,10 @@ export const getAllEvents = async ({
   userAddress: Address;
 }): Promise<Event[] | undefined> => {
   const spaceIdZuCity = 1; // TODO : REFACTOR TO GET THE SPACE ID CORRECTLY NOW STRING IS ENABLED
-  console.log('spaceId', spaceId);
-  console.log('spaceIdZuCity', spaceIdZuCity);
-  console.log('userAddress', userAddress);
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/events/space/${spaceIdZuCity}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/events/${spaceIdZuCity}`,
       {
         method: 'GET',
         headers: {
