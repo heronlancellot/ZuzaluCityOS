@@ -65,7 +65,7 @@ export const GiveBadge = () => {
   const { address, chainId } = useAccount();
   const { push } = useRouter();
   const unwatch = watchAccount(config, {
-    onChange() { },
+    onChange() {},
   });
   const {
     addressStep,
@@ -241,12 +241,12 @@ export const GiveBadge = () => {
   // Changes the continue arrow color based on the status of a valid input address
   const iconColor =
     (inputAddress && isAddress(inputAddress)) ||
-      (badgeInputAddress && isAddress(badgeInputAddress?.address))
+    (badgeInputAddress && isAddress(badgeInputAddress?.address))
       ? 'text-[#000000  ]'
       : 'text-[#F5FFFFB2]';
   const iconBg =
     (inputAddress && isAddress(inputAddress)) ||
-      (badgeInputAddress && isAddress(badgeInputAddress?.address))
+    (badgeInputAddress && isAddress(badgeInputAddress?.address))
       ? 'bg-[#B1EF42B2]'
       : 'bg-[#37383A]';
 
@@ -420,7 +420,7 @@ export const GiveBadge = () => {
                     backgroundColor: '#fff',
                     width: '100%',
                     margin: '16px 0',
-                    opacity: '0.2'
+                    opacity: '0.2',
                   }}
                 />
                 <Box
@@ -500,7 +500,7 @@ export const GiveBadge = () => {
               >
                 <Flex flexDirection={'column'} className="w-full items-center">
                   <Flex className="w-full flex-row p-4 items-center" gap={4}>
-                    <UserIcon />
+                    <UserIcon className="text-white" />
                     <Flex
                       flexDirection={'column'}
                       gap={2}
@@ -518,7 +518,7 @@ export const GiveBadge = () => {
                   </Flex>
                   <Divider className="border-slate-50 opacity-10 w-full" />
                   <Flex className="w-full flex-row p-4" gap={4}>
-                    <UserIcon />
+                    <UserIcon className="text-white" />
                     <Flex
                       flexDirection={'column'}
                       gap={2}
@@ -550,9 +550,14 @@ export const GiveBadge = () => {
                       className="flex text-white opacity-70 text-sm font-normal leading-tight"
                       color="white"
                       onChange={handleBadgeSelectChange}
+                      style={{ color: 'white' }}
                     >
                       {inputBadgeTitleList?.map((title, index) => (
-                        <option key={index} value={title}>
+                        <option
+                          key={index}
+                          value={title}
+                          style={{ color: 'black' }}
+                        >
                           {title}
                         </option>
                       ))}
