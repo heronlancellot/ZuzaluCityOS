@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, ChakraProvider, Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
 import { useAccount } from 'wagmi';
@@ -14,6 +14,7 @@ import { BADGE_QUERY } from '../../constants/schemaQueries';
 import { TheFooterNavbar } from '../../components/TheFooterNavbar';
 import { TheHeader } from '../../components/TheHeader';
 import { fetchEASData } from '../../service';
+import chakraTheme from '@/theme/lib/chakra-ui';
 
 interface Attestation {
   decodedDataJson: string;
@@ -216,7 +217,7 @@ export const MyBadgeSection: React.FC = () => {
   };
 
   return (
-    <Flex flexDirection="column" minHeight="100vh">
+    <Flex flexDirection="column" minHeight="10vh" marginBottom="60px">
       {villagerAttestationCount !== null ? (
         <>
           <TheHeader />
@@ -232,11 +233,16 @@ export const MyBadgeSection: React.FC = () => {
                   <BeatLoader size={8} color="#B1EF42" />
                 </Box>
               ) : (
-                <BadgeCard badgeData={badgeData} />
+                <ChakraProvider theme={chakraTheme}>
+                  <BadgeCard badgeData={badgeData} />
+                </ChakraProvider>
+
               )}
             </Flex>
           </Box>
-          <TheFooterNavbar />
+          <Box className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full items-center">
+            <TheFooterNavbar />
+          </Box>
         </>
       ) : (
         <Box flex={1} className="flex justify-center items-center">

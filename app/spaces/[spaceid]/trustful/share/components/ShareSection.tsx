@@ -41,7 +41,7 @@ export const ShareSection = () => {
   }, [villagerAttestationCount]);
 
   return (
-    <Flex flexDirection="column" minHeight="100vh" marginBottom="60px">
+    <Flex flexDirection="column" minHeight="10vh" marginBottom="60px">
       {villagerAttestationCount !== null ? (
         <>
           <TheHeader />
@@ -116,7 +116,9 @@ export const ShareSection = () => {
               </Flex>
             </Link>
           </Box>
-          <TheFooterNavbar />
+          <Box className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full items-center">
+            <TheFooterNavbar />
+          </Box>
         </>
       ) : (
         <Box flex={1} className="flex justify-center items-center">
