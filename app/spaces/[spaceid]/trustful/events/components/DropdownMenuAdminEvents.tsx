@@ -16,8 +16,10 @@ import { BeatLoader } from 'react-spinners';
 import { isAddress } from 'viem';
 import { useAccount, useSwitchChain } from 'wagmi';
 import {
+  CypherHouseSpaceId,
   Role,
   ROLES,
+  spaceIdValue,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
@@ -39,8 +41,6 @@ export const DropdownMenuAdminEvents = () => {
   );
   const [eventAction, setEventAction] = useState<EVENT_ACTION | null>(null);
   const [isloading, setIsLoading] = useState<boolean>(false);
-  const spaceIdValue = 1
-  const zucityIdValue = 1
 
   const [inputValuesTextArea, setInputValuesTextArea] = useState<{
     [key: string]: string;
@@ -90,7 +90,7 @@ export const DropdownMenuAdminEvents = () => {
       name: inputValuesTextArea['createEventName'],
       description: inputValuesTextArea['createEventDescription'],
       spaceId: spaceIdValue,
-      zucityId: zucityIdValue,
+      zucityId: CypherHouseSpaceId,
       user: userRole,
     });
 
@@ -152,11 +152,9 @@ export const DropdownMenuAdminEvents = () => {
       >
         <Flex className="w-full flex-col">
           <Flex className="gap-4 pb-4 justify-start items-center">
-            <Text className='text-white'>
-              Name:
-            </Text>
+            <Text className="text-white">Name:</Text>
             <Textarea
-              className='text-white'
+              className="text-white"
               color="white"
               placeholder="Name..."
               _placeholder={{
@@ -174,9 +172,7 @@ export const DropdownMenuAdminEvents = () => {
               minH="unset"
               resize="none"
             />
-            <Text className='text-white'>
-              Description:
-            </Text>
+            <Text className="text-white">Description:</Text>
             <Textarea
               className=" text-base font-normal leading-snug"
               color="white"
@@ -190,7 +186,7 @@ export const DropdownMenuAdminEvents = () => {
               onChange={handleInputValuesTextareaChange}
               rows={
                 (inputValuesTextArea['createEventDescription'] || '').length >
-                  50
+                50
                   ? 3
                   : 1
               }
