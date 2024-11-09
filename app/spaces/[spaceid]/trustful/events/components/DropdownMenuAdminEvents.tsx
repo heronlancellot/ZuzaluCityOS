@@ -10,13 +10,12 @@ import {
   Button,
   Textarea,
   Box,
-  Input,
 } from '@chakra-ui/react';
 import { BeatLoader } from 'react-spinners';
 import { isAddress } from 'viem';
-import { useAccount, useSwitchChain } from 'wagmi';
+import { useAccount } from 'wagmi';
 import {
-  CypherHouseSpaceId,
+  CYPHERHOUSE_SPACEID,
   Role,
   ROLES,
   spaceIdValue,
@@ -32,7 +31,7 @@ import {
 import { createEvents } from '../../service/backend/createEvents';
 
 export const DropdownMenuAdminEvents = () => {
-  const { address, chainId } = useAccount();
+  const { address } = useAccount();
   const { userRole } = useTrustful();
   const [role, setRole] = useState<ROLES | null>(null);
   const [inputAddress, setInputAddress] = useState<string>('');
@@ -45,11 +44,8 @@ export const DropdownMenuAdminEvents = () => {
   const [inputValuesTextArea, setInputValuesTextArea] = useState<{
     [key: string]: string;
   }>({});
-  const [inputValuesChange, setInputValuesChange] = useState<{
-    [key: string]: string;
-  }>({});
 
-  // Updates the validAddress when the inputAddress changes
+  /* Updates the validAddress when the inputAddress changes */
   useEffect(() => {
     if (inputAddress && isAddress(inputAddress)) {
       setValidAddress(new EthereumAddress(inputAddress));
@@ -68,10 +64,6 @@ export const DropdownMenuAdminEvents = () => {
     console.log('inputValuesTextArea', inputValuesTextArea);
   }, [inputValuesTextArea]);
 
-  useEffect(() => {
-    console.log('inputValuesChange', inputValuesChange);
-  }, [inputValuesChange]);
-
   /** EVENT */
   const handleCreateEvent = async () => {
     if (!address) {
@@ -84,13 +76,12 @@ export const DropdownMenuAdminEvents = () => {
       toast.error('Please connect first. No userRole found.');
       return;
     }
-    console.log('validAddress', validAddress);
 
     const response = await createEvents({
       name: inputValuesTextArea['createEventName'],
       description: inputValuesTextArea['createEventDescription'],
       spaceId: spaceIdValue,
-      zucityId: CypherHouseSpaceId,
+      zucityId: CYPHERHOUSE_SPACEID,
       user: userRole,
     });
 
@@ -124,14 +115,6 @@ export const DropdownMenuAdminEvents = () => {
     }));
   };
 
-  const handleInputValuesChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setInputValuesChange((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
-  };
-
   const handleActionSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
     let selectOptions = EVENT_OPTIONS;
     selectOptions.filter((option) => {
@@ -142,6 +125,15 @@ export const DropdownMenuAdminEvents = () => {
         setEventAction(option.action);
       }
     });
+  };
+
+  const handleCreateEventValidation = async () => {
+    !inputValuesTextArea['createEventDescription'] &&
+      toast.error('Please enter a valid description');
+    !inputValuesTextArea['createEventName'] &&
+      toast.error('Please enter a valid name');
+    setIsLoading(true);
+    await handleCreateEvent();
   };
 
   const renderEventAction: Record<EVENT_ACTION, React.JSX.Element> = {
@@ -193,30 +185,6 @@ export const DropdownMenuAdminEvents = () => {
               minH="unset"
               resize="none"
             />
-            {/* <Text className='text-white'>
-              spaceId:
-            </Text>
-            <Input
-              className='text-white'
-              focusBorderColor={'#B1EF42'}
-              name="createEventSpaceId"
-              placeholder="Space id"
-              onChange={handleInputValuesChange}
-              value={inputValuesChange['createEventSpaceId'] || 0}
-              type="text"
-              min={1}
-            />
-            <Text className='text-white'>ZuCityId:</Text>
-            <Input
-              className='text-white'
-              focusBorderColor={'#B1EF42'}
-              name="createEventZucityId"
-              placeholder="zucity Id"
-              onChange={handleInputValuesChange}
-              value={inputValuesChange['createEventZucityId"'] || 0}
-              type="number"
-              min={1}
-            /> */}
           </Flex>
           <Box>
             <Flex className="pb-4 gap-4 items-center">
@@ -230,18 +198,16 @@ export const DropdownMenuAdminEvents = () => {
             </Flex>
           </Box>
           <Button
-            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!inputValuesTextArea['createEventSpaceId'] ? 'cursor-not-allowed opacity-10' : ''}`}
+            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!inputValuesTextArea['createEventDescription'] || !inputValuesTextArea['createEventName'] ? 'cursor-not-allowed opacity-10' : ''}`}
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
             isLoading={isloading}
-            // isDisabled={!inputValuesChange['createEventSpaceId']}
+            isDisabled={
+              !inputValuesTextArea['createEventDescription'] ||
+              !inputValuesTextArea['createEventName']
+            }
             spinner={<BeatLoader size={8} color="white" />}
-            onClick={() => {
-              !inputValuesChange['createEventSpaceId'] &&
-                toast.error('Please enter a valid address');
-              setIsLoading(true);
-              handleCreateEvent();
-            }}
+            onClick={handleCreateEventValidation}
           >
             <CheckIcon className="w-[16px] h-[16px]" />
             Confirm
@@ -269,9 +235,14 @@ export const DropdownMenuAdminEvents = () => {
                 color="white"
                 onChange={handleActionSelectChange}
                 focusBorderColor={'#B1EF42'}
+                style={{ color: 'white' }}
               >
                 {EVENT_OPTIONS.map((event, index) => (
-                  <option key={index} value={event.action}>
+                  <option
+                    key={index}
+                    value={event.action}
+                    style={{ color: 'black' }}
+                  >
                     {event.action}
                   </option>
                 ))}

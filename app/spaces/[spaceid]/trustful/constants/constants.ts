@@ -2,7 +2,7 @@ export const isDev = process.env.NEXT_PUBLIC_ENV === 'dev';
 
 /** ID of the space enabled for Trustful to appear so far. */
 /** zucityIdValue */
-export const CypherHouseSpaceId =
+export const CYPHERHOUSE_SPACEID =
   'kjzl6kcym7w8y5ye1nxcz2o08c8pk9nd57bwqqax6wlfaimn5qsf6s3306jgj34';
 
 /** Space Id 1 equals CypherHouseSpaceId in backend.*/
