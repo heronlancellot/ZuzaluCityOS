@@ -51,11 +51,7 @@ export const CardEventDetails = () => {
             Event Details
           </Text>
 
-          <Card
-            background={'#222222'}
-            className="mb-4 p-4 cursor-pointer"
-            onClick={() => push(`${actualURL}/${eventDetails.eventId}`)}
-          >
+          <Card background={'#222222'} className="mb-4 p-4">
             <Text className="text-white font-semibold text-lg">
               {eventDetails.name}
             </Text>

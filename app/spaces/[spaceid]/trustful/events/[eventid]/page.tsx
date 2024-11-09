@@ -11,6 +11,7 @@ import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
 import { DropdownEventSelected } from './components/DropdownEventSelected';
 import { CardEventDetails } from './components/CardEventDetails';
+import { CardSession } from './components/CardSession';
 
 const TrustfulPageEventId = () => {
   const params = useParams();
@@ -148,6 +149,7 @@ const TrustfulPageEventId = () => {
         >
           <DropdownEventSelected />
           <CardEventDetails />
+          <CardSession />
         </Box>
       </Stack>
     </Stack>
