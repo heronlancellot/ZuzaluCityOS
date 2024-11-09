@@ -31,18 +31,38 @@ interface getSessionRequest {
     toDate?: Date;
   };
 }
-
-//TODO: Filter by id
+/**
+ *
+ * The hostAddress must be in LowerCase
+ */
 export const getSession = async ({
   userAddress,
   eventid,
-  page,
-  limit,
+  page = 1,
+  limit = 100,
   filters,
 }: getSessionRequest): Promise<GetSessionResponse | undefined> => {
   try {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      eventId: eventid.toString(),
+      hostAddress: userAddress.toLowerCase(),
+    });
+
+    if (filters) {
+      if (filters.eventId)
+        queryParams.append('eventId', filters.eventId.toString());
+      if (filters.hostAddress)
+        queryParams.append('hostAddress', filters.hostAddress);
+      if (filters.fromDate)
+        queryParams.append('fromDate', filters.fromDate.toISOString());
+      if (filters.toDate)
+        queryParams.append('toDate', filters.toDate.toISOString());
+    }
+
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions?page=1&limit=100&eventId=${eventid}&hostAddress=${userAddress}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions?${queryParams.toString()}`,
       {
         method: 'GET',
         headers: {
@@ -50,15 +70,16 @@ export const getSession = async ({
         },
       },
     );
+    console.log('responseresponse', response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data: GetSessionResponse = await response.json();
-
+    console.log('data GetSession', data);
     return data;
   } catch (error) {
     console.error('Error getting session:', error);
-    toast.error('An unexpected error occurred while get the session.');
+    toast.error('An unexpected error occurred while getting the session.');
     throw new Error(`Error getting session information`);
   }
 };

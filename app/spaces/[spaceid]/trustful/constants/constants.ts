@@ -91,7 +91,7 @@ export const TRUSTFUL_SCHEMAS: { [key: string]: Schemas } = {
     allowedRole: [ROLES.VILLAGER],
   },
   ATTEST_RESPONSE: {
-    uid: SCHEMA_UIDS.ATTEST_MANAGER as `0x${string}`,
+    uid: SCHEMA_UIDS.ATTEST_RESPONSE as `0x${string}`,
     data: 'bool status',
     revocable: true,
     allowedRole: [ROLES.VILLAGER],

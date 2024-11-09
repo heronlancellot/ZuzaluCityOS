@@ -45,11 +45,12 @@ export const createEvents = async ({
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/events?userAddress=${user.address}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/events`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          userAddress: `${user.address}`,
         },
         body: JSON.stringify({
           name: name,
@@ -63,12 +64,12 @@ export const createEvents = async ({
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data: createEventResponse = await response.json();
-    toast.success('Session created successfully!');
+    toast.success('Event created successfully!');
 
     return data;
   } catch (error) {
-    console.error('Error creating session:', error);
-    toast.error('An unexpected error occurred while creating the session.');
-    throw new Error('Error creating session');
+    console.error('Error creating Event:', error);
+    toast.error('An unexpected error occurred while creating the Event.');
+    throw new Error('Error creating Event');
   }
 };

@@ -38,11 +38,12 @@ export const joinSession = async ({
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions/${sessionId}/participants?userAddress=${userAddress}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions/${sessionId}/participants`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          userAddress: `${userAddress}`,
         },
         body: JSON.stringify({
           sessionId: sessionId,

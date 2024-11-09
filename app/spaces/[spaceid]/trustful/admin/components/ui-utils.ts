@@ -46,13 +46,13 @@ export interface AdminActions {
 
 export const VILLAGER_OPTIONS: AdminActions[] = [
   {
-    action: ADMIN_ACTION.JOIN_SESSION,
+    action: ADMIN_ACTION.JOIN_SESSION, // entra na session dentro da pagina da session selecionada, dai pode dar join
   },
   {
-    action: ADMIN_ACTION.CREATE_SESSION,
+    action: ADMIN_ACTION.CREATE_SESSION, // Cria a session no evento
   },
   {
-    action: ADMIN_ACTION.WRAP_SESSION,
+    action: ADMIN_ACTION.WRAP_SESSION, // sai na session dentro da pagina da session selecionada, dai pode dar wrap
   },
 ];
 
@@ -83,4 +83,46 @@ export const ADMIN_OPTIONS: AdminActions[] = [
     action: ADMIN_ACTION.REMOVE_SESSION,
   },
   ...MANAGER_OPTIONS,
+];
+
+// SESSIONS ACTIONS
+export enum EVENT_ACTION {
+  CREATE_EVENT = 'Create event',
+}
+
+export interface EventActions {
+  action: EVENT_ACTION;
+}
+
+export const EVENT_OPTIONS: EventActions[] = [
+  {
+    action: EVENT_ACTION.CREATE_EVENT,
+  },
+];
+
+// SESSIONS ACTIONS
+export enum SESSION_ACTION {
+  REMOVE_SESSION = 'Remove session',
+  JOIN_SESSION = 'Join session',
+  CREATE_SESSION = 'Create session',
+  WRAP_SESSION = 'Wrap session',
+}
+
+export interface SessionActions {
+  action: SESSION_ACTION;
+}
+
+export const SESSION_OPTIONS: SessionActions[] = [
+  {
+    action: SESSION_ACTION.JOIN_SESSION,
+  },
+  {
+    action: SESSION_ACTION.CREATE_SESSION,
+  },
+  {
+    action: SESSION_ACTION.WRAP_SESSION,
+  },
+  {
+    action: SESSION_ACTION.REMOVE_SESSION,
+  },
 ];
