@@ -11,7 +11,7 @@ import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
 import {
   CardSessionDetails,
-  DropdownMenuAdminSessionSelected,
+  DropdownSessionDetails,
 } from '@/app/spaces/[spaceid]/trustful/events/[eventid]/[sessionid]/components';
 
 const TrustfulPageSessionId = () => {
@@ -149,7 +149,7 @@ const TrustfulPageSessionId = () => {
           }}
         >
           <CardSessionDetails />
-          <DropdownMenuAdminSessionSelected />
+          <DropdownSessionDetails />
         </Box>
       </Stack>
     </Stack>

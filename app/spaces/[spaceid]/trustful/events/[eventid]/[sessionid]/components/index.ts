@@ -1,2 +1,2 @@
 export * from './CardSessionDetails';
-export * from './DropdownMenuAdminSessionSelected';
+export * from './DropdownSessionDetails';
