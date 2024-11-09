@@ -1,7 +1,7 @@
 import toast from 'react-hot-toast';
 import { Address } from 'viem';
 
-type Session = {
+export type Session = {
   name: string;
   sessionId: number;
   createdAt: Date;
