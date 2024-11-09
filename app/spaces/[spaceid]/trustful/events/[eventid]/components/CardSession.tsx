@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, Text } from '@chakra-ui/react';
 import { getSession, GetSessionResponse } from '../../../service';
-import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
-import { Address } from 'viem';
 
 export const CardSession = () => {
   const [sessions, setSessions] = useState<GetSessionResponse[] | undefined>(
@@ -15,7 +13,7 @@ export const CardSession = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
   console.log('paramsparams', params);
-  const actualURL = `/spaces/${spaceId}/trustful/events/${params.eventid}/sessions`;
+  const actualURL = `/spaces/${spaceId}/trustful/events/${params.eventid}`;
   const { push } = useRouter();
   const { address } = useAccount();
 
@@ -38,26 +36,37 @@ export const CardSession = () => {
 
   return (
     <>
-      <div>sessions card</div>
-      {/* {sessions && sessions.length > 0 ? (
+      {sessions && sessions.length > 0 && (
         <Card
           background={'#F5FFFF0D'}
           className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
         >
           <Text className="text-white mb-2 font-medium leading-none">
-            Events
+            Sessions
           </Text>
           {sessions.map((session, index) => (
-            <Text key={index} className="text-white">
-              {session.sessions[index].name}
-            </Text>
+            <Card
+              key={index}
+              background={'#222222'}
+              className="mb-4 p-4 cursor-pointer"
+              onClick={() =>
+                push(`${actualURL}/${session.sessions[index].sessionId}`)
+              }
+            >
+              <Text className="text-white font-semibold text-lg">
+                {session.sessions[index].name}
+              </Text>
+              <Text className="text-gray-500 text-sm">
+                Event ID: {session.sessions[index].eventId}
+              </Text>
+              <Text className="text-gray-500 text-sm">
+                Created at:{' '}
+                {new Date(session.sessions[index].createdAt).toLocaleString()}
+              </Text>
+            </Card>
           ))}
         </Card>
-      ) : (
-        {
-          sessions,
-        }
-      )} */}
+      )}
     </>
   );
 };
