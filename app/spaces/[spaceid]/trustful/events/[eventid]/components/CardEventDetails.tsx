@@ -75,23 +75,6 @@ export const CardEventDetails = () => {
           </Card>
         </Card>
       )}
-
-      <Card
-        background={'#F5FFFF0D'}
-        className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
-        onClick={() => {
-          const eventId = 123;
-          push(`${actualURL}/sessions`);
-        }}
-      >
-        Estamos no evento especifico , aqui podemos criar umma sessão se formos
-        o root, ao criar as sessoes, vamos poder ver as sessoes criadas e os
-        participantes que estão nela , e podemos dar badges para os
-        participantes; Pode ter um button do dropdown pra criar sessão e ir para
-        sessoes quando for para sesssoes ai vai ser no /sessions depois
-        Sessssion Name:Blockchain Workshop description: workshop Session
-        blockchain technology
-      </Card>
     </>
   );
 };
