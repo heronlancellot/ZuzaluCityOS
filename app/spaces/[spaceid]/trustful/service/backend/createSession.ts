@@ -25,10 +25,6 @@ export const createSession = async ({
   eventId,
   zucityId,
 }: createSessionRequest): Promise<createSessionResponse | undefined> => {
-  console.log('name', name);
-  console.log('hostAddress', hostAddress);
-  console.log('eventId', eventId);
-  console.log('zucityId', zucityId);
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions?userAddress=${hostAddress}`,
@@ -53,8 +49,8 @@ export const createSession = async ({
     toast.success('Session created successfully!');
 
     return data;
-  } catch (error) {
-    console.error('Error creating session:', error);
+  } catch (error: any) {
+    console.error('Error creating session:', error.message);
     toast.error('An unexpected error occurred while creating the session.');
     throw new Error('Error creating session');
   }

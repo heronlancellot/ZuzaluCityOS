@@ -14,11 +14,9 @@ import {
 } from '@chakra-ui/react';
 import { BeatLoader } from 'react-spinners';
 import { Address, isAddress } from 'viem';
-import { scroll, scrollSepolia } from 'viem/chains';
 import { useAccount, useSwitchChain } from 'wagmi';
 import {
   CYPHERHOUSE_SPACEID,
-  isDev,
   Role,
   ROLES,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
@@ -27,8 +25,6 @@ import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
 import toast from 'react-hot-toast';
 import {
-  EVENT_ACTION,
-  EVENT_OPTIONS,
   SESSION_ACTION,
   SESSION_OPTIONS,
 } from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
@@ -41,6 +37,7 @@ import {
 import { Event } from '../../../service/backend/getEventById';
 import { useParams } from 'next/navigation';
 import { getAllEvents } from '../../../service/backend/getAllEvents';
+import { createSessionSC } from '@/app/spaces/[spaceid]/trustful/service/smart-contract';
 
 export const DropdownEventSelected = () => {
   const { address, chainId } = useAccount();
@@ -182,6 +179,21 @@ export const DropdownEventSelected = () => {
       return;
     }
 
+    const timeNow = Date.now();
+    const sessionTitle =
+      inputValuesTextArea['createSessionName'] + '_' + Date.now();
+
+    const oneDayInSeconds = BigInt(86400);
+
+    /*Create Session in Smart Contract */
+    const smartContractCreateSession = await createSessionSC({
+      from: address as Address,
+      sessionTitle: sessionTitle,
+      duration: oneDayInSeconds,
+      msgValue: BigInt(0),
+    });
+
+    /*Create Session in Backend */
     const response = await createSession({
       name: inputValuesTextArea['createSessionName'],
       eventId: Number(eventId),
@@ -394,7 +406,6 @@ export const DropdownEventSelected = () => {
               resize="none"
             />
           </Flex>
-
           <Box>
             <Flex className="pb-4 gap-4 items-center">
               <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">

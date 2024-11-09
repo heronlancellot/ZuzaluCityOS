@@ -3,7 +3,7 @@ export * from './allowedSchemas';
 export * from './attest';
 export * from './cannotReply';
 export * from './closeSession';
-export * from './createSession';
+export * from './createSessionSC';
 export * from './getAllAttestationTitles';
 export * from './grantRole';
 export * from './hasRole';
