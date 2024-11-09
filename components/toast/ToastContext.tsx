@@ -24,8 +24,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   };
 
   const hideToast = () => {
-    setOpen(false);
     setConfig(null);
+    setOpen(false);
   };
 
   return (

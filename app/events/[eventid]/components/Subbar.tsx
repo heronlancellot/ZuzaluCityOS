@@ -19,8 +19,35 @@ const Subbar: React.FC<SubbarProps> = ({
   setTabName,
   canViewSessions,
 }) => {
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const handleTabClick = (newTabName: string, event: React.MouseEvent<HTMLDivElement>) => {
+    if (newTabName === 'Sessions' && !canViewSessions) {
+      return;
+    }
+
+    setTabName(newTabName);
+    
+    const clickedElement = event.currentTarget;
+    const container = scrollContainerRef.current;
+    
+    if (container) {
+      const containerWidth = container.offsetWidth;
+      const elementOffset = clickedElement.offsetLeft;
+      const elementWidth = clickedElement.offsetWidth;
+      
+      const scrollPosition = elementOffset - (containerWidth / 2) + (elementWidth / 2);
+      
+      container.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <Stack
+      ref={scrollContainerRef}
       direction="row"
       paddingX={2}
       spacing={3}
@@ -42,10 +69,10 @@ const Subbar: React.FC<SubbarProps> = ({
           alignItems="center"
           borderBottom={tabName === 'About' ? '1px solid white' : 'none'}
           sx={{ cursor: 'pointer', padding: '0 14px' }}
+          onClick={(e) => handleTabClick('About', e)}
         >
           <CalendarIcon />
           <Typography
-            onClick={() => setTabName('About')}
             color="white"
             variant="bodyMB"
           >
@@ -57,11 +84,11 @@ const Subbar: React.FC<SubbarProps> = ({
           spacing={1}
           alignItems="center"
           borderBottom={tabName === 'Sessions' ? '1px solid white' : 'none'}
-          sx={{ cursor: 'pointer', padding: '0 14px' }}
+          sx={{ cursor: canViewSessions ? 'pointer' : 'not-allowed', padding: '0 14px' }}
+          onClick={(e) => handleTabClick('Sessions', e)}
         >
           {canViewSessions ? <SessionIcon /> : <LockIcon />}
           <Typography
-            onClick={() => canViewSessions && setTabName('Sessions')}
             color="white"
             variant="bodyMB"
             sx={{ cursor: canViewSessions ? 'pointer' : 'not-allowed' }}
@@ -73,17 +100,15 @@ const Subbar: React.FC<SubbarProps> = ({
           direction="row"
           spacing={1}
           alignItems="center"
-          borderBottom={
-            tabName === 'Public Sessions' ? '1px solid white' : 'none'
-          }
+          borderBottom={tabName === 'Public Sessions' ? '1px solid white' : 'none'}
           sx={{ cursor: 'pointer', padding: '0 14px' }}
+          onClick={(e) => handleTabClick('Public Sessions', e)}
         >
           <SessionIcon />
           <Typography
-            onClick={() => setTabName('Public Sessions')}
             color="white"
             variant="bodyMB"
-            sx={{ cursor: 'pointer' }}
+            sx={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
             Public Sessions
           </Typography>
@@ -92,14 +117,12 @@ const Subbar: React.FC<SubbarProps> = ({
           direction="row"
           spacing={1}
           alignItems="center"
-          borderBottom={
-            tabName === 'Announcements' ? '1px solid white' : 'none'
-          }
+          borderBottom={tabName === 'Announcements' ? '1px solid white' : 'none'}
           sx={{ cursor: 'pointer', padding: '0 14px' }}
+          onClick={(e) => handleTabClick('Announcements', e)}
         >
           <AnnouncementsIcon />
           <Typography
-            onClick={() => setTabName('Announcements')}
             color="white"
             variant="bodyMB"
           >
