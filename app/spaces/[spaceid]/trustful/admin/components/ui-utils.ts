@@ -74,9 +74,6 @@ export const ADMIN_OPTIONS: AdminActions[] = [
     action: ADMIN_ACTION.GRANT_ROLE,
   },
   {
-    action: ADMIN_ACTION.REVOKE_ROLE,
-  },
-  {
     action: ADMIN_ACTION.SET_SCHEMA,
   },
   {
