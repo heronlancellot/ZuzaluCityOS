@@ -17,6 +17,7 @@ import { Address, isAddress } from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
 import { useAccount, useSwitchChain } from 'wagmi';
 import {
+  CYPHERHOUSE_SPACEID,
   isDev,
   Role,
   ROLES,
@@ -41,7 +42,7 @@ import { Event } from '../../../service/backend/getEventById';
 import { useParams } from 'next/navigation';
 import { getAllEvents } from '../../../service/backend/getAllEvents';
 
-export const DropdownMenuAdminSession = () => {
+export const DropdownEventSelected = () => {
   const { address, chainId } = useAccount();
   const { userRole } = useTrustful();
   const { switchChain } = useSwitchChain();
@@ -64,6 +65,7 @@ export const DropdownMenuAdminSession = () => {
   const [events, setEvents] = useState<Event[] | undefined>([]);
   const params = useParams();
   const spaceId = params.spaceid.toString();
+  const eventId = params.eventid.toString();
 
   console.log('spaceIdspaceIdspaceId', spaceId);
 
@@ -167,7 +169,7 @@ export const DropdownMenuAdminSession = () => {
     toast.success('Session joined successfully!');
   };
 
-  /** VILLAGER */
+  /** VILLAGER - Create Session */
   const handleCreateSession = async () => {
     if (!address) {
       setIsLoading(false);
@@ -176,17 +178,15 @@ export const DropdownMenuAdminSession = () => {
     }
     if (!userRole || userRole.role == Role.NO_ROLE) {
       setIsLoading(false);
-      toast.error('Please connect first. No userRole found.');
+      toast.error('Please connect first. No role found.');
       return;
     }
-    console.log('validAddress', validAddress);
 
     const response = await createSession({
-      user: userRole,
       name: inputValuesTextArea['createSessionName'],
-      eventId: Number(inputValuesChange['createSessionEventId']),
-      zucityId: Number(inputValuesChange['createSessionZucityId']),
-      hostAddress: validAddress?.address as Address,
+      eventId: Number(eventId),
+      zucityId: CYPHERHOUSE_SPACEID,
+      hostAddress: address as Address,
     });
 
     if (response instanceof Error) {
@@ -393,33 +393,8 @@ export const DropdownMenuAdminSession = () => {
               minH="unset"
               resize="none"
             />
-            <Text>eventId:</Text>
-            <Input
-              style={{ color: 'black' }}
-              name="createSessionEventId"
-              placeholder="Event id"
-              onChange={handleInputValuesChange}
-              value={inputValuesChange['createSessionEventId'] || 0}
-              type="number"
-              min={1}
-            />
-            <Text>ZuCityId:</Text>
-            <Input
-              style={{ color: 'black' }}
-              name="createSessionzucityId"
-              placeholder="zucity Id"
-              onChange={handleInputValuesChange}
-              value={inputValuesChange['createSessionzucityId'] || 0}
-              type="number"
-              min={1}
-            />
           </Flex>
-          <Text>HostAddress:</Text>
-          <InputAddressUser
-            label="Address to host Address"
-            onInputChange={(value: string) => setInputAddress(value)}
-            inputAddress={String(inputAddress)}
-          />
+
           <Box>
             <Flex className="pb-4 gap-4 items-center">
               <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
@@ -432,19 +407,15 @@ export const DropdownMenuAdminSession = () => {
             </Flex>
           </Box>
           <Button
-            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) || !inputValuesTextArea['createSessionName'] ? 'cursor-not-allowed opacity-10' : ''}`}
+            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!inputValuesTextArea['createSessionName'] ? 'cursor-not-allowed opacity-10' : ''}`}
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
             isLoading={isloading}
-            isDisabled={
-              !isAddress(inputAddress.toString()) ||
-              !inputValuesChange['createSessionEventId']
-            }
+            isDisabled={!inputValuesTextArea['createSessionName']}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
-              !isAddress(inputAddress.toString()) ||
-                (!inputValuesChange['createSessionEventId'] &&
-                  toast.error('Please enter a valid address'));
+              !inputValuesTextArea['createSessionName'] &&
+                toast.error('Please enter a valid Session Name');
               setIsLoading(true);
               handleCreateSession();
             }}

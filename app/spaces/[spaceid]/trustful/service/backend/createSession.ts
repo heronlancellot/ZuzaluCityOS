@@ -1,4 +1,3 @@
-import { Role } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import toast from 'react-hot-toast';
 import { Address } from 'viem';
 
@@ -7,45 +6,32 @@ interface createSessionResponse {
   name: string;
   hostAddress: Address;
   eventId: number;
-  zucityId: number | null;
+  zucityId: string;
   createdAt: Date;
   updatedAt: Date;
   endAt: Date;
 }
 
-interface User {
-  address: Address;
-  role: Role;
-}
-
 interface createSessionRequest {
-  user: User;
   name: string;
   hostAddress: Address;
   eventId: number;
-  zucityId?: number | null;
+  zucityId?: string;
 }
 
 export const createSession = async ({
-  user,
   name,
   hostAddress,
   eventId,
   zucityId,
 }: createSessionRequest): Promise<createSessionResponse | undefined> => {
-  if (user.role !== Role.MANAGER && user.role !== Role.ROOT) {
-    toast.error('User Address is not a manager or root');
-    return;
-  }
-
-  console.log('user.address', user.address);
   console.log('name', name);
   console.log('hostAddress', hostAddress);
   console.log('eventId', eventId);
   console.log('zucityId', zucityId);
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions?userAddress=${user.address}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/sessions?userAddress=${hostAddress}`,
       {
         method: 'POST',
         headers: {
@@ -54,11 +40,12 @@ export const createSession = async ({
         body: JSON.stringify({
           name: name,
           hostAddress: hostAddress,
-          eventId: Number(eventId),
-          zucityId: Number(zucityId),
+          eventId: eventId,
+          zucityId: zucityId,
         } as createSessionRequest),
       },
     );
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
