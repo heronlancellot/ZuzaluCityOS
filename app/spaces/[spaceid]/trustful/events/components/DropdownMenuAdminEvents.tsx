@@ -39,6 +39,8 @@ export const DropdownMenuAdminEvents = () => {
   );
   const [eventAction, setEventAction] = useState<EVENT_ACTION | null>(null);
   const [isloading, setIsLoading] = useState<boolean>(false);
+  const spaceIdValue = 1
+  const zucityIdValue = 1
 
   const [inputValuesTextArea, setInputValuesTextArea] = useState<{
     [key: string]: string;
@@ -87,8 +89,8 @@ export const DropdownMenuAdminEvents = () => {
     const response = await createEvents({
       name: inputValuesTextArea['createEventName'],
       description: inputValuesTextArea['createEventDescription'],
-      spaceId: Number(inputValuesChange['createEventSpaceId']), // TODO: GET FROM SPACEID PARAM
-      zucityId: Number(inputValuesChange['createSessionZucityId']),
+      spaceId: spaceIdValue,
+      zucityId: zucityIdValue,
       user: userRole,
     });
 
@@ -195,7 +197,7 @@ export const DropdownMenuAdminEvents = () => {
               minH="unset"
               resize="none"
             />
-            <Text className='text-white'>
+            {/* <Text className='text-white'>
               spaceId:
             </Text>
             <Input
@@ -205,7 +207,7 @@ export const DropdownMenuAdminEvents = () => {
               placeholder="Space id"
               onChange={handleInputValuesChange}
               value={inputValuesChange['createEventSpaceId'] || 0}
-              type="number"
+              type="text"
               min={1}
             />
             <Text className='text-white'>ZuCityId:</Text>
@@ -218,7 +220,7 @@ export const DropdownMenuAdminEvents = () => {
               value={inputValuesChange['createEventZucityId"'] || 0}
               type="number"
               min={1}
-            />
+            /> */}
           </Flex>
           <Box>
             <Flex className="pb-4 gap-4 items-center">
@@ -236,7 +238,7 @@ export const DropdownMenuAdminEvents = () => {
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
             isLoading={isloading}
-            isDisabled={!inputValuesChange['createEventSpaceId']}
+            // isDisabled={!inputValuesChange['createEventSpaceId']}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
               !inputValuesChange['createEventSpaceId'] &&
