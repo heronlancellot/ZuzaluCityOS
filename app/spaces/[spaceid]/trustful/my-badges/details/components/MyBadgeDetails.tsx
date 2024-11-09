@@ -32,6 +32,7 @@ import { TheFooterNavbar } from '../../../components/TheFooterNavbar';
 import { TheHeader } from '../../../components/TheHeader';
 import { revoke } from '../../../service/smart-contract/revoke';
 import toast from 'react-hot-toast';
+import { Address } from 'viem';
 
 export const MyBadgeDetails = () => {
   const { address, chainId } = useAccount();
@@ -240,7 +241,7 @@ export const MyBadgeDetails = () => {
                       Issuer
                     </Text>
 
-                    <UserIcon />
+                    {getEllipsedAddress(selectedBadge.attester as Address)}
                   </Flex>
                 </Flex>
                 <Divider className="border-slate-50 opacity-10 w-full" />
@@ -254,7 +255,7 @@ export const MyBadgeDetails = () => {
                     <Text className="text-slate-50 text-sm font-medium leading-none">
                       Receiver
                     </Text>
-                    <UserIcon />
+                    {getEllipsedAddress(selectedBadge.recipient as Address)}
                   </Flex>
                 </Flex>
               </Flex>

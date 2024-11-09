@@ -15,6 +15,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { BadgeStatus, BadgeTagIcon } from './BadgeTagIcon';
 import { useTrustful } from '@/context/TrustfulContext';
 import { CalendarTimeIcon, HeartLoveIcon, UserIcon } from '@/components/icons';
+import { getEllipsedAddress } from '@/utils/format';
+import { Address } from 'viem';
 
 export interface Schema {
   index: string;
@@ -100,12 +102,12 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({ badgeData }) => {
               </Flex>
             </Flex>
             <Flex gap={4} alignItems={'center'} flexDirection={'row'}>
-              <UserIcon />
-              <Flex gap={2} alignItems={'center'}>
+              <UserIcon className="text-white" />
+              <Flex gap={2} alignItems={'center'} className="text-slate-50">
                 <Text className="text-slate-50 opacity-70 text-sm font-normal leading-tight">
                   Issuer
                 </Text>
-                {badge.attester as `0x${string}`}
+                {getEllipsedAddress(badge.attester as Address)}
               </Flex>
             </Flex>
           </CardBody>
