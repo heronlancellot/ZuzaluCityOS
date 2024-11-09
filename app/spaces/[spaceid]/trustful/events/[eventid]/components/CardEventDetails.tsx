@@ -3,12 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, Text } from '@chakra-ui/react';
-import {
-  getSession,
-  getEventById,
-  GetSessionResponse,
-  Event,
-} from '../../../service';
+import { getEventById, Event } from '../../../service';
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
@@ -19,7 +14,6 @@ export const CardEventDetails = () => {
   );
   const params = useParams();
   const spaceId = params.spaceid.toString();
-  console.log('paramsparams', params);
   const actualURL = `/spaces/${spaceId}/trustful/events/${params.eventid}`;
   const { push } = useRouter();
   const { address } = useAccount();
