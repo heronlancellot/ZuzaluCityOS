@@ -145,13 +145,23 @@ const schema = Yup.object().shape({
     })
     .nullable(),
   weekdays: Yup.array()
-    .of(Yup.number())
+    .of(Yup.string())
     .when('recurring', {
       is: 'weekly',
       then: (schema) =>
         schema
           .required('Please select at least one weekday')
           .min(1, 'Please select at least one weekday'),
+      otherwise: (schema) => schema,
+    }),
+  monthdays: Yup.array()
+    .of(Yup.number())
+    .when('recurring', {
+      is: 'monthly',
+      then: (schema) =>
+        schema
+          .required('Please select at least one day')
+          .min(1, 'Please select at least one day'),
       otherwise: (schema) => schema,
     }),
 });
@@ -188,6 +198,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
       isAllDay: false,
       recurring: 'none',
       weekdays: [],
+      monthdays: [],
     },
     shouldFocusError: true,
   });
@@ -221,6 +232,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         locationName,
         locationUrl,
         weekdays,
+        monthdays,
       } = data;
 
       const selectedTimezone = timezone.value || dayjs.tz.guess();
@@ -254,6 +266,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         space_id: spaceId,
         creator: JSON.stringify(profile),
         weekdays: recurring === 'weekly' ? weekdays?.join(',') : null,
+        monthdays: recurring === 'monthly' ? monthdays?.join(',') : null,
       };
 
       if (event) {
@@ -310,8 +323,9 @@ const CreateEventForm: React.FC<EventFormProps> = ({
       setValue('format', event.format);
       setValue('locationName', event.location_name);
       setValue('locationUrl', event.location_url);
-      event.weekdays &&
-        setValue('weekdays', event.weekdays.split(',').map(Number));
+      event.weekdays && setValue('weekdays', event.weekdays.split(','));
+      event.monthdays &&
+        setValue('monthdays', event.monthdays.split(',').map(Number));
     }
   }, []);
 
@@ -541,6 +555,79 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                                 </MenuItem>
                               ))}
                             </Select>
+                            {error && (
+                              <FormHelperText error>
+                                {error.message}
+                              </FormHelperText>
+                            )}
+                          </>
+                        )}
+                      />
+                    </Stack>
+                  )}
+                  {recurring === 'monthly' && (
+                    <Stack spacing="10px">
+                      <FormLabel>Repeat on*</FormLabel>
+                      <FormLabelDesc>
+                        Select which days of the month this event should repeat
+                        on
+                      </FormLabelDesc>
+                      <Controller
+                        name="monthdays"
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <>
+                            <Box
+                              sx={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(7, 1fr)',
+                                gap: 1,
+                                maxWidth: '300px',
+                              }}
+                            >
+                              {Array.from({ length: 31 }, (_, i) => i + 1).map(
+                                (day) => (
+                                  <Box
+                                    key={day}
+                                    onClick={() => {
+                                      const currentValue = field.value || [];
+                                      const newValue = currentValue.includes(
+                                        day,
+                                      )
+                                        ? currentValue.filter(
+                                            (d) => d !== undefined && d !== day,
+                                          )
+                                        : [...currentValue, day];
+                                      field.onChange(newValue);
+                                    }}
+                                    sx={{
+                                      width: '30px',
+                                      height: '30px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      cursor: 'pointer',
+                                      borderRadius: '50%',
+                                      backgroundColor: (
+                                        field.value || []
+                                      ).includes(day)
+                                        ? 'primary.main'
+                                        : 'transparent',
+                                      '&:hover': {
+                                        backgroundColor: (
+                                          field.value || []
+                                        ).includes(day)
+                                          ? 'primary.dark'
+                                          : 'rgba(255, 255, 255, 0.08)',
+                                      },
+                                      fontSize: '14px',
+                                    }}
+                                  >
+                                    {day}
+                                  </Box>
+                                ),
+                              )}
+                            </Box>
                             {error && (
                               <FormHelperText error>
                                 {error.message}

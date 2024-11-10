@@ -544,6 +544,7 @@ export interface CalEvent {
   recurring: string;
   uuid: string;
   weekdays?: string;
+  monthdays?: string;
 }
 
 export const SOCIAL_TYPES = [
