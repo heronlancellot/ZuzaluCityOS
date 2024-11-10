@@ -121,6 +121,17 @@ const ConfigForm: React.FC<RegistrationMethodSelectorProps> = ({
             scrollPassContractFactoryID,
           });
         } else {
+          let scrollPassContractFactoryID;
+          if (
+            pass === TicketingMethod.ScrollPass &&
+            !regAndAccess?.scrollPassContractFactoryID
+          ) {
+            const result = await createEventID();
+            if (!result?.contractID) {
+              throw new Error('Failed to create scroll pass contract');
+            }
+            scrollPassContractFactoryID = result?.contractID;
+          }
           updateMutation.mutate({
             eventId,
             id: regAndAccess!.id,
@@ -129,6 +140,7 @@ const ConfigForm: React.FC<RegistrationMethodSelectorProps> = ({
             applyRule: apply || '',
             registrationAccess: access!,
             ticketType: pass!,
+            scrollPassContractFactoryID,
           });
         }
       } catch (error) {

@@ -426,6 +426,11 @@ const About: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
       justifyContent="center"
       alignItems="center"
       bgcolor="#222222"
+      sx={{
+        [breakpoints.down('sm')]: {
+          padding: '20px 10px',
+        },
+      }}
     >
       {eventData && (
         <Stack
@@ -507,6 +512,7 @@ const About: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
             ) : null}
 
             <EventName
+              eventId={eventId}
               avatar={eventData.space?.avatar}
               tagline={eventData.tagline}
               endTime={eventData.endTime}

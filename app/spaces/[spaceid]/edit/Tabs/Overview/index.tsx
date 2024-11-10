@@ -26,6 +26,7 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { SOCIAL_TYPES } from '@/constant';
 import { useDialog } from '@/components/dialog/DialogContext';
 import dynamic from 'next/dynamic';
+import FormUploader from '@/components/form/FormUploader';
 const SuperEditor = dynamic(() => import('@/components/editor/SuperEditor'), {
   ssr: false,
 });
@@ -38,8 +39,8 @@ const Overview = () => {
   const [space, setSpace] = useState<Space>();
   const [name, setName] = useState<string>('');
   const [tagline, setTagline] = useState<string>('');
-  const avatarUploader = useUploaderPreview();
-  const bannerUploader = useUploaderPreview();
+  const [avatar, setAvatar] = useState('');
+  const [banner, setBanner] = useState('');
   const router = useRouter();
   const descriptionEditorStore = useEditorStore();
 
@@ -92,8 +93,8 @@ const Overview = () => {
       const editSpace: Space = response.data.node as Space;
       setSpace(editSpace);
       setName(editSpace.name);
-      avatarUploader.setUrl(editSpace.avatar);
-      bannerUploader.setUrl(editSpace.banner);
+      setAvatar(editSpace.avatar ?? '');
+      setBanner(editSpace.banner ?? '');
       descriptionEditorStore.setValue(editSpace.description);
       setTagline(editSpace.tagline);
 
@@ -207,8 +208,8 @@ const Overview = () => {
       id: space!.id,
       name,
       tagline,
-      avatar: avatarUploader.getUrl() as string,
-      banner: bannerUploader.getUrl() as string,
+      avatar,
+      banner,
       description: descriptionEditorStore.getValueString(),
     };
 
@@ -469,38 +470,14 @@ const Overview = () => {
           200 x 200 Min. (1:1 Ratio) Upload PNG, GIF or JPEG
         </Typography>
 
-        <Uploader3
-          accept={['.gif', '.jpeg', '.gif', '.png']}
-          api={'/api/file/upload'}
-          multiple={false}
-          crop={{
-            size: { width: 400, height: 400 },
-            aspectRatio: 1,
-          }} // must be false when accept is svg
-          onUpload={(file) => {
-            avatarUploader.setFile(file);
+        <FormUploader
+          value={avatar}
+          onChange={setAvatar}
+          previewStyle={{
+            width: '150px',
+            height: '150px',
+            borderRadius: '50%',
           }}
-          onComplete={(file) => {
-            avatarUploader.setFile(file);
-          }}
-        >
-          <Button
-            component="span"
-            sx={{
-              color: 'white',
-              borderRadius: '10px',
-              backgroundColor: '#373737',
-              border: '1px solid #383838',
-            }}
-          >
-            Upload Image
-          </Button>
-        </Uploader3>
-        <PreviewFile
-          sx={{ width: '150px', height: '150px', borderRadius: '60%' }}
-          src={avatarUploader.getUrl()}
-          errorMessage={avatarUploader.errorMessage()}
-          isLoading={avatarUploader.isLoading()}
         />
       </Box>
       <Box
@@ -518,38 +495,14 @@ const Overview = () => {
           Recommend min of 730x220 Accept PNG GIF or JPEG
         </Typography>
 
-        <Uploader3
-          accept={['.gif', '.jpeg', '.gif', '.png']}
-          api={'/api/file/upload'}
-          multiple={false}
-          crop={{
-            size: { width: 600, height: 400 },
-            aspectRatio: 740 / 200,
+        <FormUploader
+          value={banner}
+          onChange={setBanner}
+          previewStyle={{
+            width: '100%',
+            height: '200px',
+            borderRadius: '10px',
           }}
-          onUpload={(file) => {
-            bannerUploader.setFile(file);
-          }}
-          onComplete={(file) => {
-            bannerUploader.setFile(file);
-          }}
-        >
-          <Button
-            component="span"
-            sx={{
-              color: 'white',
-              borderRadius: '10px',
-              backgroundColor: '#373737',
-              border: '1px solid #383838',
-            }}
-          >
-            Upload Image
-          </Button>
-        </Uploader3>
-        <PreviewFile
-          sx={{ width: '100%', height: '200px', borderRadius: '10px' }}
-          src={bannerUploader.getUrl()}
-          errorMessage={bannerUploader.errorMessage()}
-          isLoading={bannerUploader.isLoading()}
         />
       </Box>
 

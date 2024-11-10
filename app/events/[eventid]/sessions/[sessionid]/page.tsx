@@ -1971,7 +1971,10 @@ const Home = () => {
       </Stack>
       {session && (
         <Stack
-          sx={{ color: 'white' }}
+          sx={{
+            color: 'white',
+            [theme.breakpoints.down('sm')]: { padding: '20px 10px' },
+          }}
           padding="20px"
           bgcolor="#222222"
           height="auto"
@@ -1981,7 +1984,14 @@ const Home = () => {
             gap="20px"
             justifyContent="center"
           >
-            <Stack gap="20px">
+            <Stack
+              gap="20px"
+              sx={{
+                [theme.breakpoints.down('sm')]: {
+                  gap: '10px',
+                },
+              }}
+            >
               {session.creatorDID === adminId && (
                 <Stack
                   padding="10px"
@@ -1992,6 +2002,13 @@ const Home = () => {
                   width="100%"
                   border="1px solid rgba(255, 199, 125, .1)"
                   borderRadius={'8px'}
+                  sx={{
+                    [theme.breakpoints.down('sm')]: {
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                    },
+                  }}
                 >
                   <Typography
                     fontSize={'14px'}
@@ -2160,7 +2177,7 @@ const Home = () => {
                             color="white"
                             sx={{ opacity: 0.5 }}
                           >
-                            {session.video_url}
+                            {session.video_url?.slice(0, 10)}
                           </Typography>
                         </Link>
                       ) : (
@@ -2217,7 +2234,7 @@ const Home = () => {
                           rel="noopener noreferrer"
                           sx={{ textDecoration: 'underline', color: '#fff' }}
                         >
-                          {session.liveStreamLink}
+                          {session.liveStreamLink.slice(0, 20) + '...'}
                         </Typography>
                       </Stack>
                     </Stack>
@@ -2236,7 +2253,7 @@ const Home = () => {
                           rel="noopener noreferrer"
                           sx={{ textDecoration: 'underline', color: '#fff' }}
                         >
-                          {session.recording_link}
+                          {session.recording_link.slice(0, 20) + '...'}
                         </Typography>
                       </Stack>
                     </Stack>

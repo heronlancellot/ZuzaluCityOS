@@ -34,13 +34,6 @@ export type TicketCardProps = {
 };
 
 const TicketCard: React.FC<TicketCardProps> = ({
-  // name,
-  // price,
-  // open,
-  // status,
-  // sold,
-  // tokenSymbol,
-  // address,
   ticket,
   index,
   ticketAddresses,
@@ -96,15 +89,16 @@ const TicketCard: React.FC<TicketCardProps> = ({
         height={100}
         objectFit="cover"
         style={{
-          width: isMobile ? '100%' : undefined,
-          height: isMobile ? '100%' : undefined,
+          width: isMobile ? '100%' : '100px',
+          height: isMobile ? '100%' : '100px',
         }}
       />
       <Stack direction="column" spacing="14px" width="100%">
         <Stack
           direction="row"
-          alignItems="center"
+          alignItems="baseline"
           justifyContent="space-between"
+          gap="20px"
         >
           <Stack
             gap="10px"
@@ -114,28 +108,40 @@ const TicketCard: React.FC<TicketCardProps> = ({
             <Typography fontSize={24} fontWeight={700} lineHeight={1.2}>
               {ticket[0]?.result}
             </Typography>
-            <Stack direction="row" alignItems="center" spacing="5px">
-              <Typography
-                fontSize={16}
-                fontWeight={700}
-                lineHeight={1.2}
-                sx={{ opacity: 0.7 }}
-              >
-                {(ticket[3].result / BigInt(10 ** decimal)).toString()}{' '}
-              </Typography>
-              <Typography fontSize={10} lineHeight={1.2} sx={{ opacity: 0.7 }}>
-                {ticket[2]?.result === mUSDC_TOKEN ? 'USDC' : 'USDT'}
-              </Typography>
+          </Stack>
+          <Stack spacing="5px" alignItems="center" direction="row">
+            <Stack alignItems="center" direction="row" spacing="10px">
+              <Stack direction="row" alignItems="center" spacing="5px">
+                <Typography
+                  fontSize={16}
+                  fontWeight={700}
+                  lineHeight={1.2}
+                  sx={{ opacity: 0.7 }}
+                >
+                  {(ticket[3].result / BigInt(10 ** decimal)).toString()}{' '}
+                </Typography>
+                <Typography
+                  fontSize={10}
+                  lineHeight={1.2}
+                  sx={{ opacity: 0.7 }}
+                >
+                  {ticket[2]?.result === mUSDC_TOKEN ? 'USDC' : 'USDT'}
+                </Typography>
+              </Stack>
+              {isChecked && (
+                <Stack alignItems="center" direction="row">
+                  <CheckIcon size={4} />
+                  <Typography
+                    fontSize={10}
+                    lineHeight={1.2}
+                    sx={{ opacity: 0.7, whiteSpace: 'nowrap' }}
+                  >
+                    CHECK-IN ENABLED
+                  </Typography>
+                </Stack>
+              )}
             </Stack>
           </Stack>
-          {isChecked && (
-            <Stack spacing="5px" alignItems="center" direction="row">
-              <CheckIcon size={4} />
-              <Typography fontSize={10} lineHeight={1.2} sx={{ opacity: 0.7 }}>
-                CHECK-IN ENABLED
-              </Typography>
-            </Stack>
-          )}
         </Stack>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}

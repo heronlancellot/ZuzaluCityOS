@@ -61,6 +61,7 @@ const Home = () => {
                   space {
                     avatar
                     name
+                    id
                   }
                   regAndAccess(first: 1) {
                     edges {

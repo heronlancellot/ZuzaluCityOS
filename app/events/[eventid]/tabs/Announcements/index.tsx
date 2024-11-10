@@ -309,7 +309,7 @@ const Announcements: React.FC<IAbout> = ({ eventData, setVerify, canEdit }) => {
       bgcolor="#222222"
       sx={{
         [breakpoints.down('sm')]: {
-          padding: '20px',
+          padding: '20px 10px',
         },
       }}
     >
