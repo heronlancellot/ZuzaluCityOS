@@ -26,7 +26,7 @@ export default function CalendarView({
         fixedWeekCount={false}
         dayMaxEvents={4}
         aspectRatio={2}
-        eventClick={(info) => {
+        eventClick={(info: any) => {
           const eventId = info.event.id;
           onEventClick?.(eventId);
         }}

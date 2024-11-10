@@ -263,6 +263,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         const rule = new RRule({
           freq: RRule.WEEKLY,
           byweekday: byweekday,
+          dtstart: dayjs().utc().startOf('day').toDate(),
         });
 
         rruleString = rule.toString();
@@ -270,6 +271,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         const rule = new RRule({
           freq: RRule.MONTHLY,
           bymonthday: monthdays,
+          dtstart: dayjs().utc().startOf('day').toDate(),
         });
 
         rruleString = rule.toString();

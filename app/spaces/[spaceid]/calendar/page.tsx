@@ -19,6 +19,7 @@ import CalendarConfigForm from './components/CalendarConfigForm';
 import { supabase } from '@/utils/supabase/client';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import { RRule, rrulestr } from 'rrule';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -81,20 +82,67 @@ const Calendar = () => {
 
   const filteredEventsData = useMemo(() => {
     if (!eventsData) return [];
-    const data = eventsData.map((event: any) => {
-      const { start_date, end_date, timezone, id, category, name } = event;
-      return {
+
+    const currentMonthStart = dayjs().startOf('month');
+    const currentMonthEnd = dayjs().endOf('month');
+
+    const processedEvents = eventsData.flatMap((event: any) => {
+      const { start_date, end_date, timezone, id, category, name, recurring } = event;
+      
+      const originalStartTime = dayjs(start_date);
+      const originalEndTime = dayjs(end_date);
+      const eventDuration = originalEndTime.diff(originalStartTime);
+      
+      const baseEvent = {
         title: name,
-        start: dayjs.tz(dayjs(start_date), timezone).toISOString(),
-        end: dayjs.tz(dayjs(end_date), timezone).toISOString(),
+        start: dayjs.tz(originalStartTime, timezone).toISOString(),
+        end: dayjs.tz(originalEndTime, timezone).toISOString(),
         id,
         category: category.split(','),
+        originalEvent: event,
       };
+
+      if (!recurring) {
+        return [baseEvent];
+      }
+
+      try {
+        const rule = rrulestr(recurring);
+        const dates = rule.between(
+          currentMonthStart.toDate(),
+          currentMonthEnd.toDate(),
+          true,
+        );
+
+        return dates.map((date, index) => {
+          const recurDate = dayjs(date);
+          
+          const eventStart = recurDate
+            .hour(originalStartTime.hour())
+            .minute(originalStartTime.minute())
+            .second(originalStartTime.second());
+          
+          const eventEnd = eventStart.add(eventDuration, 'millisecond');
+
+          return {
+            ...baseEvent,
+            id: `${id}_${index}`,
+            start: eventStart.tz(timezone).toISOString(),
+            end: eventEnd.tz(timezone).toISOString(),
+            isRecurring: true,
+            recurringId: id,
+          };
+        });
+      } catch (error) {
+        console.error('Error processing recurring event:', error);
+        return [baseEvent];
+      }
     });
+
     if (currentCategory === 'All') {
-      return data;
+      return processedEvents;
     }
-    return data.filter((event: any) =>
+    return processedEvents.filter((event: any) =>
       event.category.includes(currentCategory),
     );
   }, [eventsData, currentCategory]);
@@ -129,8 +177,9 @@ const Calendar = () => {
     (id: any) => {
       toggleDrawer();
       setType('view');
+      const eventId = id.toString().split('_')[0];
       eventsData?.forEach((event: any) => {
-        if (event.id === Number(id)) {
+        if (event.id === Number(eventId)) {
           setCurrentEvent(event);
         }
       });
