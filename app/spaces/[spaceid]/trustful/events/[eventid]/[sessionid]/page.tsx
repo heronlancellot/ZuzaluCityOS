@@ -148,8 +148,8 @@ const TrustfulPageSessionId = () => {
             padding: '20px',
           }}
         >
-          <CardSessionDetails />
           <DropdownSessionDetails />
+          <CardSessionDetails />
         </Box>
       </Stack>
     </Stack>
