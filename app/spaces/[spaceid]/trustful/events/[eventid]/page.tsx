@@ -9,8 +9,9 @@ import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
-import { DropdownMenuAdminSession } from './components/DropdownMenuAdminSession';
+import { DropdownEventSelected } from './components/DropdownEventSelected';
 import { CardEventDetails } from './components/CardEventDetails';
+import { CardSession } from './components/CardSession';
 
 const TrustfulPageEventId = () => {
   const params = useParams();
@@ -146,8 +147,9 @@ const TrustfulPageEventId = () => {
             padding: '20px',
           }}
         >
-          <DropdownMenuAdminSession />
+          <DropdownEventSelected />
           <CardEventDetails />
+          <CardSession />
         </Box>
       </Stack>
     </Stack>

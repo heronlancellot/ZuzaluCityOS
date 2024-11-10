@@ -12,40 +12,50 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { BeatLoader } from 'react-spinners';
-import { isAddress } from 'viem';
+import { Address, isAddress } from 'viem';
 import { useAccount } from 'wagmi';
 import {
   CYPHERHOUSE_SPACEID,
   Role,
   ROLES,
-  spaceIdValue,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
 import toast from 'react-hot-toast';
 import {
-  EVENT_ACTION,
-  EVENT_OPTIONS,
+  SESSION_ACTION,
+  SESSION_OPTIONS,
 } from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
+import { createSession } from '@/app/spaces/[spaceid]/trustful/service/backend/';
+import { Event } from '../../../service/backend/getEventById';
+import { useParams } from 'next/navigation';
+import { getAllEvents } from '../../../service/backend/getAllEvents';
+import { createSessionSC } from '@/app/spaces/[spaceid]/trustful/service/smart-contract';
 
-import { createEvents } from '../../service/backend/createEvents';
-
-export const DropdownMenuAdminEvents = () => {
-  const { address } = useAccount();
+export const DropdownEventSelected = () => {
+  const { address, chainId } = useAccount();
   const { userRole } = useTrustful();
   const [role, setRole] = useState<ROLES | null>(null);
   const [inputAddress, setInputAddress] = useState<string>('');
   const [validAddress, setValidAddress] = useState<EthereumAddress | null>(
     null,
   );
-  const [eventAction, setEventAction] = useState<EVENT_ACTION | null>(null);
+  const [sessionAction, setSessionAction] =
+    useState<SESSION_ACTION.CREATE_SESSION | null>(null);
   const [isloading, setIsLoading] = useState<boolean>(false);
 
   const [inputValuesTextArea, setInputValuesTextArea] = useState<{
     [key: string]: string;
   }>({});
+  const [inputValuesChange, setInputValuesChange] = useState<{
+    [key: string]: string;
+  }>({});
+  const [events, setEvents] = useState<Event[] | undefined>([]);
+  const params = useParams();
+  const spaceId = params.spaceid.toString();
+  const eventId = params.eventid.toString();
 
-  /* Updates the validAddress when the inputAddress changes */
+  // Updates the validAddress when the inputAddress changes
   useEffect(() => {
     if (inputAddress && isAddress(inputAddress)) {
       setValidAddress(new EthereumAddress(inputAddress));
@@ -58,14 +68,33 @@ export const DropdownMenuAdminEvents = () => {
 
   useEffect(() => {
     setRole(null);
-  }, [eventAction]);
+  }, [sessionAction]);
 
   useEffect(() => {
     console.log('inputValuesTextArea', inputValuesTextArea);
   }, [inputValuesTextArea]);
 
-  /** EVENT */
-  const handleCreateEvent = async () => {
+  useEffect(() => {
+    console.log('inputValuesChange', inputValuesChange);
+  }, [inputValuesChange]);
+
+  useEffect(() => {
+    const fetchAllEvents = async () => {
+      try {
+        const eventsData = await getAllEvents({
+          spaceId: Number(spaceId),
+          userAddress: address as Address,
+        });
+        setEvents(eventsData);
+      } catch (error) {
+        console.log('error', error);
+      }
+    };
+    fetchAllEvents();
+  }, []);
+
+  /** VILLAGER - Create Session */
+  const handleCreateSession = async () => {
     if (!address) {
       setIsLoading(false);
       toast.error('Please connect first. No address found.');
@@ -73,19 +102,31 @@ export const DropdownMenuAdminEvents = () => {
     }
     if (!userRole || userRole.role == Role.NO_ROLE) {
       setIsLoading(false);
-      toast.error('Please connect first. No userRole found.');
+      toast.error('Please connect first. No role found.');
       return;
     }
 
-    const response = await createEvents({
-      name: inputValuesTextArea['createEventName'],
-      description: inputValuesTextArea['createEventDescription'],
-      spaceId: spaceIdValue,
-      zucityId: CYPHERHOUSE_SPACEID,
-      user: userRole,
+    const timeNow = Date.now();
+    const sessionTitle =
+      inputValuesTextArea['createSessionName'] + '_' + timeNow;
+
+    const oneDayInSeconds = BigInt(86400);
+
+    /*Create Session in Smart Contract */
+    const smartContractCreateSession = await createSessionSC({
+      from: address as Address,
+      sessionTitle: sessionTitle,
+      duration: oneDayInSeconds,
+      msgValue: BigInt(0),
     });
 
-    console.log('response CreateEvents', response);
+    /*Create Session in Backend */
+    const response = await createSession({
+      name: inputValuesTextArea['createSessionName'],
+      eventId: Number(eventId),
+      zucityId: CYPHERHOUSE_SPACEID,
+      hostAddress: address as Address,
+    });
 
     if (response instanceof Error) {
       setIsLoading(false);
@@ -116,69 +157,46 @@ export const DropdownMenuAdminEvents = () => {
   };
 
   const handleActionSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    let selectOptions = EVENT_OPTIONS;
-    selectOptions.filter((option) => {
+    let selectOptions = SESSION_OPTIONS.filter((option) => {
+      return option.action === SESSION_ACTION.CREATE_SESSION;
+    });
+    selectOptions.forEach((option) => {
       if (event.target.value === '') {
-        setEventAction(null);
-      }
-      if (event.target.value === option.action) {
-        setEventAction(option.action);
+        setSessionAction(null);
+      } else if (event.target.value === option.action) {
+        setSessionAction(option.action as SESSION_ACTION.CREATE_SESSION);
       }
     });
   };
 
-  const handleCreateEventValidation = async () => {
-    !inputValuesTextArea['createEventDescription'] &&
-      toast.error('Please enter a valid description');
-    !inputValuesTextArea['createEventName'] &&
-      toast.error('Please enter a valid name');
-    setIsLoading(true);
-    await handleCreateEvent();
-  };
-
-  const renderEventAction: Record<EVENT_ACTION, React.JSX.Element> = {
-    [EVENT_ACTION.CREATE_EVENT]: (
+  /*
+   * Renders the appropriate admin action component based on the provided ADMIN_ACTION.
+   */
+  const renderSessionAction: Record<
+    SESSION_ACTION.CREATE_SESSION,
+    React.JSX.Element
+  > = {
+    [SESSION_ACTION.CREATE_SESSION]: (
       <Card
         background={'#F5FFFF0D'}
         className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
       >
         <Flex className="w-full flex-col">
           <Flex className="gap-4 pb-4 justify-start items-center">
-            <Text className="text-white">Name:</Text>
             <Textarea
-              className="text-white"
+              style={{ color: 'black' }}
+              className="text-black text-base font-normal leading-snug"
               color="white"
-              placeholder="Name..."
+              placeholder="Set the Session Name..."
               _placeholder={{
-                className: 'text-white',
+                className: 'text-black',
               }}
               focusBorderColor={'#B1EF42'}
-              value={inputValuesTextArea['createEventName'] || ''}
-              name="createEventName"
+              value={inputValuesTextArea['createSessionName'] || ''}
+              name="createSessionName"
               onChange={handleInputValuesTextareaChange}
               rows={
-                (inputValuesTextArea['createEventName'] || '').length > 50
-                  ? 3
-                  : 1
-              }
-              minH="unset"
-              resize="none"
-            />
-            <Text className="text-white">Description:</Text>
-            <Textarea
-              className=" text-base font-normal leading-snug"
-              color="white"
-              placeholder="Description..."
-              _placeholder={{
-                className: 'text-white',
-              }}
-              focusBorderColor={'#B1EF42'}
-              value={inputValuesTextArea['createEventDescription'] || ''}
-              name="createEventDescription"
-              onChange={handleInputValuesTextareaChange}
-              rows={
-                (inputValuesTextArea['createEventDescription'] || '').length >
-                50
+                (inputValuesTextArea['createSessionName'] || '').length > 50
                   ? 3
                   : 1
               }
@@ -191,23 +209,25 @@ export const DropdownMenuAdminEvents = () => {
               <Text className="flex min-w-[80px] text-white opacity-70 text-sm font-normal leading-tight">
                 &#x26A0;WARNING&#x26A0;
                 <br />
-                {`This will create the event from the contract and the user will not be able to create another until this session be finished.`}
+                {`This will create the session from the contract and the user will not be able to create another until this session be finished.`}
                 <br />
                 {`Are you sure you want to proceed?`}
               </Text>
             </Flex>
           </Box>
           <Button
-            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!inputValuesTextArea['createEventDescription'] || !inputValuesTextArea['createEventName'] ? 'cursor-not-allowed opacity-10' : ''}`}
+            className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!inputValuesTextArea['createSessionName'] ? 'cursor-not-allowed opacity-10' : ''}`}
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
             isLoading={isloading}
-            isDisabled={
-              !inputValuesTextArea['createEventDescription'] ||
-              !inputValuesTextArea['createEventName']
-            }
+            isDisabled={!inputValuesTextArea['createSessionName']}
             spinner={<BeatLoader size={8} color="white" />}
-            onClick={handleCreateEventValidation}
+            onClick={() => {
+              !inputValuesTextArea['createSessionName'] &&
+                toast.error('Please enter a valid Session Name');
+              setIsLoading(true);
+              handleCreateSession();
+            }}
           >
             <CheckIcon className="w-[16px] h-[16px]" />
             Confirm
@@ -225,24 +245,21 @@ export const DropdownMenuAdminEvents = () => {
             background={'#F5FFFF0D'}
             className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
           >
-            <Text className="text-slate-50 mb-2 text-sm font-medium leading-none">
+            <Text className="text-white mb-2 font-medium leading-none">
               Select a function
             </Text>
             {userRole.role === Role.ROOT || userRole.role === Role.MANAGER ? (
               <Select
                 placeholder="Select option"
-                className="flex opacity-70 font-normal leading-tight"
+                className="flex text-black opacity-70 font-normal leading-tight"
                 color="white"
                 onChange={handleActionSelectChange}
                 focusBorderColor={'#B1EF42'}
-                style={{ color: 'white' }}
               >
-                {EVENT_OPTIONS.map((event, index) => (
-                  <option
-                    key={index}
-                    value={event.action}
-                    style={{ color: 'black' }}
-                  >
+                {SESSION_OPTIONS.filter(
+                  (option) => option.action == SESSION_ACTION.CREATE_SESSION,
+                ).map((event, index) => (
+                  <option key={index} value={event.action}>
                     {event.action}
                   </option>
                 ))}
@@ -251,7 +268,7 @@ export const DropdownMenuAdminEvents = () => {
               toast.error('No role found')
             )}
           </Card>
-          {eventAction && renderEventAction[eventAction]}
+          {sessionAction && renderSessionAction[sessionAction]}
         </>
       ) : (
         <Box flex={1} className="flex justify-center items-center">

@@ -1,11 +1,10 @@
 import { getWalletClient } from '@wagmi/core';
 import { Address, encodeFunctionData, type TransactionReceipt } from 'viem';
 import { sendTransaction } from 'viem/actions';
-
 import { client, config } from '@/context/WalletContext';
 import { RESOLVER_CONTRACT_SCROLL_TRUSTFUL } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
-export async function createSession({
+export async function createSessionSC({
   from,
   sessionTitle,
   duration,

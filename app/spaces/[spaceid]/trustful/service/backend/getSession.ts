@@ -1,7 +1,7 @@
 import toast from 'react-hot-toast';
 import { Address } from 'viem';
 
-type Session = {
+export type Session = {
   name: string;
   sessionId: number;
   createdAt: Date;
@@ -20,7 +20,7 @@ export interface GetSessionResponse {
 }
 
 interface getSessionRequest {
-  userAddress: Address;
+  userAddress?: Address;
   eventid: number;
   page?: number;
   limit?: number;
@@ -34,6 +34,7 @@ interface getSessionRequest {
 /**
  *
  * The hostAddress must be in LowerCase
+ * Page & Limit are not optional
  */
 export const getSession = async ({
   userAddress,
@@ -47,7 +48,7 @@ export const getSession = async ({
       page: page.toString(),
       limit: limit.toString(),
       eventId: eventid.toString(),
-      hostAddress: userAddress.toLowerCase(),
+      hostAddress: userAddress ? userAddress.toLowerCase() : '',
     });
 
     if (filters) {

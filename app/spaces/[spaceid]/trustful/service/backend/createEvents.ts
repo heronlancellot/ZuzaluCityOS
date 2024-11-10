@@ -4,7 +4,7 @@ import { Address } from 'viem';
 
 interface createEventResponse {
   eventId: number;
-  zucityId: number | null;
+  zucityId?: string;
   name: string;
   description: string;
   spaceId: number;
@@ -22,7 +22,7 @@ interface createEventsRequest {
   name: string;
   description: string;
   spaceId: number;
-  zucityId?: number | null;
+  zucityId?: string;
 }
 
 export const createEvents = async ({

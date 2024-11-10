@@ -155,45 +155,6 @@ export const TrustfulContextProvider: React.FC<
     }
   }, [address, newTitleAdded, addressStep]);
 
-  const handleBadgeDropdown = async () => {
-    if (!address) {
-      toast.error('No account connected. Please connect your wallet.');
-      return;
-    }
-
-    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
-      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
-      return;
-    }
-
-    const filteredBadges: string[] | Error = await getAllAttestationTitles();
-
-    console.log('filteredBadges', filteredBadges);
-    if (filteredBadges instanceof Error || !filteredBadges) {
-      toast.error(
-        'Error Read Contract.Error while reading badge titles from the blockchain.',
-      );
-      return;
-    }
-
-    if (userRole?.role === Role.ROOT || userRole?.role === Role.MANAGER) {
-      filteredBadges.push('Manager');
-    }
-
-    if (userRole?.address === TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.allowedRole[0]) {
-      filteredBadges.push('Check-in');
-      filteredBadges.push('Check-out');
-    }
-
-    await Promise.all(filteredBadges);
-    console.log('filteredBadges2', filteredBadges);
-
-    setInputBadgeTitleList(filteredBadges.sort());
-  };
-
   useEffect(() => {
     const fetchUserRoleByContract = async () => {
       const isRoot = await hasRole(ROLES.ROOT, address as Address);
@@ -242,6 +203,43 @@ export const TrustfulContextProvider: React.FC<
 
     fetchUserRole();
   }, [address, chainId]);
+
+  const handleBadgeDropdown = async () => {
+    if (!address) {
+      toast.error('No account connected. Please connect your wallet.');
+      return;
+    }
+
+    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
+      toast.error(
+        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
+      );
+      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
+      return;
+    }
+
+    const filteredBadges: string[] | Error = await getAllAttestationTitles();
+
+    if (filteredBadges instanceof Error || !filteredBadges) {
+      toast.error(
+        'Error Read Contract.Error while reading badge titles from the blockchain.',
+      );
+      return;
+    }
+
+    if (userRole?.role === Role.ROOT || userRole?.role === Role.MANAGER) {
+      filteredBadges.push('Manager');
+    }
+
+    if (userRole?.address === TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.allowedRole[0]) {
+      filteredBadges.push('Check-in');
+      filteredBadges.push('Check-out');
+    }
+
+    await Promise.all(filteredBadges);
+
+    setInputBadgeTitleList(filteredBadges.sort());
+  };
 
   return (
     <TrustfulContext.Provider value={TrustfulContextData}>

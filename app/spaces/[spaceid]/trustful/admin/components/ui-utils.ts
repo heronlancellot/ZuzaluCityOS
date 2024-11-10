@@ -74,9 +74,6 @@ export const ADMIN_OPTIONS: AdminActions[] = [
     action: ADMIN_ACTION.GRANT_ROLE,
   },
   {
-    action: ADMIN_ACTION.REVOKE_ROLE,
-  },
-  {
     action: ADMIN_ACTION.SET_SCHEMA,
   },
   {
@@ -85,7 +82,7 @@ export const ADMIN_OPTIONS: AdminActions[] = [
   ...MANAGER_OPTIONS,
 ];
 
-// SESSIONS ACTIONS
+// EVENT ACTIONS
 export enum EVENT_ACTION {
   CREATE_EVENT = 'Create event',
 }
@@ -124,5 +121,28 @@ export const SESSION_OPTIONS: SessionActions[] = [
   },
   {
     action: SESSION_ACTION.REMOVE_SESSION,
+  },
+];
+
+// SESSIONS ACTIONS
+export enum SESSION_DETAILS_ACTION {
+  REMOVE_SESSION = 'Remove session',
+  JOIN_SESSION = 'Join session',
+  WRAP_SESSION = 'Wrap session',
+}
+
+export interface SessionDetailsActions {
+  action: SESSION_DETAILS_ACTION;
+}
+
+export const SESSION_DETAILS_OPTIONS: SessionDetailsActions[] = [
+  {
+    action: SESSION_DETAILS_ACTION.JOIN_SESSION,
+  },
+  {
+    action: SESSION_DETAILS_ACTION.WRAP_SESSION,
+  },
+  {
+    action: SESSION_DETAILS_ACTION.REMOVE_SESSION,
   },
 ];
