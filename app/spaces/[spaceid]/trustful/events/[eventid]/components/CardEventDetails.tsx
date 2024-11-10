@@ -32,7 +32,6 @@ export const CardEventDetails = () => {
         if (eventsData) {
           setEventDetails(eventsData);
         }
-        console.log('eventsData', eventsData);
       } catch (error) {
         console.log('error', error);
       }

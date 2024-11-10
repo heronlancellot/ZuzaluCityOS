@@ -64,20 +64,8 @@ export const DropdownSessionDetails = () => {
   }, [inputAddress]);
 
   useEffect(() => {
-    console.log('userRole', userRole);
-  }, [userRole]);
-
-  useEffect(() => {
     setRole(null);
   }, [sessionAction]);
-
-  useEffect(() => {
-    console.log('inputValuesTextArea', inputValuesTextArea);
-  }, [inputValuesTextArea]);
-
-  useEffect(() => {
-    console.log('inputValuesChange', inputValuesChange);
-  }, [inputValuesChange]);
 
   useEffect(() => {
     const fetchAllEvents = async () => {
@@ -114,15 +102,12 @@ export const DropdownSessionDetails = () => {
       sessionOwner: validAddress.address as Address,
       msgValue: BigInt(0),
     });
-    console.log('responseSmartContract', responseSmartContract);
 
     const responseBackend = await deleteSession({
       role: userRole.role,
       sessionId: Number(sessionId),
       userAddress: validAddress.address as Address,
     });
-
-    console.log('responseBackend', responseBackend);
 
     setIsLoading(false);
     // toast.success(
@@ -143,8 +128,6 @@ export const DropdownSessionDetails = () => {
       sessionId: Number(sessionId),
       userAddress: address as Address,
     });
-
-    console.log('response join-session', response);
 
     if (response instanceof Error) {
       setIsLoading(false);
@@ -169,8 +152,6 @@ export const DropdownSessionDetails = () => {
       sessionId: Number(sessionId),
       userAddress: address as Address,
     });
-
-    console.log('response join-session', response);
 
     if (response instanceof Error) {
       setIsLoading(false);

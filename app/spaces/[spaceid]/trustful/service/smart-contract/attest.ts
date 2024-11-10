@@ -103,7 +103,6 @@ export async function submitAttest(
 
     return transactionReceipt;
   } catch (error) {
-    console.log('Error sending transaction: ', error);
     return Error('Error sending transaction.');
   }
 }

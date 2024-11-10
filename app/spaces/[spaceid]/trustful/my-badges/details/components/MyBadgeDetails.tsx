@@ -61,11 +61,9 @@ export const MyBadgeDetails = () => {
       push('/pre-checkin');
     }
     if (selectedBadge) {
-      console.log('selectedBadge', selectedBadge);
       setBadgeStatus(selectedBadge?.status);
       setAttestResponseId(selectedBadge?.responseId);
     } else {
-      console.log('not selected badge');
       push(`${actualURL}`);
     }
   }, [villagerAttestationCount]);
@@ -118,7 +116,6 @@ export const MyBadgeDetails = () => {
       return;
     }
     if (selectedBadge) {
-      console.log('selectedBadge11', selectedBadge);
       selectedBadge.revoked = true;
       setSelectedBadge(selectedBadge);
     }
@@ -169,7 +166,6 @@ export const MyBadgeDetails = () => {
       TRUSTFUL_SCHEMAS.ATTEST_RESPONSE.uid,
       attestationRequestData,
     );
-    console.log('response', response);
     processAttestationResponse(response, isConfirm);
     // fetchAttestationResponse();
   };

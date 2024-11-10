@@ -35,7 +35,6 @@ export const getEventById = async ({
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data: Event = await response.json();
-    console.log('data GetALlEvents', data);
 
     return data;
   } catch (error) {

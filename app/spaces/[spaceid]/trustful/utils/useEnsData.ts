@@ -26,7 +26,6 @@ export const useEnsData = ({ ensAddress }: Props) => {
       return;
     }
 
-    console.log('ensAddress', ensAddress);
     const name = await client.getEnsName({
       address: ensAddress?.address,
     });

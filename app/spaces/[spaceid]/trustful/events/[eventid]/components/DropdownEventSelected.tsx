@@ -63,20 +63,8 @@ export const DropdownEventSelected = () => {
   }, [inputAddress]);
 
   useEffect(() => {
-    console.log('userRole', userRole);
-  }, [userRole]);
-
-  useEffect(() => {
     setRole(null);
   }, [sessionAction]);
-
-  useEffect(() => {
-    console.log('inputValuesTextArea', inputValuesTextArea);
-  }, [inputValuesTextArea]);
-
-  useEffect(() => {
-    console.log('inputValuesChange', inputValuesChange);
-  }, [inputValuesChange]);
 
   useEffect(() => {
     const fetchAllEvents = async () => {

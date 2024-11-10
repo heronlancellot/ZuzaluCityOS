@@ -16,7 +16,6 @@ import { CardSession } from './components/CardSession';
 const TrustfulPageEventId = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
-  console.log('params', params);
 
   const [space, setSpace] = useState<Space>();
   const [events, setEvents] = useState<Event[]>([]);

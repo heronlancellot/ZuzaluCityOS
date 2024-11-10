@@ -58,8 +58,6 @@ export const CardEvents = () => {
     fetchEventsWithSessions();
   }, [address, spaceId]); // TODO: Adicionar dependências aqui conforme necessário
 
-  console.log('events', events);
-
   return (
     <>
       {events && events.length > 0 ? (

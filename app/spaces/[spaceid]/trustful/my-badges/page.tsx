@@ -15,7 +15,6 @@ import { MyBadgeSection } from './components/MyBadgeSection';
 const TrustfulPage = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
-  console.log('params', params);
 
   const [space, setSpace] = useState<Space>();
   const [events, setEvents] = useState<Event[]>([]);
