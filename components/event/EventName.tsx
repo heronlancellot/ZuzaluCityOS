@@ -1,7 +1,17 @@
 import * as React from 'react';
-import { Box, Stack, Typography, useTheme, useMediaQuery } from '@mui/material';
-import { EventIcon, GroupIcon, MapIcon } from 'components/icons';
+import {
+  Box,
+  Stack,
+  Typography,
+  useTheme,
+  useMediaQuery,
+  IconButton,
+} from '@mui/material';
+import { EventIcon, GroupIcon, MapIcon, ShareIcon } from 'components/icons';
 import { convertDateStringFormat } from '@/utils';
+import useGetShareLink from '@/hooks/useGetShareLink';
+import CopyToClipboard from 'react-copy-to-clipboard';
+import { useToast } from '../toast/ToastContext';
 
 interface PropTypes {
   spaceName?: string;
@@ -15,6 +25,7 @@ interface PropTypes {
   tagline?: string;
   avatar?: string;
   status?: string;
+  eventId: string;
 }
 
 const EventName = ({
@@ -29,19 +40,15 @@ const EventName = ({
   tagline,
   avatar,
   status,
+  eventId,
 }: PropTypes) => {
   const theme = useTheme();
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  function isValidJSON(str: string): boolean {
-    try {
-      JSON.parse(str);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
+  const { showToast } = useToast();
+  const { shareUrl } = useGetShareLink({ id: eventId, name: eventName });
+  const url =
+    shareUrl ||
+    (typeof window !== 'undefined' && `${window.origin}/events/${eventId}`) ||
+    '';
 
   return (
     <Stack spacing="10px">
@@ -49,8 +56,8 @@ const EventName = ({
         <Stack width={'100%'} alignItems={'center'} justifyContent={'center'}>
           <Box
             component="img"
-            width={isMobile ? '350px' : '500px'}
-            height={isMobile ? '350px' : '500px'}
+            width={'200px'}
+            height={'200px'}
             src={imageUrl}
             borderRadius="10px"
             border="1px solid rgba(255, 255, 255, 0.2)"
@@ -61,17 +68,30 @@ const EventName = ({
         sx={{
           padding: '0px 10px 20px 10px',
           [theme.breakpoints.down('sm')]: {
-            padding: '0px 20px',
+            padding: '0',
           },
         }}
         gap={'10px'}
       >
-        <Stack padding={'10px'} gap={'20px'}>
+        <Stack
+          padding={'10px'}
+          gap={'20px'}
+          sx={{
+            [theme.breakpoints.down('sm')]: {
+              gap: '10px',
+            },
+          }}
+        >
           <Stack
             direction={'row'}
             gap={'10px'}
             alignItems={'center'}
-            sx={{ paddingTop: '20px' }}
+            sx={{
+              paddingTop: '20px',
+              [theme.breakpoints.down('sm')]: {
+                paddingTop: 0,
+              },
+            }}
           >
             <Stack direction="row" spacing="5px" alignItems="center">
               <Typography color="rgba(255, 255, 255, 0.80)" variant="caption">
@@ -101,9 +121,25 @@ const EventName = ({
             </Stack>
           </Stack>
           <Stack>
-            <Typography color="white" variant="subtitleLB">
-              {eventName}
-            </Typography>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography color="white" variant="subtitleLB">
+                {eventName}
+              </Typography>
+              <CopyToClipboard
+                text={url}
+                onCopy={() =>
+                  showToast({ message: 'Copy share link to clipboard!' })
+                }
+              >
+                <IconButton>
+                  <ShareIcon />
+                </IconButton>
+              </CopyToClipboard>
+            </Stack>
             <Typography
               color="white"
               variant="bodyM"

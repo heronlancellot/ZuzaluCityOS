@@ -379,6 +379,7 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
                     </Stack> */}
 
             <EventName
+              eventId={eventId}
               tagline={eventData.tagline}
               endTime={eventData.endTime}
               startTime={eventData.startTime}

@@ -141,10 +141,7 @@ const TicketVault = ({
                   accept={['.gif', '.jpeg', '.gif', '.png']}
                   api={'/api/file/upload'}
                   multiple={false}
-                  crop={{
-                    size: { width: 400, height: 400 },
-                    aspectRatio: 1,
-                  }} // must be false when accept is svg
+                  crop={false}
                   onUpload={(file) => {
                     avatarUploader.setFile(file);
                   }}
