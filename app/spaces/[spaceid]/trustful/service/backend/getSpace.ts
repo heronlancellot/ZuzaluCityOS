@@ -1,26 +1,24 @@
-import toast from 'react-hot-toast';
 import { Address } from 'viem';
 
-export type Event = {
-  eventId: number;
+interface Space {
+  spaceId: string | number;
   zucityId: number | null;
   name: string;
   description: string;
-  spaceId: string | number;
+  resolverAddress: Address;
+  userAddress: Address;
   createdAt: Date;
   updatedAt: Date;
-};
+}
 
-export const getAllEvents = async ({
+export const getSpace = async ({
   userAddress,
-  spaceId,
 }: {
-  spaceId: string | number;
   userAddress: Address;
-}): Promise<Event[] | undefined> => {
+}): Promise<Space[] | undefined> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/events/space/${spaceId}`,
+      `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/spaces`,
       {
         method: 'GET',
         headers: {
@@ -29,10 +27,14 @@ export const getAllEvents = async ({
         },
       },
     );
+    console.log(
+      'responseresponseresponseresponseresponseresponseresponseresponse',
+      response,
+    );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data: Event[] = await response.json();
+    const data: Space[] = await response.json();
 
     return data;
   } catch (error) {
