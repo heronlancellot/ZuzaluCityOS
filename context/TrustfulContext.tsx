@@ -84,21 +84,21 @@ interface TrustfulContextType {
 
 const defaultContextValue: TrustfulContextType = {
   userRole: null,
-  setUserRole: () => {},
+  setUserRole: () => { },
 
   /**BadgeContext */
   selectedBadge: null,
-  setSelectedBadge: () => {},
+  setSelectedBadge: () => { },
 
   /**GiveBadgeContext */
   badgeInputAddress: null,
-  setBadgeInputAddress: () => {},
+  setBadgeInputAddress: () => { },
   addressStep: GiveBadgeStepAddress.INSERT_ADDRESS,
-  setAddressStep: () => {},
+  setAddressStep: () => { },
   inputBadgeTitleList: null,
-  setInputBadgeTitleList: () => {},
+  setInputBadgeTitleList: () => { },
   newTitleAdded: false,
-  setNewTitleAdded: () => {},
+  setNewTitleAdded: () => { },
 };
 
 const TrustfulContext = createContext<TrustfulContextType>(defaultContextValue);
@@ -125,6 +125,43 @@ export const TrustfulContextProvider: React.FC<
     string[] | null
   >(null);
   const [newTitleAdded, setNewTitleAdded] = useState<boolean>(false);
+
+  const handleBadgeDropdown = async () => {
+    if (!address) {
+      toast.error('No account connected. Please connect your wallet.');
+      return;
+    }
+
+    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
+      toast.error(
+        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
+      );
+      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
+      return;
+    }
+
+    const filteredBadges: string[] | Error = await getAllAttestationTitles();
+
+    if (filteredBadges instanceof Error || !filteredBadges) {
+      toast.error(
+        'Error Read Contract.Error while reading badge titles from the blockchain.',
+      );
+      return;
+    }
+
+    if (userRole?.role === Role.ROOT || userRole?.role === Role.MANAGER) {
+      filteredBadges.push('Manager');
+    }
+
+    if (userRole?.address === TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.allowedRole[0]) {
+      filteredBadges.push('Check-in');
+      filteredBadges.push('Check-out');
+    }
+
+    await Promise.all(filteredBadges);
+
+    setInputBadgeTitleList(filteredBadges.sort());
+  };
 
   const TrustfulContextData = useMemo(
     () => ({
@@ -154,11 +191,6 @@ export const TrustfulContextProvider: React.FC<
   const { switchChain } = useSwitchChain();
   const { chainId, address } = useAccount();
 
-  useEffect(() => {
-    if (address) {
-      handleBadgeDropdown();
-    }
-  }, [address, newTitleAdded, addressStep]);
 
   useEffect(() => {
     const fetchUserRoleByContract = async () => {
@@ -219,40 +251,16 @@ export const TrustfulContextProvider: React.FC<
   // Badge de Host e Atendee se for o owner da Sessão.
 
   useEffect(() => {
+    handleBadgeDropdown();
+
     const fetchAllEvents = async () => {
       try {
         // TODO: Get all spaces -> armazenar cada spaceId // ja tem só 1
         // TODO: Get all events do space de cada espaco
         // get session passando cada evento e ver se o hostAddress é igual ao address
         const spaces = await getSpace({ userAddress: address as Address });
-        console.log('spacesspaces', spaces);
         const spaceIds = spaces && spaces.map((space) => space.spaceId);
 
-        // const eventsData = await getAllEvents({
-        //   spaceId: spaceIdValue,
-        //   userAddress: address as Address,
-        // });
-
-        // if (eventsData) {
-        //   eventsData.map((event) => {
-        //     event.sessions.forEach((session) => {
-        //       console.log(' session ', session);
-        //       console.log(' session ', event);
-        //       // if (session.hostAddress === address) {
-        //       //   console.log('Host of session:', session.name);
-        //       //   // Add host badge
-        //       //   const hostBadgeTitle = `host_${session.name}`;
-        //       //   const attendeeBadgeTitle = `attendee_${session.name}`;
-        //       //   setInputBadgeTitleList((prevList) => {
-        //       //     const newList = prevList ? [...prevList] : [];
-        //       //     newList.push(hostBadgeTitle, attendeeBadgeTitle);
-        //       //     return newList;
-        //       //   });
-        //       // }
-        //     });
-        //   });
-        // }
-        console.log('spaceIds', spaceIds);
         if (spaceIds) {
           for (const spaceId of spaceIds) {
             console.log('spaceId', spaceId);
@@ -271,40 +279,18 @@ export const TrustfulContextProvider: React.FC<
                 console.log('sessionssessionssessionssessions', sessions);
                 if (sessions) {
                   sessions.sessions.forEach((session) => {
-                    console.log(' session44444 ', session.hostAddress);
-                    console.log(' lolol ', event);
-                    console.log('address', address);
                     if (
                       address &&
                       session.hostAddress &&
-                      session.hostAddress.toLowerCase() == address.toLowerCase()
+                      session.hostAddress.toLowerCase() == address?.toLowerCase()
                     ) {
-                      console.log('Host of session:', session.name);
                       // Add host badge
                       const hostBadgeTitle = `host_${session.name}`;
                       const attendeeBadgeTitle = `attendee_${session.name}`;
-                      setInputBadgeTitleList((prevList) => {
-                        const newList = prevList ? [...prevList] : [];
-                        newList.push(hostBadgeTitle, attendeeBadgeTitle);
-                        return newList;
-                      });
+                      setInputBadgeTitleList((prevList) => [...(prevList || []), hostBadgeTitle, attendeeBadgeTitle])
                     }
                   });
                 }
-                console.log('eachevent', event);
-                // event.sessions.forEach((session) => {
-                //   if (session.hostAddress === address) {
-                //     console.log('Host of session:', session.name);
-                //     // Add host badge
-                //     const hostBadgeTitle = `host_${session.name}`;
-                //     const attendeeBadgeTitle = `attendee_${session.name}`;
-                //     setInputBadgeTitleList((prevList) => {
-                //       const newList = prevList ? [...prevList] : [];
-                //       newList.push(hostBadgeTitle, attendeeBadgeTitle);
-                //       return newList;
-                //     });
-                //   }
-                // });
               });
             }
           }
@@ -313,70 +299,8 @@ export const TrustfulContextProvider: React.FC<
         console.log('error', error);
       }
     };
-    fetchAllEvents();
-  }, [address]);
-
-  // useEffect(() => {
-  //   const fetchAllEvents = async () => {
-  //     try {
-  //       const allEventSessionsData = await getSession({
-  //         eventid: Number(eventid),
-  //         userAddress: address as Address,
-  //       });
-  //       console.log('allEventSessionsData', allEventSessionsData);
-
-  //       if (allEventSessionsData && allEventSessionsData.sessions.length > 0) {
-  //         const titles = allEventSessionsData.sessions.map(
-  //           (session) => session.name,
-  //         );
-  //         // const newBadge:Badge = {
-  //         //   attester
-  //         // }
-  //         // setSessions([allEventSessionsData]);
-  //       }
-  //     } catch (error) {
-  //       console.log('error', error);
-  //     }
-  //   };
-  //   fetchAllEvents();
-  // }, [address]);
-
-  const handleBadgeDropdown = async () => {
-    if (!address) {
-      toast.error('No account connected. Please connect your wallet.');
-      return;
-    }
-
-    if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
-      switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
-      return;
-    }
-
-    const filteredBadges: string[] | Error = await getAllAttestationTitles();
-
-    if (filteredBadges instanceof Error || !filteredBadges) {
-      toast.error(
-        'Error Read Contract.Error while reading badge titles from the blockchain.',
-      );
-      return;
-    }
-
-    if (userRole?.role === Role.ROOT || userRole?.role === Role.MANAGER) {
-      filteredBadges.push('Manager');
-    }
-
-    if (userRole?.address === TRUSTFUL_SCHEMAS.ATTEST_VILLAGER.allowedRole[0]) {
-      filteredBadges.push('Check-in');
-      filteredBadges.push('Check-out');
-    }
-
-    await Promise.all(filteredBadges);
-
-    setInputBadgeTitleList(filteredBadges.sort());
-  };
+    fetchAllEvents()
+  }, [address])
 
   return (
     <TrustfulContext.Provider value={TrustfulContextData}>
