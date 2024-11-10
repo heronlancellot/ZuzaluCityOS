@@ -545,6 +545,7 @@ export interface CalEvent {
   uuid: string;
   weekdays?: string;
   monthdays?: string;
+  rrule?: string;
 }
 
 export const SOCIAL_TYPES = [

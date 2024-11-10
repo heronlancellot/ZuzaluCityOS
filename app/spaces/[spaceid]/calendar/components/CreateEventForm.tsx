@@ -52,6 +52,7 @@ import { supabase } from '@/utils/supabase/client';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import { RRule, Weekday } from 'rrule';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -155,7 +156,7 @@ const schema = Yup.object().shape({
       otherwise: (schema) => schema,
     }),
   monthdays: Yup.array()
-    .of(Yup.number())
+    .of(Yup.number().required())
     .when('recurring', {
       is: 'monthly',
       then: (schema) =>
@@ -233,6 +234,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         locationUrl,
         weekdays,
         monthdays,
+        recurring,
       } = data;
 
       const selectedTimezone = timezone.value || dayjs.tz.guess();
@@ -251,6 +253,28 @@ const CreateEventForm: React.FC<EventFormProps> = ({
             .hour(endTime!.hour())
             .minute(endTime!.minute());
 
+      let rruleString = '';
+      if (recurring === 'weekly' && weekdays?.length) {
+        const byweekday = weekdays.map((day) => {
+          const dayIndex = WEEKDAYS.findIndex((d) => d.value === day);
+          return dayIndex;
+        });
+
+        const rule = new RRule({
+          freq: RRule.WEEKLY,
+          byweekday: byweekday,
+        });
+
+        rruleString = rule.toString();
+      } else if (recurring === 'monthly' && monthdays?.length) {
+        const rule = new RRule({
+          freq: RRule.MONTHLY,
+          bymonthday: monthdays,
+        });
+
+        rruleString = rule.toString();
+      }
+
       const eventData = {
         name,
         description: encodeOutputData(description),
@@ -265,8 +289,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         location_url: locationUrl,
         space_id: spaceId,
         creator: JSON.stringify(profile),
-        weekdays: recurring === 'weekly' ? weekdays?.join(',') : null,
-        monthdays: recurring === 'monthly' ? monthdays?.join(',') : null,
+        recurring: rruleString || null,
       };
 
       if (event) {
@@ -326,17 +349,30 @@ const CreateEventForm: React.FC<EventFormProps> = ({
       event.weekdays && setValue('weekdays', event.weekdays.split(','));
       event.monthdays &&
         setValue('monthdays', event.monthdays.split(',').map(Number));
+      if (event.recurring) {
+        const rule = RRule.fromString(event.recurring);
+        if (rule.options.freq === RRule.WEEKLY) {
+          const weekdayValues = rule.options.byweekday?.map(
+            (dayIndex) => WEEKDAYS[dayIndex as number].value,
+          );
+          setValue('recurring', 'weekly');
+          setValue('weekdays', weekdayValues);
+        } else if (rule.options.freq === RRule.MONTHLY) {
+          setValue('recurring', 'monthly');
+          setValue('monthdays', rule.options.bymonthday);
+        }
+      }
     }
   }, []);
 
   const WEEKDAYS = [
-    { label: 'Sunday', value: 'Sunday' },
     { label: 'Monday', value: 'Monday' },
     { label: 'Tuesday', value: 'Tuesday' },
     { label: 'Wednesday', value: 'Wednesday' },
     { label: 'Thursday', value: 'Thursday' },
     { label: 'Friday', value: 'Friday' },
     { label: 'Saturday', value: 'Saturday' },
+    { label: 'Sunday', value: 'Sunday' },
   ];
 
   return (
