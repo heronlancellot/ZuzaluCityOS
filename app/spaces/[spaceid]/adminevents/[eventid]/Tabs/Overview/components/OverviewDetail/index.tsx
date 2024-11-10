@@ -67,7 +67,7 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
       padding={2}
       direction="row"
       gap={2}
-      bgcolor="#283734"
+      bgcolor="#262626"
       borderRadius={3}
       position={'relative'}
       overflow={'hidden'}
@@ -92,18 +92,6 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
           setShowModal(false);
         }}
       />
-      <Stack
-        sx={{
-          backgroundImage: `url(${eventData.imageUrl ? eventData.imageUrl : '/12.webp'})`,
-          width: '100%',
-          height: '100%',
-          filter: 'blur(10px)',
-          position: 'absolute',
-          top: '0px',
-          left: '0px',
-          zIndex: '0',
-        }}
-      ></Stack>
       <Box
         component="img"
         src={eventData.imageUrl ? eventData.imageUrl : '/12.webp'}
