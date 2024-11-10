@@ -9,6 +9,9 @@ import {
   FormHelperText,
   Select,
   MenuItem,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -62,10 +65,20 @@ const schema = Yup.object().shape({
     .min(1, 'At least one category is required'),
   description: Yup.mixed(),
   isAllDay: Yup.boolean(),
-  startDate: Yup.mixed().dayjs().required('Start date is required'),
+  startDate: Yup.mixed()
+    .dayjs()
+    .when('recurring', {
+      is: 'none',
+      then: (schema) => schema.required('Start date is required'),
+      otherwise: (schema) => schema,
+    }),
   endDate: Yup.mixed()
     .dayjs()
-    .required('End date is required')
+    .when('recurring', {
+      is: 'none',
+      then: (schema) => schema.required('End date is required'),
+      otherwise: (schema) => schema,
+    })
     .test(
       'is-after-start',
       'End date must be after start date',
@@ -131,6 +144,16 @@ const schema = Yup.object().shape({
       then: (schema) => schema.required('Location URL is required'),
     })
     .nullable(),
+  weekdays: Yup.array()
+    .of(Yup.number())
+    .when('recurring', {
+      is: 'weekly',
+      then: (schema) =>
+        schema
+          .required('Please select at least one weekday')
+          .min(1, 'Please select at least one weekday'),
+      otherwise: (schema) => schema,
+    }),
 });
 
 type FormData = Yup.InferType<typeof schema>;
@@ -164,14 +187,17 @@ const CreateEventForm: React.FC<EventFormProps> = ({
       endTime: dayjs().add(1, 'hour'),
       isAllDay: false,
       recurring: 'none',
+      weekdays: [],
     },
     shouldFocusError: true,
   });
 
   const isAllDay = watch('isAllDay');
+  const recurring = watch('recurring');
   const format = watch('format');
   const description = watch('description');
   const currentCategories = watch('categories');
+  const currentWeekdays = watch('weekdays');
 
   const [blockClickModal, setBlockClickModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -194,6 +220,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         timezone,
         locationName,
         locationUrl,
+        weekdays,
       } = data;
 
       const selectedTimezone = timezone.value || dayjs.tz.guess();
@@ -226,6 +253,7 @@ const CreateEventForm: React.FC<EventFormProps> = ({
         location_url: locationUrl,
         space_id: spaceId,
         creator: JSON.stringify(profile),
+        weekdays: recurring === 'weekly' ? weekdays?.join(',') : null,
       };
 
       if (event) {
@@ -282,8 +310,20 @@ const CreateEventForm: React.FC<EventFormProps> = ({
       setValue('format', event.format);
       setValue('locationName', event.location_name);
       setValue('locationUrl', event.location_url);
+      event.weekdays &&
+        setValue('weekdays', event.weekdays.split(',').map(Number));
     }
   }, []);
+
+  const WEEKDAYS = [
+    { label: 'Sunday', value: 'Sunday' },
+    { label: 'Monday', value: 'Monday' },
+    { label: 'Tuesday', value: 'Tuesday' },
+    { label: 'Wednesday', value: 'Wednesday' },
+    { label: 'Thursday', value: 'Thursday' },
+    { label: 'Friday', value: 'Friday' },
+    { label: 'Saturday', value: 'Saturday' },
+  ];
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -425,10 +465,6 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                       render={({ field }) => (
                         <FormUploader
                           {...field}
-                          crop={{
-                            size: { width: 620, height: 338 },
-                            aspectRatio: 16 / 9,
-                          }}
                           previewStyle={{
                             width: 310,
                             height: 169,
@@ -459,6 +495,62 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                   flexDirection="column"
                   gap="20px"
                 >
+                  <Stack spacing={'10px'}>
+                    <FormLabel>Session Frequency</FormLabel>
+                    <Controller
+                      name="recurring"
+                      control={control}
+                      render={({ field }) => (
+                        <Select {...field} size="small">
+                          <MenuItem value="none">Only Once</MenuItem>
+                          <MenuItem value="weekly">Every Week</MenuItem>
+                          <MenuItem value="monthly">Every Month</MenuItem>
+                        </Select>
+                      )}
+                    />
+                  </Stack>
+                  {recurring === 'weekly' && (
+                    <Stack spacing="10px">
+                      <FormLabel>Repeat on*</FormLabel>
+                      <FormLabelDesc>
+                        Select which days of the week this event should repeat
+                        on
+                      </FormLabelDesc>
+                      <Controller
+                        name="weekdays"
+                        control={control}
+                        render={({ field, fieldState: { error } }) => (
+                          <>
+                            <Select
+                              size="small"
+                              multiple
+                              renderValue={(selected) => selected.join(', ')}
+                              {...field}
+                              error={!!error}
+                            >
+                              {WEEKDAYS.map((item) => (
+                                <MenuItem key={item.label} value={item.value}>
+                                  <SelectCheckItem
+                                    label={item.label}
+                                    isChecked={
+                                      (currentWeekdays ?? []).findIndex(
+                                        (v) => v?.toString() === item.value,
+                                      ) > -1
+                                    }
+                                  />
+                                </MenuItem>
+                              ))}
+                            </Select>
+                            {error && (
+                              <FormHelperText error>
+                                {error.message}
+                              </FormHelperText>
+                            )}
+                          </>
+                        )}
+                      />
+                    </Stack>
+                  )}
                   <Box display="flex" alignItems="center" gap="20px">
                     <Controller
                       name="isAllDay"
@@ -471,42 +563,48 @@ const CreateEventForm: React.FC<EventFormProps> = ({
                       All Day
                     </Typography>
                   </Box>
-                  <Box display="flex" justifyContent="space-between" gap="20px">
-                    <Stack flex={1} spacing="10px">
-                      <FormLabel>Start Date*</FormLabel>
-                      <Controller
-                        name="startDate"
-                        control={control}
-                        render={({ field, fieldState: { error } }) => (
-                          <>
-                            <DesktopDatePicker {...field} />
-                            {error && (
-                              <FormHelperText error>
-                                {error.message}
-                              </FormHelperText>
-                            )}
-                          </>
-                        )}
-                      />
-                    </Stack>
-                    <Stack flex={1} spacing="10px">
-                      <FormLabel>End Date*</FormLabel>
-                      <Controller
-                        name="endDate"
-                        control={control}
-                        render={({ field, fieldState: { error } }) => (
-                          <>
-                            <DesktopDatePicker {...field} />
-                            {error && (
-                              <FormHelperText error>
-                                {error.message}
-                              </FormHelperText>
-                            )}
-                          </>
-                        )}
-                      />
-                    </Stack>
-                  </Box>
+                  {recurring === 'none' && (
+                    <Box
+                      display="flex"
+                      justifyContent="space-between"
+                      gap="20px"
+                    >
+                      <Stack flex={1} spacing="10px">
+                        <FormLabel>Start Date*</FormLabel>
+                        <Controller
+                          name="startDate"
+                          control={control}
+                          render={({ field, fieldState: { error } }) => (
+                            <>
+                              <DesktopDatePicker {...field} />
+                              {error && (
+                                <FormHelperText error>
+                                  {error.message}
+                                </FormHelperText>
+                              )}
+                            </>
+                          )}
+                        />
+                      </Stack>
+                      <Stack flex={1} spacing="10px">
+                        <FormLabel>End Date*</FormLabel>
+                        <Controller
+                          name="endDate"
+                          control={control}
+                          render={({ field, fieldState: { error } }) => (
+                            <>
+                              <DesktopDatePicker {...field} />
+                              {error && (
+                                <FormHelperText error>
+                                  {error.message}
+                                </FormHelperText>
+                              )}
+                            </>
+                          )}
+                        />
+                      </Stack>
+                    </Box>
+                  )}
                   {!isAllDay && (
                     <Box
                       display="flex"

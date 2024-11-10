@@ -543,6 +543,7 @@ export interface CalEvent {
   location_url?: string;
   recurring: string;
   uuid: string;
+  weekdays?: string;
 }
 
 export const SOCIAL_TYPES = [
