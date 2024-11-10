@@ -14,18 +14,23 @@ import { Address } from 'viem';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { scroll, scrollSepolia } from 'viem/chains';
 import {
+  CYPHERHOUSE_SPACEID,
   isDev,
   Role,
   ROLES,
+  spaceIdValue,
   TRUSTFUL_SCHEMAS,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import {
   getAllAttestationTitles,
+  getAllEvents,
+  getSession,
   getUserRole,
   hasRole,
 } from '@/app/spaces/[spaceid]/trustful/service';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import toast from 'react-hot-toast';
+import { getSpace } from '@/app/spaces/[spaceid]/trustful/service/backend/getSpace';
 
 interface User {
   address: Address;
@@ -44,7 +49,7 @@ enum BadgeStatus {
   REJECTED = 'Rejected',
 }
 
-interface Badge {
+export interface Badge {
   id: string;
   title: string;
   status: BadgeStatus;
@@ -203,6 +208,138 @@ export const TrustfulContextProvider: React.FC<
 
     fetchUserRole();
   }, [address, chainId]);
+
+  // host_ + titleSession(Name-Session) + _ + Timestamp
+
+  // nas sessoes que eu sou owner adicionar badge de host e atendee
+  // 1. PEGAR Todos os titulos de sessão do backend --> getSession() address - owner host  ( tem que ser host de alguma sessão para ter essa badge especial )
+  // 2. Montar badge ( #1 String ( host_ + titleSession(Name-Session)) #2 Badge ( atendee_ + titleSession(Name-Session)) )
+  // 3. Adicionar essas 2 strings no filteredBadges.
+
+  // Badge de Host e Atendee se for o owner da Sessão.
+
+  useEffect(() => {
+    const fetchAllEvents = async () => {
+      try {
+        // TODO: Get all spaces -> armazenar cada spaceId // ja tem só 1
+        // TODO: Get all events do space de cada espaco
+        // get session passando cada evento e ver se o hostAddress é igual ao address
+        const spaces = await getSpace({ userAddress: address as Address });
+        console.log('spacesspaces', spaces);
+        const spaceIds = spaces && spaces.map((space) => space.spaceId);
+
+        // const eventsData = await getAllEvents({
+        //   spaceId: spaceIdValue,
+        //   userAddress: address as Address,
+        // });
+
+        // if (eventsData) {
+        //   eventsData.map((event) => {
+        //     event.sessions.forEach((session) => {
+        //       console.log(' session ', session);
+        //       console.log(' session ', event);
+        //       // if (session.hostAddress === address) {
+        //       //   console.log('Host of session:', session.name);
+        //       //   // Add host badge
+        //       //   const hostBadgeTitle = `host_${session.name}`;
+        //       //   const attendeeBadgeTitle = `attendee_${session.name}`;
+        //       //   setInputBadgeTitleList((prevList) => {
+        //       //     const newList = prevList ? [...prevList] : [];
+        //       //     newList.push(hostBadgeTitle, attendeeBadgeTitle);
+        //       //     return newList;
+        //       //   });
+        //       // }
+        //     });
+        //   });
+        // }
+        console.log('spaceIds', spaceIds);
+        if (spaceIds) {
+          for (const spaceId of spaceIds) {
+            console.log('spaceId', spaceId);
+            const events = await getAllEvents({
+              spaceId: spaceIdValue,
+              userAddress: address as Address,
+            });
+
+            console.log('eventsxxxx', events);
+            if (events && events.length > 0) {
+              events.map(async (event) => {
+                const sessions = await getSession({
+                  eventid: event.eventId,
+                  userAddress: address as Address,
+                });
+                console.log('sessionssessionssessionssessions', sessions);
+                if (sessions) {
+                  sessions.sessions.forEach((session) => {
+                    console.log(' session44444 ', session.hostAddress);
+                    console.log(' lolol ', event);
+                    console.log('address', address);
+                    if (
+                      address &&
+                      session.hostAddress &&
+                      session.hostAddress.toLowerCase() == address.toLowerCase()
+                    ) {
+                      console.log('Host of session:', session.name);
+                      // Add host badge
+                      const hostBadgeTitle = `host_${session.name}`;
+                      const attendeeBadgeTitle = `attendee_${session.name}`;
+                      setInputBadgeTitleList((prevList) => {
+                        const newList = prevList ? [...prevList] : [];
+                        newList.push(hostBadgeTitle, attendeeBadgeTitle);
+                        return newList;
+                      });
+                    }
+                  });
+                }
+                console.log('eachevent', event);
+                // event.sessions.forEach((session) => {
+                //   if (session.hostAddress === address) {
+                //     console.log('Host of session:', session.name);
+                //     // Add host badge
+                //     const hostBadgeTitle = `host_${session.name}`;
+                //     const attendeeBadgeTitle = `attendee_${session.name}`;
+                //     setInputBadgeTitleList((prevList) => {
+                //       const newList = prevList ? [...prevList] : [];
+                //       newList.push(hostBadgeTitle, attendeeBadgeTitle);
+                //       return newList;
+                //     });
+                //   }
+                // });
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.log('error', error);
+      }
+    };
+    fetchAllEvents();
+  }, [address]);
+
+  // useEffect(() => {
+  //   const fetchAllEvents = async () => {
+  //     try {
+  //       const allEventSessionsData = await getSession({
+  //         eventid: Number(eventid),
+  //         userAddress: address as Address,
+  //       });
+  //       console.log('allEventSessionsData', allEventSessionsData);
+
+  //       if (allEventSessionsData && allEventSessionsData.sessions.length > 0) {
+  //         const titles = allEventSessionsData.sessions.map(
+  //           (session) => session.name,
+  //         );
+  //         // const newBadge:Badge = {
+  //         //   attester
+  //         // }
+  //         // setSessions([allEventSessionsData]);
+  //       }
+  //     } catch (error) {
+  //       console.log('error', error);
+  //     }
+  //   };
+  //   fetchAllEvents();
+  // }, [address]);
 
   const handleBadgeDropdown = async () => {
     if (!address) {
