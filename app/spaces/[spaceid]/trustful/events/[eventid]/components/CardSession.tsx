@@ -12,7 +12,6 @@ export const CardSession = () => {
   );
   const params = useParams();
   const spaceId = params.spaceid.toString();
-  console.log('paramsparams', params);
   const actualURL = `/spaces/${spaceId}/trustful/events/${params.eventid}`;
   const { push } = useRouter();
   const { address } = useAccount();
@@ -31,7 +30,6 @@ export const CardSession = () => {
       }
     };
     fetchAllEvents();
-    console.log('sessions', sessions);
   }, [address]);
 
   return (
@@ -44,27 +42,38 @@ export const CardSession = () => {
           <Text className="text-white mb-2 font-medium leading-none">
             Sessions
           </Text>
-          {sessions.map((session, index) => (
-            <Card
-              key={index}
-              background={'#222222'}
-              className="mb-4 p-4 cursor-pointer"
-              onClick={() =>
-                push(`${actualURL}/${session.sessions[index].sessionId}`)
-              }
-            >
-              <Text className="text-white font-semibold text-lg">
-                {session.sessions[index].name}
-              </Text>
-              <Text className="text-gray-500 text-sm">
-                Event ID: {session.sessions[index].eventId}
-              </Text>
-              <Text className="text-gray-500 text-sm">
-                Created at:{' '}
-                {new Date(session.sessions[index].createdAt).toLocaleString()}
-              </Text>
-            </Card>
-          ))}
+          {sessions.map(
+            (session, index) =>
+              session &&
+              session.sessions && (
+                <Card
+                  key={index}
+                  background={'#222222'}
+                  className="mb-4 p-4 cursor-pointer"
+                  onClick={() =>
+                    push(`${actualURL}/${session.sessions[index].sessionId}`)
+                  }
+                >
+                  {session.sessions[index] && (
+                    <>
+                      <Text className="text-white font-semibold text-lg">
+                        {session.sessions[index].name}
+                      </Text>
+
+                      <Text className="text-gray-500 text-sm">
+                        Event ID: {session.sessions[index].eventId}
+                      </Text>
+                      <Text className="text-gray-500 text-sm">
+                        Created at:{' '}
+                        {new Date(
+                          session.sessions[index].createdAt,
+                        ).toLocaleString()}
+                      </Text>
+                    </>
+                  )}
+                </Card>
+              ),
+          )}
         </Card>
       )}
     </>
