@@ -6,6 +6,7 @@ import {
   AdminIcon,
   BadgeIcon,
   HeartLoveIcon,
+  HomeIcon,
   LoginIcon,
   LogoutIcon,
   QrCodeIcon,
@@ -117,9 +118,7 @@ export const TheFooterNavbar = () => {
             className={`flex flex-col min-w-16 justify-center items-center cursor-pointer py-3 gap-2 border-t ${params.slug == 'share' ? 'border-[#B1EF42]' : 'border-transparent'}`}
             onClick={() => push(`${actualURL}/events`)}
           >
-            <AdminIcon
-              className={`w-5 h-5 text-white ${params.slug == 'share' ? 'opacity-100' : 'opacity-50'}`}
-            />
+            <HomeIcon fill="#969696" />
             <Text
               className={`text-slate-50 ${params.slug == 'share' ? 'opacity-100' : 'opacity-50'} text-sm font-medium leading-none`}
             >
