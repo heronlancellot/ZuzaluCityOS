@@ -812,51 +812,11 @@ const Home = () => {
 
   useQuery({
     queryKey: ['eventSessionDetail', ceramic?.did?.parent, sessionUpdated],
-    //enabled: !!profileId,
     queryFn: async () => {
       setCurrentHref(window.location.href);
-
-      try {
-        const eventDetails = await getEventDetailInfo();
-        const admins =
-          eventDetails?.admins?.map((admin) => admin.id.toLowerCase()) || [];
-        const superadmins =
-          eventDetails?.superAdmin?.map((superAdmin) =>
-            superAdmin.id.toLowerCase(),
-          ) || [];
-        const members =
-          eventDetails?.members?.map((member) => member.id.toLowerCase()) || [];
-        if (!ceramic.did && localStorage.getItem('ceramic:eth_did')) {
-          await authenticate();
-        }
-        const adminId = ceramic?.did?.parent.toString().toLowerCase() || '';
-        console.log(adminId, superadmins, admins, members);
-        if (!adminId) {
-          setDialogTitle('You are not logged in');
-          setDialogMessage('Please login and refresh the page');
-          setShowLoginModal(true);
-        } else {
-          if (
-            superadmins.includes(adminId) ||
-            admins.includes(adminId) ||
-            members.includes(adminId)
-          ) {
-            getPeople();
-            getSession();
-            getLocation();
-            setCanViewSessions(true);
-          } else {
-            setDialogTitle('You are not a member of this event');
-            setDialogMessage(
-              'Please contact the event organizers to get more information',
-            );
-            setShowLoginModal(true);
-          }
-        }
-        return {};
-      } catch (err) {
-        console.log(err);
-      }
+      getPeople();
+      getSession();
+      getLocation();
     },
   });
 
@@ -1867,6 +1827,53 @@ const Home = () => {
       window.removeEventListener('scroll', detectScrollPosition);
     };
   }, []);
+
+  useEffect(() => {
+    if (session?.id) {
+      const checkAuth = async () => {
+        try {
+          const eventDetails = await getEventDetailInfo();
+          const admins =
+            eventDetails?.admins?.map((admin) => admin.id.toLowerCase()) || [];
+          const superadmins =
+            eventDetails?.superAdmin?.map((superAdmin) =>
+              superAdmin.id.toLowerCase(),
+            ) || [];
+          const members =
+            eventDetails?.members?.map((member) => member.id.toLowerCase()) ||
+            [];
+          if (!ceramic.did && localStorage.getItem('ceramic:eth_did')) {
+            await authenticate();
+          }
+          const adminId = ceramic?.did?.parent.toString().toLowerCase() || '';
+          if (!adminId) {
+            setDialogTitle('You are not logged in');
+            setDialogMessage('Please login and refresh the page');
+            setShowLoginModal(true);
+          } else if (!session?.isPublic) {
+            if (
+              superadmins.includes(adminId) ||
+              admins.includes(adminId) ||
+              members.includes(adminId)
+            ) {
+              setCanViewSessions(true);
+            } else {
+              setDialogTitle('You are not a member of this event');
+              setDialogMessage(
+                'Please contact the event organizers to get more information',
+              );
+              setShowLoginModal(true);
+            }
+          }
+          if (session?.isPublic) setCanViewSessions(true);
+          return {};
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      checkAuth();
+    }
+  }, [session?.id]);
 
   const isInTime = useMemo(() => {
     return (

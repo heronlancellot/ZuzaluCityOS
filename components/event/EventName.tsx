@@ -56,8 +56,8 @@ const EventName = ({
         <Stack width={'100%'} alignItems={'center'} justifyContent={'center'}>
           <Box
             component="img"
-            width={'200px'}
-            height={'200px'}
+            width={'500px'}
+            height={'500px'}
             src={imageUrl}
             borderRadius="10px"
             border="1px solid rgba(255, 255, 255, 0.2)"

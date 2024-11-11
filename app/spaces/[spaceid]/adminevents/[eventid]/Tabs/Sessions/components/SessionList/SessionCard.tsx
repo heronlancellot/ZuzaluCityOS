@@ -202,8 +202,6 @@ const SessionCard: React.FC<SessionCardProps> = ({
     }
   }, [session, userDID]);
 
-  console.log(session.video_url);
-
   return (
     <Stack
       onClick={() => handleClick()}
