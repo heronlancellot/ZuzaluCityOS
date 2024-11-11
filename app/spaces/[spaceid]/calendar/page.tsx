@@ -87,12 +87,13 @@ const Calendar = () => {
     const currentMonthEnd = dayjs().endOf('month');
 
     const processedEvents = eventsData.flatMap((event: any) => {
-      const { start_date, end_date, timezone, id, category, name, recurring } = event;
-      
+      const { start_date, end_date, timezone, id, category, name, recurring } =
+        event;
+
       const originalStartTime = dayjs(start_date);
       const originalEndTime = dayjs(end_date);
       const eventDuration = originalEndTime.diff(originalStartTime);
-      
+
       const baseEvent = {
         title: name,
         start: dayjs.tz(originalStartTime, timezone).toISOString(),
@@ -116,12 +117,12 @@ const Calendar = () => {
 
         return dates.map((date, index) => {
           const recurDate = dayjs(date);
-          
+
           const eventStart = recurDate
             .hour(originalStartTime.hour())
             .minute(originalStartTime.minute())
             .second(originalStartTime.second());
-          
+
           const eventEnd = eventStart.add(eventDuration, 'millisecond');
 
           return {
@@ -174,13 +175,18 @@ const Calendar = () => {
   }, []);
 
   const handleEventClick = useCallback(
-    (id: any) => {
-      toggleDrawer();
-      setType('view');
-      const eventId = id.toString().split('_')[0];
+    (data: any) => {
+      console.log(data.event.start, '1312312312');
+      const eventId = data.event.id.toString().split('_')[0];
       eventsData?.forEach((event: any) => {
         if (event.id === Number(eventId)) {
-          setCurrentEvent(event);
+          toggleDrawer();
+          setType('view');
+          setCurrentEvent({
+            ...event,
+            start_date: dayjs(data.event.start),
+            end_date: dayjs(data.event.end),
+          });
         }
       });
     },
@@ -349,7 +355,7 @@ const Calendar = () => {
   }, [spaceData]);
 
   useEffect(() => {
-    if (currentEvent) {
+    if (currentEvent && !currentEvent.recurring) {
       eventsData?.forEach((event: any) => {
         if (event.id === currentEvent.id) {
           setCurrentEvent(event);

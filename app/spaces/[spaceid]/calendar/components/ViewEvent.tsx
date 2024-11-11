@@ -92,6 +92,7 @@ export default function ViewEvent({
 
   const dateContent = useMemo(() => {
     const { start_date, end_date, timezone } = event;
+    console.log(start_date);
     const start = dayjs(start_date).tz(timezone);
     const end = dayjs(end_date).tz(timezone);
     if (start.isSame(end, 'day')) {
@@ -272,36 +273,37 @@ export default function ViewEvent({
                 }}
               >
                 <Stack flexDirection="column" sx={{ gap: '10px' }}>
+                  {!event.recurring &&
+                    [
+                      {
+                        title: 'Edit Event',
+                      },
+                    ].map((item) => (
+                      <Stack
+                        key={item.title}
+                        direction="row"
+                        gap="10px"
+                        alignItems="center"
+                        p="6px"
+                        borderRadius="8px"
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': {
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          },
+                        }}
+                        onClick={() => handleMenuClick('edit')}
+                      >
+                        <PencilIcon size={4} />
+                        <Typography fontSize={13} lineHeight={1.4}>
+                          {item.title}
+                        </Typography>
+                      </Stack>
+                    ))}
+                  {!event.recurring && <Divider />}
                   {[
                     {
-                      title: 'Edit Event',
-                    },
-                  ].map((item) => (
-                    <Stack
-                      key={item.title}
-                      direction="row"
-                      gap="10px"
-                      alignItems="center"
-                      p="6px"
-                      borderRadius="8px"
-                      sx={{
-                        cursor: 'pointer',
-                        '&:hover': {
-                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        },
-                      }}
-                      onClick={() => handleMenuClick('edit')}
-                    >
-                      <PencilIcon size={4} />
-                      <Typography fontSize={13} lineHeight={1.4}>
-                        Edit Event
-                      </Typography>
-                    </Stack>
-                  ))}
-                  <Divider />
-                  {[
-                    {
-                      title: 'Edit Event',
+                      title: 'Delete Event',
                     },
                   ].map((item) => (
                     <Stack
@@ -325,7 +327,7 @@ export default function ViewEvent({
                         lineHeight={1.4}
                         color="#FF5E5E"
                       >
-                        Delete Event
+                        {item.title}
                       </Typography>
                     </Stack>
                   ))}

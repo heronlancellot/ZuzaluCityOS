@@ -8,7 +8,7 @@ import './calendar.css';
 
 interface CalendarProps {
   eventsData: any[];
-  onEventClick?: (id: any) => void;
+  onEventClick?: (event: any) => void;
 }
 
 export default function CalendarView({
@@ -26,10 +26,7 @@ export default function CalendarView({
         fixedWeekCount={false}
         dayMaxEvents={4}
         aspectRatio={2}
-        eventClick={(info: any) => {
-          const eventId = info.event.id;
-          onEventClick?.(eventId);
-        }}
+        eventClick={onEventClick}
       />
     </div>
   );
