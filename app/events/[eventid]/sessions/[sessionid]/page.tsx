@@ -1865,6 +1865,7 @@ const Home = () => {
               setShowLoginModal(true);
             }
           }
+          if (session?.isPublic) setCanViewSessions(true);
           return {};
         } catch (err) {
           console.log(err);
