@@ -1832,6 +1832,10 @@ const Home = () => {
     if (session?.id) {
       const checkAuth = async () => {
         try {
+          if (session.isPublic) {
+            setCanViewSessions(true);
+            return {};
+          }
           const eventDetails = await getEventDetailInfo();
           const admins =
             eventDetails?.admins?.map((admin) => admin.id.toLowerCase()) || [];
@@ -1850,7 +1854,7 @@ const Home = () => {
             setDialogTitle('You are not logged in');
             setDialogMessage('Please login and refresh the page');
             setShowLoginModal(true);
-          } else if (!session?.isPublic) {
+          } else {
             if (
               superadmins.includes(adminId) ||
               admins.includes(adminId) ||
@@ -1865,7 +1869,6 @@ const Home = () => {
               setShowLoginModal(true);
             }
           }
-          if (session?.isPublic) setCanViewSessions(true);
           return {};
         } catch (err) {
           console.log(err);
@@ -2275,71 +2278,75 @@ const Home = () => {
                       )}
                     </Typography>
                   </Stack>
-                  <Stack spacing="10px">
-                    <Stack
-                      direction="row"
-                      padding="10px 14px"
-                      alignItems="center"
-                      spacing="10px"
-                      border={
-                        isRsvped
-                          ? '1px solid rgba(125, 255, 209, 0.1)'
-                          : '1px solid rgba(255, 255, 255, 0.10)'
-                      }
-                      borderRadius="10px"
-                      bgcolor={
-                        isRsvped ? 'rgba(125, 255, 209, 0.1)' : '#383838'
-                      }
-                      justifyContent="center"
-                      color={isRsvped ? 'rgb(125, 255, 209)' : ''}
-                      sx={{
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={() => setHover(true)}
-                      onMouseLeave={() => setHover(false)}
-                      onClick={() => {
-                        if (isRsvped) {
-                          handleCancelRSVP(session.id);
-                        } else {
-                          handleRSVPClick(session.id);
+                  {ceramic.did?.parent && (
+                    <Stack spacing="10px">
+                      <Stack
+                        direction="row"
+                        padding="10px 14px"
+                        alignItems="center"
+                        spacing="10px"
+                        border={
+                          isRsvped
+                            ? '1px solid rgba(125, 255, 209, 0.1)'
+                            : '1px solid rgba(255, 255, 255, 0.10)'
                         }
-                      }}
-                    >
-                      {!isLoading ? (
-                        isRsvped ? (
-                          hover ? (
-                            <CancelIcon />
+                        borderRadius="10px"
+                        bgcolor={
+                          isRsvped ? 'rgba(125, 255, 209, 0.1)' : '#383838'
+                        }
+                        justifyContent="center"
+                        color={isRsvped ? 'rgb(125, 255, 209)' : ''}
+                        sx={{
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={() => setHover(true)}
+                        onMouseLeave={() => setHover(false)}
+                        onClick={() => {
+                          if (isRsvped) {
+                            handleCancelRSVP(session.id);
+                          } else {
+                            handleRSVPClick(session.id);
+                          }
+                        }}
+                      >
+                        {!isLoading ? (
+                          isRsvped ? (
+                            hover ? (
+                              <CancelIcon />
+                            ) : (
+                              <SessionIcon fill={'rgb(125, 255, 209)'} />
+                            )
                           ) : (
-                            <SessionIcon fill={'rgb(125, 255, 209)'} />
+                            <SessionIcon />
                           )
                         ) : (
-                          <SessionIcon />
-                        )
-                      ) : (
-                        <></>
-                      )}
-                      {!isLoading ? (
-                        isRsvped ? (
-                          <Typography variant="bodyBB">
-                            {hover ? 'Cancel RSVP?' : "RSVP'd"}
-                          </Typography>
+                          <></>
+                        )}
+                        {!isLoading ? (
+                          isRsvped ? (
+                            <Typography variant="bodyBB">
+                              {hover ? 'Cancel RSVP?' : "RSVP'd"}
+                            </Typography>
+                          ) : (
+                            <Typography variant="bodyBB">
+                              RSVP Session
+                            </Typography>
+                          )
                         ) : (
-                          <Typography variant="bodyBB">RSVP Session</Typography>
-                        )
-                      ) : (
-                        <></>
-                      )}
-                      {isLoading && (
-                        <CircularProgress
-                          size={'20px'}
-                          sx={{
-                            color: isRsvped ? 'rgb(125, 255, 209)' : 'white',
-                          }}
-                        />
-                      )}
+                          <></>
+                        )}
+                        {isLoading && (
+                          <CircularProgress
+                            size={'20px'}
+                            sx={{
+                              color: isRsvped ? 'rgb(125, 255, 209)' : 'white',
+                            }}
+                          />
+                        )}
+                      </Stack>
+                      {/*<Typography variant="bodyS">Attending: 000</Typography>*/}
                     </Stack>
-                    {/*<Typography variant="bodyS">Attending: 000</Typography>*/}
-                  </Stack>
+                  )}
                 </Stack>
                 {session.video_url && (
                   <Stack spacing="14px" padding="20px">
