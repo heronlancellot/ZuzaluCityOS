@@ -17,20 +17,28 @@ import { encodeAbiParameters, parseAbiParameters } from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { useTrustful } from '@/context/TrustfulContext';
-import { BadgeStatus, BadgeTagIcon } from '../../components/BadgeTagIcon';
+import {
+  BadgeStatus,
+  BadgeTagIcon,
+} from '@/app/spaces/[spaceid]/trustful/my-badges/components';
 import { getEllipsedAddress } from '@/utils/format';
-import { isDev, TRUSTFUL_SCHEMAS } from '../../../constants/constants';
+import {
+  isDev,
+  TRUSTFUL_SCHEMAS,
+} from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import {
   AttestationRequestData,
   submitAttest,
-} from '../../../service/smart-contract';
+  revoke,
+} from '@/app/spaces/[spaceid]/trustful/service';
 import { HeartLoveIcon, UserIcon } from '@/components/icons';
-import { BadgeDetailsNavigation } from '../../../components';
-import { CopyToClipboardButton } from '../../../components/CopyToClipboardButton';
-import { OutboundLinkButton } from '../../../components/OutboundLink';
-import { TheFooterNavbar } from '../../../components/TheFooterNavbar';
-import { TheHeader } from '../../../components/TheHeader';
-import { revoke } from '../../../service/smart-contract/revoke';
+import {
+  BadgeDetailsNavigation,
+  CopyToClipboardButton,
+  OutboundLinkButton,
+  TheHeader,
+  TheFooterNavbar,
+} from '@/app/spaces/[spaceid]/trustful/components';
 import toast from 'react-hot-toast';
 import { Address } from 'viem';
 

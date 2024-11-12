@@ -27,8 +27,7 @@ import {
   EVENT_ACTION,
   EVENT_OPTIONS,
 } from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
-
-import { createEvents } from '../../service/backend/createEvents';
+import { createEvents } from '@/app/spaces/[spaceid]/trustful/service/';
 
 export const DropdownMenuAdminEvents = () => {
   const { address } = useAccount();

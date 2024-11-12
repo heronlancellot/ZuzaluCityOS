@@ -100,6 +100,7 @@ import { ThankYouIcon } from './ThankYouIcon';
 import { QrCodeIcon } from './QrCodeIcon';
 import { HeartLoveIcon } from './HeartLoveIcon';
 import { CalendarTimeIcon } from './CalendarTimeIcon';
+import { BlockfulLogo } from './BlockfulLogo';
 export {
   AdminIcon,
   HomeIcon,
@@ -203,4 +204,5 @@ export {
   QrCodeIcon,
   HeartLoveIcon,
   CalendarTimeIcon,
+  BlockfulLogo,
 };

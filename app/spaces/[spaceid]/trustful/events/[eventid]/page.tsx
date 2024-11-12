@@ -9,9 +9,11 @@ import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
-import { DropdownEventSelected } from './components/DropdownEventSelected';
-import { CardEventDetails } from './components/CardEventDetails';
-import { CardSession } from './components/CardSession';
+import {
+  CardEventDetails,
+  CardSession,
+  DropdownEventSelected,
+} from '@/app/spaces/[spaceid]/trustful/events/[eventid]/components';
 
 const TrustfulPageEventId = () => {
   const params = useParams();

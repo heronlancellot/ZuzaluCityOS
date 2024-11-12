@@ -15,13 +15,14 @@ import { useParams, useRouter } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
 import { useAccount } from 'wagmi';
 import toast from 'react-hot-toast';
-import { TheHeader } from '../../components/TheHeader';
 import { getEllipsedAddress } from '@/utils/format';
-import { CopyToClipboardButton } from '../../components/CopyToClipboardButton';
-import { TheFooterNavbar } from '../../components/TheFooterNavbar';
-import { BlockfulLogo } from '@/components/icons/BlockfulLogo';
-import { QrCodeIcon } from '@/components/icons';
-import { QRCodeGiveBadge } from './QRCodeGiveBadge';
+import { BlockfulLogo, QrCodeIcon } from '@/components/icons';
+import { QRCodeGiveBadge } from '@/app/spaces/[spaceid]/trustful/share/components';
+import {
+  CopyToClipboardButton,
+  TheFooterNavbar,
+  TheHeader,
+} from '@/app/spaces/[spaceid]/trustful/components';
 
 export const ShareSection = () => {
   const { address, chain } = useAccount();

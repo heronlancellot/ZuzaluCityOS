@@ -1,21 +1,12 @@
 import toast from 'react-hot-toast';
+import { Event } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { Address } from 'viem';
 
-export type Event = {
-  eventId: number;
-  zucityId: number | null;
-  name: string;
-  description: string;
-  spaceId: number;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export const getEventById = async ({
+export const getEventByEventId = async ({
   userAddress,
   spaceId,
 }: {
-  spaceId: number;
+  spaceId: string | number;
   userAddress: Address;
 }): Promise<Event | undefined> => {
   const spaceIdZuCity = 1; // TODO : REFACTOR TO GET THE SPACE ID CORRECTLY NOW STRING IS ENABLED

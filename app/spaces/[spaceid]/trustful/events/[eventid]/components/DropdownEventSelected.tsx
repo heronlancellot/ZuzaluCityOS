@@ -26,11 +26,13 @@ import {
   SESSION_ACTION,
   SESSION_OPTIONS,
 } from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
-import { createSession } from '@/app/spaces/[spaceid]/trustful/service/backend/';
-import { Event } from '../../../service/backend/getEventById';
-import { useParams } from 'next/navigation';
-import { getAllEvents } from '../../../service/backend/getAllEvents';
 import { createSessionSC } from '@/app/spaces/[spaceid]/trustful/service/smart-contract';
+import {
+  createSession,
+  getAllEventsBySpaceId,
+} from '@/app/spaces/[spaceid]/trustful/service';
+import { Event } from '@/app/spaces/[spaceid]/trustful/constants/constants';
+import { useParams } from 'next/navigation';
 
 export const DropdownEventSelected = () => {
   const { address, chainId } = useAccount();
@@ -69,7 +71,7 @@ export const DropdownEventSelected = () => {
   useEffect(() => {
     const fetchAllEvents = async () => {
       try {
-        const eventsData = await getAllEvents({
+        const eventsData = await getAllEventsBySpaceId({
           spaceId: Number(spaceId),
           userAddress: address as Address,
         });

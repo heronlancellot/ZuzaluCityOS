@@ -9,8 +9,7 @@ import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
-import { Address } from 'viem';
-import { MyBadgeSection } from './components/MyBadgeSection';
+import { MyBadgeSection } from '@/app/spaces/[spaceid]/trustful/my-badges/components';
 
 const TrustfulPage = () => {
   const params = useParams();

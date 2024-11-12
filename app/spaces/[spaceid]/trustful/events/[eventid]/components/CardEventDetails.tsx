@@ -3,10 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, Text } from '@chakra-ui/react';
-import { getEventById, Event } from '../../../service';
+import { getEventByEventId } from '@/app/spaces/[spaceid]/trustful/service';
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
 import { Address } from 'viem';
+import { Event } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 export const CardEventDetails = () => {
   const [eventDetails, setEventDetails] = useState<Event | undefined>(
@@ -25,8 +26,8 @@ export const CardEventDetails = () => {
         return;
       }
       try {
-        const eventsData = await getEventById({
-          spaceId: Number(spaceId),
+        const eventsData = await getEventByEventId({
+          spaceId: spaceId,
           userAddress: address as Address,
         });
         if (eventsData) {

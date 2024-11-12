@@ -1,14 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Event } from '../../service/backend/getEventById';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, Text } from '@chakra-ui/react';
 import { Address } from 'viem';
 import { useAccount } from 'wagmi';
 import toast from 'react-hot-toast';
-import { getAllEvents } from '../../service/backend/getAllEvents';
-import { getSession } from '../../service';
+import {
+  getAllEventsBySpaceId,
+  getSession,
+} from '@/app/spaces/[spaceid]/trustful/service/';
+import {
+  Event,
+  spaceIdValue,
+} from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 export const CardEvents = () => {
   const [events, setEvents] = useState<
@@ -28,10 +33,11 @@ export const CardEvents = () => {
 
     const fetchEventsWithSessions = async () => {
       try {
-        const eventsData: Event[] | undefined = await getAllEvents({
-          spaceId: Number(spaceId),
+        const eventsData: Event[] | undefined = await getAllEventsBySpaceId({
+          spaceId: spaceIdValue,
           userAddress: address as Address,
         });
+        console.log('eventsData', eventsData);
 
         const eventsWithSessions = eventsData
           ? await Promise.all(

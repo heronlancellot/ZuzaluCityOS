@@ -1,17 +1,7 @@
-import toast from 'react-hot-toast';
 import { Address } from 'viem';
+import { Event } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
-export type Event = {
-  eventId: number;
-  zucityId: number | null;
-  name: string;
-  description: string;
-  spaceId: string | number;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export const getAllEvents = async ({
+export const getAllEventsBySpaceId = async ({
   userAddress,
   spaceId,
 }: {
@@ -29,6 +19,7 @@ export const getAllEvents = async ({
         },
       },
     );
+    console.log('responseresponse', response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

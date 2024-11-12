@@ -14,7 +14,10 @@ import {
 import { BeatLoader } from 'react-spinners';
 import { Address, isAddress } from 'viem';
 import { useAccount } from 'wagmi';
-import { ROLES } from '@/app/spaces/[spaceid]/trustful/constants/constants';
+import {
+  Event,
+  ROLES,
+} from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { removeSession } from '@/app/spaces/[spaceid]/trustful/service/smart-contract';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
@@ -23,15 +26,14 @@ import {
   SESSION_DETAILS_ACTION,
   SESSION_DETAILS_OPTIONS,
 } from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
-import { InputAddressUser } from '@/app/spaces/[spaceid]/trustful/components/';
+import { InputAddressUser } from '@/app/spaces/[spaceid]/trustful/components';
 import {
   joinSession,
   deleteSession,
+  getAllEventsBySpaceId,
   wrapSession,
 } from '@/app/spaces/[spaceid]/trustful/service/backend/';
-import { Event } from '@/app/spaces/[spaceid]/trustful/service/backend';
 import { useParams } from 'next/navigation';
-import { getAllEvents } from '@/app/spaces/[spaceid]/trustful/service/backend/getAllEvents';
 
 export const DropdownSessionDetails = () => {
   const { address } = useAccount();
@@ -70,7 +72,7 @@ export const DropdownSessionDetails = () => {
   useEffect(() => {
     const fetchAllEvents = async () => {
       try {
-        const eventsData = await getAllEvents({
+        const eventsData = await getAllEventsBySpaceId({
           spaceId: Number(spaceId),
           userAddress: address as Address,
         });

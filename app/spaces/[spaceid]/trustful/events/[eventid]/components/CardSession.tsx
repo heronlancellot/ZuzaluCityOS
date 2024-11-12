@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, Text } from '@chakra-ui/react';
-import { getSession, GetSessionResponse } from '../../../service';
+import {
+  getSession,
+  GetSessionResponse,
+} from '@/app/spaces/[spaceid]/trustful/service/';
 import { useAccount } from 'wagmi';
 
 export const CardSession = () => {
