@@ -15,6 +15,7 @@ import { TheFooterNavbar } from '../../components/TheFooterNavbar';
 import { TheHeader } from '../../components/TheHeader';
 import { fetchEASData } from '../../service';
 import chakraTheme from '@/theme/lib/chakra-ui';
+import { isDev } from '@/constant';
 
 interface Attestation {
   decodedDataJson: string;
@@ -32,6 +33,8 @@ interface Attestation {
 export const MyBadgeSection: React.FC = () => {
   const { address } = useAccount();
   const { push } = useRouter();
+  const [badgeData, setBadgeData] = useState<BadgeData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // const { villagerAttestationCount } = useContext(WalletContext);
   const villagerAttestationCount = Number(1);
@@ -43,17 +46,18 @@ export const MyBadgeSection: React.FC = () => {
     }
   }, [villagerAttestationCount]);
 
-  const [badgeData, setBadgeData] = useState<BadgeData[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-
   useEffect(() => {
-    if (address) {
+    if (address && !isDev) {
       fetchData();
+    } else if (isDev) {
+      toast.error(
+        'Cannot fetch your badges. Please connect your wallet to Scroll Mainnet to view your badges.',
+      );
     }
   }, [address]);
 
   const fetchData = async () => {
-    setLoading(true);
+    setIsLoading(true);
     const responseAttestBadges: Attestation[] = await handleQuery(
       false,
       null,
@@ -134,7 +138,7 @@ export const MyBadgeSection: React.FC = () => {
       setBadgeData(decodedData);
     }
 
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const handleQuery = async (
@@ -228,7 +232,7 @@ export const MyBadgeSection: React.FC = () => {
             marginBottom="60px"
           >
             <Flex flexDirection={'column'} gap={2} className="w-full">
-              {loading ? (
+              {isLoading ? (
                 <Box flex={1} className="flex justify-center items-center">
                   <BeatLoader size={8} color="#B1EF42" />
                 </Box>
@@ -236,7 +240,6 @@ export const MyBadgeSection: React.FC = () => {
                 <ChakraProvider theme={chakraTheme}>
                   <BadgeCard badgeData={badgeData} />
                 </ChakraProvider>
-
               )}
             </Flex>
           </Box>

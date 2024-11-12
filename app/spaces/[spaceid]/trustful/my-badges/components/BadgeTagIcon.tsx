@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 'use client';
 
 export enum BadgeStatus {
