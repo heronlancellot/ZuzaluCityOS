@@ -24,7 +24,7 @@ export async function cannotReply(
       args: [uid],
     });
 
-    if (response === typeof Boolean) return Error('Response should be boolean');
+    if (typeof response !== "boolean") return Error('Response should be boolean');
 
     return response as boolean;
   } catch (error) {
