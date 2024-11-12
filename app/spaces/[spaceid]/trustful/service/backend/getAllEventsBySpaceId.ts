@@ -19,7 +19,6 @@ export const getAllEventsBySpaceId = async ({
         },
       },
     );
-    console.log('responseresponse', response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
