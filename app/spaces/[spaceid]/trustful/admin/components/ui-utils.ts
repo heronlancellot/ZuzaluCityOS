@@ -21,11 +21,11 @@ export const ROLES_OPTIONS: Record<ROLES_NAME, ROLES> = {
 };
 
 export const ACTIONS_OPTIONS: Record<ActionName, number> = {
-  NONE: 0,
-  ASSIGN_MANAGER: 1,
-  ASSIGN_VILLAGER: 2,
-  ATTEST: 3,
-  REPLY: 4,
+  [ActionName.NONE]: 0,
+  [ActionName.ASSIGN_MANAGER]: 1,
+  [ActionName.ASSIGN_VILLAGER]: 2,
+  [ActionName.ATTEST]: 3,
+  [ActionName.REPLY]: 4,
 };
 
 export enum ADMIN_ACTION {
