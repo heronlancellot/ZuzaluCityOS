@@ -2,7 +2,6 @@ export * from './createEvents';
 export * from './createSession';
 export * from './deleteSession';
 export * from './fetchEASData';
-export * from './fetchENSData';
 export * from './getEventByEventId';
 export * from './getAllEventsBySpaceId';
 export * from './getSession';
