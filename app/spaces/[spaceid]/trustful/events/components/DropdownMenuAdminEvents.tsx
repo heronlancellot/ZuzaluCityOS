@@ -33,23 +33,13 @@ export const DropdownMenuAdminEvents = () => {
   const { address } = useAccount();
   const { userRole } = useTrustful();
   const [role, setRole] = useState<ROLES | null>(null);
-  const [inputAddress, setInputAddress] = useState<string>('');
-  const [validAddress, setValidAddress] = useState<EthereumAddress | null>(
-    null,
-  );
+
   const [eventAction, setEventAction] = useState<EVENT_ACTION | null>(null);
   const [isloading, setIsLoading] = useState<boolean>(false);
 
   const [inputValuesTextArea, setInputValuesTextArea] = useState<{
     [key: string]: string;
   }>({});
-
-  /* Updates the validAddress when the inputAddress changes */
-  useEffect(() => {
-    if (inputAddress && isAddress(inputAddress)) {
-      setValidAddress(new EthereumAddress(inputAddress));
-    }
-  }, [inputAddress]);
 
   useEffect(() => {
     setRole(null);

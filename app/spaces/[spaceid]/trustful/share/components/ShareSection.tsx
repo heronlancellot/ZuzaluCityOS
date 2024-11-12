@@ -11,7 +11,7 @@ import {
   Flex,
   Link,
 } from '@chakra-ui/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
 import { useAccount } from 'wagmi';
 import toast from 'react-hot-toast';
@@ -27,9 +27,6 @@ import {
 export const ShareSection = () => {
   const { address, chain } = useAccount();
   const { push } = useRouter();
-  const params = useParams();
-
-  const actualURL = `/spaces/${params.spaceid}/trustful`;
 
   // const { villagerAttestationCount } = useContext(WalletContext);
   const villagerAttestationCount = Number(1);
