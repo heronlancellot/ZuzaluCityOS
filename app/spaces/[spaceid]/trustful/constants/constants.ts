@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export const isDev = process.env.NEXT_PUBLIC_ENV === 'dev';
 
 /** ID of the space enabled for Trustful to appear so far. */
@@ -29,6 +30,13 @@ export enum Role {
   NO_ROLE = 'NO_ROLE',
 }
 
+export enum TrustfulPage {
+  MY_BADGES = 'my-badges',
+  GIVE_BADGE = 'trustful',
+  SHARE = 'share',
+  EVENTS = 'events',
+  SETTINGS = 'settings',
+}
 export interface BadgeTitle {
   title: string;
   uid: `0x${string}`;

@@ -15,6 +15,7 @@ import {
 } from '@/app/spaces/[spaceid]/trustful/events/components';
 import { ChakraProvider } from '@chakra-ui/react';
 import chakraTheme from '@/theme/lib/chakra-ui';
+import { TheFooterNavbar } from '@/app/spaces/[spaceid]/trustful/components';
 
 const TrustfulPageEvents = () => {
   const params = useParams();
@@ -153,6 +154,9 @@ const TrustfulPageEvents = () => {
             <DropdownMenuAdminEvents />
           </ChakraProvider>
           <CardEvents />
+          <Box className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full flex items-center">
+            <TheFooterNavbar />
+          </Box>
         </Box>
       </Stack>
     </Stack>
