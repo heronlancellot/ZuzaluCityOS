@@ -142,11 +142,11 @@ export const DropdownMenuAdmin = () => {
       return;
     }
 
-    const isUserAlreadyHasTHeRole = await checkIfUserAlreadyHasTheRole(
+    const doesUserHaveTheRole = await checkIfUserAlreadyHasTheRole(
       validAddress.address as Address,
       role,
     );
-    if (isUserAlreadyHasTHeRole) {
+    if (doesUserHaveTheRole) {
       return;
     }
 
