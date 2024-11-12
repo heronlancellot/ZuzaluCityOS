@@ -31,6 +31,7 @@ export default function SelectCategories({
 
   return (
     <Autocomplete
+      size="small"
       multiple
       value={value}
       onChange={(event, newValue) => handleChange(newValue)}

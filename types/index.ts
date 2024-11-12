@@ -223,7 +223,18 @@ export interface Space {
       };
     }[];
   };
+  customAttributes: TBD[];
 }
+
+export interface CalendarConfig {
+  name: string;
+  category: string;
+  accessRule: string;
+}
+
+type TBD = {
+  tbd: string;
+};
 
 export interface SpaceEdge {
   node: Space;
@@ -514,6 +525,27 @@ export interface ZupassConfigItem {
   publicKey: EdDSAPublicKey;
   eventId: string;
   eventName: string;
+}
+
+export interface CalEvent {
+  id: number;
+  name: string;
+  category: string;
+  description?: string;
+  image_url?: string;
+  is_all_day: boolean;
+  start_date: string;
+  end_date: string;
+  creator: string;
+  timezone: string;
+  format: string;
+  location_name?: string;
+  location_url?: string;
+  recurring: string;
+  uuid: string;
+  weekdays?: string;
+  monthdays?: string;
+  rrule?: string;
 }
 
 export const SOCIAL_TYPES = [

@@ -130,6 +130,7 @@ export default function Dialog({
             variant="contained"
             fullWidth
             disabled={isLoading}
+            sx={{ height: '40px' }}
           >
             {isLoading ? (
               <CircularProgress size={24} color="inherit" />

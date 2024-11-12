@@ -169,7 +169,6 @@ const Wrapper = styled('div')<{
   font-size: ${(props) => props.fontSize || 16}px;
   line-height: 1.6;
   font-family: 'Inter', sans-serif;
-  overflow: hidden;
   ${(props) =>
     props.scrollHeight
       ? `    

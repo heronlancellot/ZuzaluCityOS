@@ -39,7 +39,6 @@ const EventDrawer: React.FC<EventDrawerProps> = ({
         }}
         role="presentation"
         zIndex="100"
-        borderLeft="1px solid #383838"
       >
         {children}
       </Box>
