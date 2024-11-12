@@ -12,7 +12,6 @@ import {
   Box,
 } from '@chakra-ui/react';
 import { BeatLoader } from 'react-spinners';
-import { isAddress } from 'viem';
 import { useAccount } from 'wagmi';
 import {
   CYPHERHOUSE_SPACEID,
@@ -20,7 +19,6 @@ import {
   ROLES,
   spaceIdValue,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
-import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
 import toast from 'react-hot-toast';
 import {
@@ -33,23 +31,13 @@ export const DropdownMenuAdminEvents = () => {
   const { address } = useAccount();
   const { userRole } = useTrustful();
   const [role, setRole] = useState<ROLES | null>(null);
-  const [inputAddress, setInputAddress] = useState<string>('');
-  const [validAddress, setValidAddress] = useState<EthereumAddress | null>(
-    null,
-  );
+
   const [eventAction, setEventAction] = useState<EVENT_ACTION | null>(null);
   const [isloading, setIsLoading] = useState<boolean>(false);
 
   const [inputValuesTextArea, setInputValuesTextArea] = useState<{
     [key: string]: string;
   }>({});
-
-  /* Updates the validAddress when the inputAddress changes */
-  useEffect(() => {
-    if (inputAddress && isAddress(inputAddress)) {
-      setValidAddress(new EthereumAddress(inputAddress));
-    }
-  }, [inputAddress]);
 
   useEffect(() => {
     setRole(null);
@@ -208,16 +196,21 @@ export const DropdownMenuAdminEvents = () => {
 
   return (
     <>
-      {userRole ? (
-        <>
-          <Card
-            background={'#F5FFFF0D'}
-            className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
-          >
-            <Text className="text-slate-50 mb-2 text-sm font-medium leading-none">
-              Select a function
-            </Text>
-            {userRole.role === Role.ROOT || userRole.role === Role.MANAGER ? (
+      {!userRole ? (
+        <Box flex={1} className="flex justify-center items-center">
+          <BeatLoader size={8} color="#B1EF42" />
+        </Box>
+      ) : (
+        userRole &&
+        (userRole.role === Role.ROOT || userRole.role === Role.MANAGER) && (
+          <>
+            <Card
+              background={'#F5FFFF0D'}
+              className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
+            >
+              <Text className="text-slate-50 mb-2 text-sm font-medium leading-none">
+                Select a function
+              </Text>
               <Select
                 placeholder="Select option"
                 className="flex opacity-70 font-normal leading-tight"
@@ -236,16 +229,10 @@ export const DropdownMenuAdminEvents = () => {
                   </option>
                 ))}
               </Select>
-            ) : (
-              toast.error('No role found')
-            )}
-          </Card>
-          {eventAction && renderEventAction[eventAction]}
-        </>
-      ) : (
-        <Box flex={1} className="flex justify-center items-center">
-          <BeatLoader size={8} color="#B1EF42" />
-        </Box>
+            </Card>
+            {eventAction && renderEventAction[eventAction]}
+          </>
+        )
       )}
     </>
   );

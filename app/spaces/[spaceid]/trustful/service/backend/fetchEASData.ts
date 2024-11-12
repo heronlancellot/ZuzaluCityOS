@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+/** This EAS Data using GraphQL doesn't work on the testnet. */
 export async function fetchEASData(query: any, variables: any) {
   try {
     const headers = {
@@ -18,18 +19,3 @@ export async function fetchEASData(query: any, variables: any) {
     return { response: null, success: false };
   }
 }
-
-//Example of usage:
-
-// const MyComponent = {
-//     const QUERY = `
-//       query GettingData($someVariable: String!) {
-//         someFieldFromEAS_Schema(variable: $someVariable) {
-//           id
-//           name
-//         }
-//       }
-//     `;
-//     const VARIABLES = { someVariable: "exampleValue" };
-//     const { result } = useEthereumAttestationService(QUERY, VARIABLES);
-//     };

@@ -2,12 +2,12 @@
 
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from 'react';
-
 import { useParams, useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import toast from 'react-hot-toast';
-
-import { DropdownMenuAdmin } from './DropdownMenuAdmin';
+import { DropdownMenuAdmin } from '@/app/spaces/[spaceid]/trustful/admin/components';
+import { Box } from '@chakra-ui/react';
+import { TheFooterNavbar } from '@/app/spaces/[spaceid]/trustful/components';
 
 export const AdminSection = () => {
   const { address, chain } = useAccount();
@@ -29,6 +29,9 @@ export const AdminSection = () => {
   return (
     <div>
       <DropdownMenuAdmin />
+      <Box className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full items-center">
+        <TheFooterNavbar />
+      </Box>
     </div>
   );
 };

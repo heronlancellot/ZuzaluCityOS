@@ -17,11 +17,15 @@ import {
   Textarea,
 } from '@chakra-ui/react';
 import { watchAccount } from '@wagmi/core';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
-import { isAddress, encodeAbiParameters, parseAbiParameters } from 'viem';
+import {
+  isAddress,
+  encodeAbiParameters,
+  parseAbiParameters,
+  zeroAddress,
+} from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
-import { normalize } from 'viem/ens';
 import { useAccount, useSwitchChain } from 'wagmi';
 import {
   ArrowIcon,
@@ -30,28 +34,29 @@ import {
   HandHeartIcon,
   UserIcon,
 } from '@/components/icons';
-import { BadgeDetailsNavigation, PasteToClipboardButton } from './';
+import {
+  AddressDisplay,
+  BadgeDetailsNavigation,
+  PasteToClipboardButton,
+  TheHeader,
+  TheFooterNavbar,
+} from '@/app/spaces/[spaceid]/trustful/components';
 import { isBytes32 } from '@/utils/format';
-import { AddressDisplay } from './AddressDisplay';
 import {
   AttestationRequestData,
-  fetchENSData,
   hasRole,
   submitAttest,
-} from '../service';
+} from '@/app/spaces/[spaceid]/trustful/service';
 import {
   BadgeTitle,
   ZUVILLAGE_BADGE_TITLES,
   TRUSTFUL_SCHEMAS,
   ROLES,
   isDev,
-} from '../constants/constants';
-import { ENS_ADDR_QUERY } from '../constants/schemaQueries';
-import { EthereumAddress } from '../utils/types';
+} from '@/app/spaces/[spaceid]/trustful/constants';
+import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
 import { config } from '@/context/WalletContext';
-import { TheHeader } from './TheHeader';
-import { TheFooterNavbar } from './TheFooterNavbar';
 import toast from 'react-hot-toast';
 import chakraTheme from '@/theme/lib/chakra-ui';
 
@@ -63,9 +68,8 @@ export enum GiveBadgeStepAddress {
 
 export const GiveBadge = () => {
   const { address, chainId } = useAccount();
-  const { push } = useRouter();
   const unwatch = watchAccount(config, {
-    onChange() { },
+    onChange() {},
   });
   const {
     addressStep,
@@ -83,14 +87,13 @@ export const GiveBadge = () => {
   const { switchChain } = useSwitchChain();
   const [badgeReceiverAddress, setBadgeReceiverAddress] =
     useState<EthereumAddress | null>(null);
-  const [inputAddress, setInputAddress] = useState<string>();
+  const [inputAddress, setInputAddress] = useState<string>('');
   const [inputBadge, setInputBadge] = useState<BadgeTitle>();
   const [commentBadge, setCommentBadge] = useState<string>();
   const [loading, setLoading] = useState<boolean>(false);
   const [text, setText] = useState<string>('');
   const searchParams = useSearchParams();
   const addressShared = searchParams.get('address');
-  const param = useParams();
 
   /** Commented for now. 
    * TODO: Check if 'Checkin/Pre-Checkin' is needed.
@@ -118,7 +121,6 @@ export const GiveBadge = () => {
       setAddressStep(GiveBadgeStepAddress.INSERT_ADDRESS);
       setBadgeInputAddress(null);
       setBadgeReceiverAddress(null);
-      setInputAddress('');
       setInputBadge(undefined);
       setCommentBadge('');
       setText('');
@@ -137,63 +139,27 @@ export const GiveBadge = () => {
 
   useEffect(() => {
     if (inputBadgeTitleList && inputBadgeTitleList?.length > 18) {
-      setInputBadgeTitleList((prevList) => prevList ? prevList?.slice(0, 18) : prevList)
+      setInputBadgeTitleList((prevList) =>
+        prevList ? prevList?.slice(0, 18) : prevList,
+      );
     }
   }, [inputBadgeTitleList]);
 
-  // Updates the badgeInputAddress when the inputAddress changes
+  /* Updates the badgeInputAddress when the inputAddress changes */
   useEffect(() => {
     if (inputAddress && isAddress(inputAddress)) {
       const ethAddress = new EthereumAddress(inputAddress);
       setBadgeInputAddress(ethAddress);
       setBadgeReceiverAddress(ethAddress);
-    } else {
-      handleResolveEns();
     }
   }, [inputAddress]);
 
-  // TODO: Check if handleResolveEns is needed
-  const handleResolveEns = async () => {
-    if (!inputAddress) return;
-    if (!/\.eth$/.test(inputAddress)) {
-      setBadgeInputAddress(null);
-      setBadgeReceiverAddress(null);
-      return;
-    }
-
-    const queryVariables = {
-      where: {
-        name: normalize(inputAddress),
-      },
-    };
-
-    const { response, success } = await fetchENSData(
-      ENS_ADDR_QUERY,
-      queryVariables,
-    );
-
-    // Behold the pyramid of doom. Where no error shall pass.
-    if (
-      !success ||
-      response === null ||
-      response === undefined ||
-      response.data.data.domains.length === 0
-    ) {
-      setBadgeInputAddress(null);
-      setBadgeReceiverAddress(null);
-      return;
-    }
-
-    const ensAddress = response?.data.data.domains[0].resolvedAddress.id;
-    if (isAddress(ensAddress)) {
-      const ethAddress = new EthereumAddress(ensAddress);
-      setBadgeInputAddress(ethAddress);
-      setBadgeReceiverAddress(ethAddress);
-    }
-  };
-
-  // Do not allow invalid Ethereum addresses to move into the next step
+  /* Do not allow invalid Ethereum addresses to move into the next step */
   const handleInputAddressConfirm = () => {
+    if (!address) {
+      toast.error('No account connected: Please connect your wallet.');
+      return;
+    }
     if (badgeInputAddress && isAddress(badgeInputAddress?.address)) {
       setAddressStep(GiveBadgeStepAddress.INSERT_BADGE_AND_COMMENT);
     } else if (!inputAddress || !isAddress(inputAddress)) {
@@ -208,7 +174,7 @@ export const GiveBadge = () => {
     }
   };
 
-  // Get the current badge selected and move to state
+  /* Get the current badge selected and move to state */
   const handleBadgeSelectChange = (event: any) => {
     let selectedBadge: BadgeTitle | undefined = undefined;
     ZUVILLAGE_BADGE_TITLES.map((badge) => {
@@ -230,8 +196,9 @@ export const GiveBadge = () => {
     setInputBadge(selectedBadge);
   };
 
-  // Get the current comment and move to state
-  // It also updates the textarea height based on the content
+  /* Get the current comment and move to state
+   * It also updates the textarea height based on the content
+   */
   const handleTextareaChange = (event: any) => {
     const textareaLineHeight = 22;
     const scrollHeight = event.target.scrollHeight - 16;
@@ -248,12 +215,12 @@ export const GiveBadge = () => {
   // Changes the continue arrow color based on the status of a valid input address
   const iconColor =
     (inputAddress && isAddress(inputAddress)) ||
-      (badgeInputAddress && isAddress(badgeInputAddress?.address))
-      ? 'text-[#000000  ]'
+    (badgeInputAddress && isAddress(badgeInputAddress?.address) && address)
+      ? 'text-[#000000]'
       : 'text-[#F5FFFFB2]';
   const iconBg =
     (inputAddress && isAddress(inputAddress)) ||
-      (badgeInputAddress && isAddress(badgeInputAddress?.address))
+    (badgeInputAddress && isAddress(badgeInputAddress?.address) && address)
       ? 'bg-[#B1EF42B2]'
       : 'bg-[#37383A]';
 
@@ -366,7 +333,6 @@ export const GiveBadge = () => {
       parseAbiParameters(encodeParam),
       encodeArgs,
     );
-    console.log('data', data);
 
     const attestationRequestData: AttestationRequestData = {
       recipient: badgeInputAddress.address,
@@ -375,18 +341,16 @@ export const GiveBadge = () => {
       refUID:
         inputBadge.title === 'Check-out'
           ? (commentBadge as `0x${string}`)
-          : '0x0000000000000000000000000000000000000000000000000000000000000000',
+          : zeroAddress,
       data: data,
       value: BigInt(0),
     };
-    console.log('attestationRequestData', attestationRequestData);
 
     const response = await submitAttest(
       address,
       inputBadge.uid,
       attestationRequestData,
     );
-    console.log('response', response);
 
     if (response instanceof Error) {
       setLoading(false);
