@@ -62,7 +62,7 @@ export const DropdownMenuAdmin = () => {
   );
   const [action, setAction] = useState<number>(0);
   const [adminAction, setAdminAction] = useState<ADMIN_ACTION | null>(null);
-  const [isloading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [inputValuesTextArea, setInputValuesTextArea] = useState<{
     [key: string]: string;
@@ -552,7 +552,7 @@ export const DropdownMenuAdmin = () => {
             className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) || !role ? 'cursor-not-allowed opacity-10' : ''}`}
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={!isAddress(inputAddress.toString()) || !role}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
@@ -626,7 +626,7 @@ export const DropdownMenuAdmin = () => {
             className="w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg"
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={!isAddress(inputAddress.toString()) || !role}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
@@ -669,7 +669,7 @@ export const DropdownMenuAdmin = () => {
             className="w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg"
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={!isAddress(inputAddress.toString())}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
@@ -737,7 +737,7 @@ export const DropdownMenuAdmin = () => {
             className="w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg"
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={!inputValuesTextArea['attestationTitle']}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
@@ -807,7 +807,7 @@ export const DropdownMenuAdmin = () => {
             className="w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg"
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={!schemaUID}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
@@ -869,7 +869,7 @@ export const DropdownMenuAdmin = () => {
             className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) || !inputValuesTextArea['removeSession'] ? 'cursor-not-allowed opacity-10' : ''}`}
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={
               !isAddress(inputAddress.toString()) ||
               !inputValuesTextArea['removeSessionTitle']
@@ -930,7 +930,7 @@ export const DropdownMenuAdmin = () => {
             className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) ? 'cursor-not-allowed opacity-10' : ''}`}
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={!isAddress(inputAddress.toString())}
             spinner={<BeatLoader size={8} color="white" />}
             onClick={() => {
@@ -1015,7 +1015,7 @@ export const DropdownMenuAdmin = () => {
             className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) || !inputValuesTextArea['createSessionName'] ? 'cursor-not-allowed opacity-10' : ''}`}
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={
               !isAddress(inputAddress.toString()) ||
               !inputValuesChange['createSessionEventId']
@@ -1066,7 +1066,7 @@ export const DropdownMenuAdmin = () => {
             className={`w-full justify-center items-center gap-2 px-6 bg-[#B1EF42] text-[#161617] rounded-lg ${!isAddress(inputAddress.toString()) || !inputValuesTextArea['removeSession'] ? 'cursor-not-allowed opacity-10' : ''}`}
             _hover={{ bg: '#B1EF42' }}
             _active={{ bg: '#B1EF42' }}
-            isLoading={isloading}
+            isLoading={isLoading}
             isDisabled={
               !isAddress(inputAddress.toString()) ||
               !inputValuesChange['wrapSessionId']
