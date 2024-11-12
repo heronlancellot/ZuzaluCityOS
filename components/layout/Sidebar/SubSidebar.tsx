@@ -3,12 +3,10 @@ import React, { useState } from 'react';
 import {
   CalendarIcon,
   ChevronDownIcon,
-  NotificationIcon,
   SettingIcon,
-  ShieldIcon,
   TableIcon,
-  UserPlusIcon,
   EventIcon,
+  AnnouncementsIcon,
 } from 'components/icons';
 import SidebarButton from './SidebarButton';
 import {
@@ -242,11 +240,12 @@ const SubSidebar: React.FC<SubSidebarProps> = ({
             content="Events"
             isActive={pathname === `/spaces/${spaceId}/events`}
           />
-          {/*<SidebarButton*/}
-          {/*  icon={<AnnouncementsIcon />}*/}
-          {/*  content="Announcements"*/}
-          {/*  isActive={false}*/}
-          {/*/>*/}
+          <SidebarButton
+            icon={<AnnouncementsIcon />}
+            content="Calendar"
+            isActive={pathname === `/spaces/${spaceId}/calendar`}
+            onClick={() => router.push(`/spaces/${spaceId}/calendar`)}
+          />
           {isAdmin && (
             <SidebarButton
               icon={<TableIcon />}

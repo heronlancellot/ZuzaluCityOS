@@ -12,10 +12,7 @@ import {
 import { EventCard } from '@/components/cards';
 // import AnnouncementCard from 'components/AnnouncementCart';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import {
-  ChevronDownIcon,
-  ShareIcon,
-} from 'components/icons';
+import { ChevronDownIcon, ShareIcon } from 'components/icons';
 import SidebarButton from 'components/layout/Sidebar/SidebarButton';
 import Image from 'next/image';
 import React, { Fragment, useEffect, useState } from 'react';

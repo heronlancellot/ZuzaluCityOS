@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { IconProps } from 'types';
 
-export const MapIcon: React.FC<IconProps & { fill?: string }> = ({
-  size = 6,
-  fill = 'white',
-}) => {
+export const MapIcon: React.FC<
+  IconProps & { fill?: string; style?: React.CSSProperties }
+> = ({ size = 6, fill = 'white', style }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -12,6 +11,7 @@ export const MapIcon: React.FC<IconProps & { fill?: string }> = ({
       fill={fill}
       width={`${size * 4}px`}
       height={`${size * 4}px`}
+      style={style}
     >
       <path
         fillRule="evenodd"

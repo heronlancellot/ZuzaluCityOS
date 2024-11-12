@@ -88,6 +88,8 @@ import { WrenchIcon } from './Wrench';
 import { KeyIcon } from './Key';
 import { ArrowUpTrayIcon } from './ArrowUpTray';
 import { WalletIcon } from './Wallet';
+import { LinkIcon } from './Link';
+import { TrashIcon } from './Trash';
 export {
   HomeIcon,
   SearchIcon,
@@ -179,4 +181,6 @@ export {
   KeyIcon,
   ArrowUpTrayIcon,
   WalletIcon,
+  LinkIcon,
+  TrashIcon,
 };

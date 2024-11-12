@@ -41,7 +41,7 @@ export const PreviewFile = (props: {
   errorMessage?: string;
   sx?: React.CSSProperties;
 }) => {
-  const { src = tempSrc, isLoading, errorMessage, sx } = props;
+  const { src, isLoading, errorMessage, sx } = props;
   return (
     <>
       <Stack sx={{ ...sx, backgroundColor: '#313131', position: 'relative' }}>
