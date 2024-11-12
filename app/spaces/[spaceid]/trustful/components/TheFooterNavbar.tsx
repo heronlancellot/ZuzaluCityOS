@@ -12,13 +12,21 @@ import {
 } from '@/components/icons';
 import { useTrustful } from '@/context/TrustfulContext';
 import { TrustfulPage } from '@/app/spaces/[spaceid]/trustful/constants/constants';
+import { useEffect, useState } from 'react';
 
 export const TheFooterNavbar = () => {
   const params = useParams();
   const { push } = useRouter();
   // const { villagerAttestationCount } = useContext(WalletContext);
-  const currentPath = window.location.pathname;
-  const lastUrlPath = currentPath.split('/').pop();
+  const [lastUrlPath, setLastUrlPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const currentPath = new URL(window.location.href).pathname;
+      const lastPath = currentPath.split('/').pop() || null;
+      setLastUrlPath(lastPath);
+    }
+  }, []);
 
   const villagerAttestationCount = Number(1);
   const checkInStatus =
