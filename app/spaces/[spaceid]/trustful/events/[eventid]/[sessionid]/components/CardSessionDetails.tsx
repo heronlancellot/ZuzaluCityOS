@@ -21,13 +21,11 @@ export const CardSessionDetails = () => {
         const sessionsData = await getSession({
           eventid: Number(params.eventid),
         });
-        console.log('sessionsData', sessionsData);
 
         if (sessionsData && sessionsData.sessions.length > 0) {
           const sessionById = sessionsData.sessions.find(
             (session) => session.sessionId === Number(params.sessionid),
           );
-          console.log('sessionById', sessionById);
 
           if (sessionById) {
             setSession(sessionById);
@@ -40,12 +38,6 @@ export const CardSessionDetails = () => {
 
     fetchSession();
   }, [address, params.eventid, params.sessionid]);
-
-  useEffect(() => {
-    if (session) {
-      console.log('Updated session:', session);
-    }
-  }, [session]);
 
   if (!address) {
     toast.error('User not found');

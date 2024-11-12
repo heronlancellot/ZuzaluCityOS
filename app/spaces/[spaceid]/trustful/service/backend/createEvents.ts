@@ -37,12 +37,6 @@ export const createEvents = async ({
     return;
   }
 
-  console.log('user.address', user.address);
-  console.log('name', name);
-  console.log('description', description);
-  console.log('spaceId', spaceId);
-  console.log('zucityId', zucityId);
-
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_RAILWAY_TRUSTFUL}/events`,

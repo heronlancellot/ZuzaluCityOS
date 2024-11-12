@@ -14,7 +14,10 @@ import {
 import { BeatLoader } from 'react-spinners';
 import { Address, isAddress } from 'viem';
 import { useAccount } from 'wagmi';
-import { ROLES } from '@/app/spaces/[spaceid]/trustful/constants/constants';
+import {
+  Event,
+  ROLES,
+} from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { removeSession } from '@/app/spaces/[spaceid]/trustful/service/smart-contract';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
 import { useTrustful } from '@/context/TrustfulContext';
@@ -23,15 +26,14 @@ import {
   SESSION_DETAILS_ACTION,
   SESSION_DETAILS_OPTIONS,
 } from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
-import { InputAddressUser } from '@/app/spaces/[spaceid]/trustful/components/';
+import { InputAddressUser } from '@/app/spaces/[spaceid]/trustful/components';
 import {
   joinSession,
   deleteSession,
+  getAllEventsBySpaceId,
   wrapSession,
 } from '@/app/spaces/[spaceid]/trustful/service/backend/';
-import { Event } from '@/app/spaces/[spaceid]/trustful/service/backend';
 import { useParams } from 'next/navigation';
-import { getAllEvents } from '@/app/spaces/[spaceid]/trustful/service/backend/getAllEvents';
 
 export const DropdownSessionDetails = () => {
   const { address } = useAccount();
@@ -64,25 +66,13 @@ export const DropdownSessionDetails = () => {
   }, [inputAddress]);
 
   useEffect(() => {
-    console.log('userRole', userRole);
-  }, [userRole]);
-
-  useEffect(() => {
     setRole(null);
   }, [sessionAction]);
 
   useEffect(() => {
-    console.log('inputValuesTextArea', inputValuesTextArea);
-  }, [inputValuesTextArea]);
-
-  useEffect(() => {
-    console.log('inputValuesChange', inputValuesChange);
-  }, [inputValuesChange]);
-
-  useEffect(() => {
     const fetchAllEvents = async () => {
       try {
-        const eventsData = await getAllEvents({
+        const eventsData = await getAllEventsBySpaceId({
           spaceId: Number(spaceId),
           userAddress: address as Address,
         });
@@ -114,15 +104,12 @@ export const DropdownSessionDetails = () => {
       sessionOwner: validAddress.address as Address,
       msgValue: BigInt(0),
     });
-    console.log('responseSmartContract', responseSmartContract);
 
     const responseBackend = await deleteSession({
       role: userRole.role,
       sessionId: Number(sessionId),
       userAddress: validAddress.address as Address,
     });
-
-    console.log('responseBackend', responseBackend);
 
     setIsLoading(false);
     // toast.success(
@@ -143,8 +130,6 @@ export const DropdownSessionDetails = () => {
       sessionId: Number(sessionId),
       userAddress: address as Address,
     });
-
-    console.log('response join-session', response);
 
     if (response instanceof Error) {
       setIsLoading(false);
@@ -169,8 +154,6 @@ export const DropdownSessionDetails = () => {
       sessionId: Number(sessionId),
       userAddress: address as Address,
     });
-
-    console.log('response join-session', response);
 
     if (response instanceof Error) {
       setIsLoading(false);

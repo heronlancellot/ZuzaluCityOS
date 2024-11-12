@@ -9,16 +9,16 @@ import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
-import { DropdownMenuAdminEvents } from '@/app/spaces/[spaceid]/trustful/events/components/DropdownMenuAdminEvents';
-import { CardEvents } from './components/CardEvents';
+import {
+  CardEvents,
+  DropdownMenuAdminEvents,
+} from '@/app/spaces/[spaceid]/trustful/events/components';
 import { ChakraProvider } from '@chakra-ui/react';
 import chakraTheme from '@/theme/lib/chakra-ui';
-
 
 const TrustfulPageEvents = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
-  console.log('params', params);
 
   const [space, setSpace] = useState<Space>();
   const [events, setEvents] = useState<Event[]>([]);

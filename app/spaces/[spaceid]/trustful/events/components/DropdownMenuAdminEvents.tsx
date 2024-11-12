@@ -27,8 +27,7 @@ import {
   EVENT_ACTION,
   EVENT_OPTIONS,
 } from '@/app/spaces/[spaceid]/trustful/admin/components/ui-utils';
-
-import { createEvents } from '../../service/backend/createEvents';
+import { createEvents } from '@/app/spaces/[spaceid]/trustful/service/';
 
 export const DropdownMenuAdminEvents = () => {
   const { address } = useAccount();
@@ -53,16 +52,8 @@ export const DropdownMenuAdminEvents = () => {
   }, [inputAddress]);
 
   useEffect(() => {
-    console.log('userRole', userRole);
-  }, [userRole]);
-
-  useEffect(() => {
     setRole(null);
   }, [eventAction]);
-
-  useEffect(() => {
-    console.log('inputValuesTextArea', inputValuesTextArea);
-  }, [inputValuesTextArea]);
 
   /** EVENT */
   const handleCreateEvent = async () => {
@@ -84,8 +75,6 @@ export const DropdownMenuAdminEvents = () => {
       zucityId: CYPHERHOUSE_SPACEID,
       user: userRole,
     });
-
-    console.log('response CreateEvents', response);
 
     if (response instanceof Error) {
       setIsLoading(false);

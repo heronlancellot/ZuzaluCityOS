@@ -71,12 +71,10 @@ export const getSession = async ({
         },
       },
     );
-    console.log('responseresponse', response);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data: GetSessionResponse = await response.json();
-    console.log('data GetSession', data);
     return data;
   } catch (error) {
     console.error('Error getting session:', error);

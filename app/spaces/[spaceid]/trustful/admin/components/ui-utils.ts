@@ -46,13 +46,13 @@ export interface AdminActions {
 
 export const VILLAGER_OPTIONS: AdminActions[] = [
   {
-    action: ADMIN_ACTION.JOIN_SESSION, // entra na session dentro da pagina da session selecionada, dai pode dar join
+    action: ADMIN_ACTION.JOIN_SESSION,
   },
   {
-    action: ADMIN_ACTION.CREATE_SESSION, // Cria a session no evento
+    action: ADMIN_ACTION.CREATE_SESSION,
   },
   {
-    action: ADMIN_ACTION.WRAP_SESSION, // sai na session dentro da pagina da session selecionada, dai pode dar wrap
+    action: ADMIN_ACTION.WRAP_SESSION,
   },
 ];
 
@@ -64,7 +64,7 @@ export const MANAGER_OPTIONS: AdminActions[] = [
     action: ADMIN_ACTION.SET_ATTESTATION_TITLE,
   },
   {
-    action: ADMIN_ACTION.REVOKE_ROLE, // This Revoke Role has some filters to not show the possibility to revoke the ROOT role
+    action: ADMIN_ACTION.REVOKE_ROLE,
   },
   ...VILLAGER_OPTIONS,
 ];

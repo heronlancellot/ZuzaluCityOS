@@ -83,20 +83,8 @@ export const DropdownMenuAdmin = () => {
   }, [inputAddress]);
 
   useEffect(() => {
-    console.log('userRole', userRole);
-  }, [userRole]);
-
-  useEffect(() => {
     setRole(null);
   }, [adminAction]);
-
-  useEffect(() => {
-    console.log('inputValuesTextArea', inputValuesTextArea);
-  }, [inputValuesTextArea]);
-
-  useEffect(() => {
-    console.log('inputValuesChange', inputValuesChange);
-  }, [inputValuesChange]);
 
   /**
    * Displays an error toast message if the user is connected to an unsupported network
@@ -284,15 +272,12 @@ export const DropdownMenuAdmin = () => {
       sessionOwner: validAddress.address as Address,
       msgValue: BigInt(0),
     });
-    console.log('responseSmartContract', responseSmartContract);
 
     const responseBackend = await deleteSession({
       role: userRole.role,
       sessionId: Number(inputValuesChange['removeSessionId']),
       userAddress: validAddress.address as Address,
     });
-
-    console.log('responseBackend', responseBackend);
 
     setIsLoading(false);
     // toast.success(
@@ -362,8 +347,6 @@ export const DropdownMenuAdmin = () => {
       userAddress: userRole.address,
     });
 
-    console.log('response ', response);
-
     if (response instanceof Error) {
       setIsLoading(false);
       toast.error(`Transaction Rejected: ${response.message}`);
@@ -386,7 +369,6 @@ export const DropdownMenuAdmin = () => {
       toast.error('Please connect first. No userRole found.');
       return;
     }
-    console.log('validAddress', validAddress);
 
     const response = await createSession({
       user: userRole,

@@ -12,6 +12,16 @@ export const spaceIdValue = 1;
 export const TestApplicationSpaceId =
   'kjzl6kcym7w8y7drgmopt1aufcut7p9cbwyoaa0ht9vl8sgs5q39blhgsbeyb83';
 
+export type Event = {
+  eventId: number;
+  zucityId: number | null;
+  name: string;
+  description: string;
+  spaceId: string | number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export enum Role {
   ROOT = 'ROOT_ROLE',
   MANAGER = 'MANAGER_ROLE',

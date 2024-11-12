@@ -9,13 +9,11 @@ import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, Space, SpaceEventData } from '@/types';
 import SubSidebar from '@/components/layout/Sidebar/SubSidebar';
 import { useTrustful } from '@/context/TrustfulContext';
-import { Address } from 'viem';
-import { MyBadgeDetails } from './components/MyBadgeDetails';
+import { MyBadgeDetails } from '@/app/spaces/[spaceid]/trustful/my-badges/details/components';
 
 const TrustfulPage = () => {
   const params = useParams();
   const spaceId = params.spaceid.toString();
-  console.log('params', params);
 
   const [space, setSpace] = useState<Space>();
   const [events, setEvents] = useState<Event[]>([]);
