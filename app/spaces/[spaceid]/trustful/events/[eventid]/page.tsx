@@ -14,6 +14,8 @@ import {
   CardSession,
   DropdownEventSelected,
 } from '@/app/spaces/[spaceid]/trustful/events/[eventid]/components';
+import { ChakraProvider } from '@chakra-ui/react';
+import chakraTheme from '@/theme/lib/chakra-ui';
 
 const TrustfulPageEventId = () => {
   const params = useParams();
@@ -148,7 +150,9 @@ const TrustfulPageEventId = () => {
             padding: '20px',
           }}
         >
-          <DropdownEventSelected />
+          <ChakraProvider theme={chakraTheme}>
+            <DropdownEventSelected />
+          </ChakraProvider>
           <CardEventDetails />
           <CardSession />
         </Box>
