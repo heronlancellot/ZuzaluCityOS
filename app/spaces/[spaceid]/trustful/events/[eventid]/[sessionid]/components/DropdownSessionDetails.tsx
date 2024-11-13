@@ -16,6 +16,7 @@ import { Address, isAddress } from 'viem';
 import { useAccount } from 'wagmi';
 import {
   Event,
+  Role,
   ROLES,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { removeSession } from '@/app/spaces/[spaceid]/trustful/service/smart-contract';
@@ -125,8 +126,12 @@ export const DropdownSessionDetails = () => {
       return;
     }
 
+    if (userRole.role === Role.NO_ROLE) {
+      toast.error("User Address doesn't have a role");
+      return;
+    }
+
     const response = await joinSession({
-      role: userRole.role,
       sessionId: Number(sessionId),
       userAddress: address as Address,
     });
