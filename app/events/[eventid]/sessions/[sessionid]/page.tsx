@@ -490,10 +490,10 @@ const Home = () => {
     }
     setSessionDate(date);
     setSessionStartTime(
-      dayjs(date).tz(eventData?.timezone).set('hour', 0).set('minute', 0),
+      dayjs.tz(date, eventData?.timezone).set('hour', 0).set('minute', 0),
     );
     setSessionEndTime(
-      dayjs(date).tz(eventData?.timezone).set('hour', 0).set('minute', 0),
+      dayjs.tz(date, eventData?.timezone).set('hour', 0).set('minute', 0),
     );
   };
 
@@ -766,16 +766,10 @@ const Home = () => {
       experience_level: sessionExperienceLevel,
       createdAt: dayjs().format('YYYY-MM-DDTHH:mm:ss[Z]').toString(),
       startTime: sessionStartTime
-        ? dayjs(sessionStartTime)
-            .utc()
-            .format('YYYY-MM-DDTHH:mm:ss[Z]')
-            .toString()
+        ? dayjs.tz(sessionStartTime, timezone).toISOString()
         : null,
       endTime: sessionEndTime
-        ? dayjs(sessionEndTime)
-            .utc()
-            .format('YYYY-MM-DDTHH:mm:ss[Z]')
-            .toString()
+        ? dayjs.tz(sessionEndTime, timezone).toISOString()
         : null,
       profileId,
       eventId,
@@ -1266,6 +1260,7 @@ const Home = () => {
                           {eventData?.timezone}
                         </Typography>
                         <DesktopDatePicker
+                          timezone={eventData?.timezone}
                           value={sessionDate}
                           onChange={(newValue) => {
                             if (newValue !== null) {
