@@ -16,7 +16,6 @@ interface EventAboutTypes {
 }
 
 const EventAbout = ({ description }: EventAboutTypes) => {
-  console.log(description);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [isCanCollapse, setIsCanCollapse] = useState<boolean>(false);
 
