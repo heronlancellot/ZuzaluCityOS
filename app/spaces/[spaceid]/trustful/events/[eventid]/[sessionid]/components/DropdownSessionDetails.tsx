@@ -16,6 +16,7 @@ import { Address, isAddress } from 'viem';
 import { useAccount } from 'wagmi';
 import {
   Event,
+  Role,
   ROLES,
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import { removeSession } from '@/app/spaces/[spaceid]/trustful/service/smart-contract';
@@ -125,8 +126,12 @@ export const DropdownSessionDetails = () => {
       return;
     }
 
+    if (userRole.role === Role.NO_ROLE) {
+      toast.error("User Address doesn't have a role");
+      return;
+    }
+
     const response = await joinSession({
-      role: userRole.role,
       sessionId: Number(sessionId),
       userAddress: address as Address,
     });
@@ -351,17 +356,21 @@ export const DropdownSessionDetails = () => {
             className="w-full border border-[#F5FFFF14] border-opacity-[8] p-4 gap-2"
           >
             <Text className="text-white mb-2 font-medium leading-none">
-              Select a functionsss
+              Select an option
             </Text>
             <Select
               placeholder="Select option"
-              className="flex text-black opacity-70 font-normal leading-tight"
+              className="flex  opacity-70 font-normal leading-tight"
               color="white"
               onChange={handleActionSelectChange}
               focusBorderColor={'#B1EF42'}
             >
               {SESSION_DETAILS_OPTIONS.map((event, index) => (
-                <option key={index} value={event.action}>
+                <option
+                  key={index}
+                  value={event.action}
+                  style={{ color: 'black' }}
+                >
                   {event.action}
                 </option>
               ))}

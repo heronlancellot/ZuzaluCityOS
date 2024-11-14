@@ -174,12 +174,12 @@ export const DropdownEventSelected = () => {
         <Flex className="w-full flex-col">
           <Flex className="gap-4 pb-4 justify-start items-center">
             <Textarea
-              style={{ color: 'black' }}
-              className="text-black text-base font-normal leading-snug"
+              style={{ color: 'white' }}
+              className="text-white text-base font-normal leading-snug"
               color="white"
               placeholder="Set the Session Name..."
               _placeholder={{
-                className: 'text-black',
+                className: 'text-white',
               }}
               focusBorderColor={'#B1EF42'}
               value={inputValuesTextArea['createSessionName'] || ''}
@@ -241,7 +241,7 @@ export const DropdownEventSelected = () => {
             {userRole.role === Role.ROOT || userRole.role === Role.MANAGER ? (
               <Select
                 placeholder="Select option"
-                className="flex text-black opacity-70 font-normal leading-tight"
+                className="flex opacity-70 font-normal leading-tight"
                 color="white"
                 onChange={handleActionSelectChange}
                 focusBorderColor={'#B1EF42'}
@@ -249,7 +249,11 @@ export const DropdownEventSelected = () => {
                 {SESSION_OPTIONS.filter(
                   (option) => option.action == SESSION_ACTION.CREATE_SESSION,
                 ).map((event, index) => (
-                  <option key={index} value={event.action}>
+                  <option
+                    key={index}
+                    value={event.action}
+                    style={{ color: 'black' }}
+                  >
                     {event.action}
                   </option>
                 ))}
