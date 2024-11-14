@@ -796,6 +796,7 @@ const Home = () => {
       liveStreamLink: sessionLiveStreamLink,
       recording_link: sessionRecordingLink,
     };
+    console.log(formattedData, sessionEndTime, sessionStartTime);
     try {
       setBlockClickModal(true);
       const response = await supaEditSession(formattedData);
