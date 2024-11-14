@@ -1832,10 +1832,6 @@ const Home = () => {
     if (session?.id) {
       const checkAuth = async () => {
         try {
-          if (session.isPublic) {
-            setCanViewSessions(true);
-            return {};
-          }
           const eventDetails = await getEventDetailInfo();
           const admins =
             eventDetails?.admins?.map((admin) => admin.id.toLowerCase()) || [];
@@ -1850,6 +1846,10 @@ const Home = () => {
             await authenticate();
           }
           const adminId = ceramic?.did?.parent.toString().toLowerCase() || '';
+          if (session.isPublic) {
+            setCanViewSessions(true);
+            return {};
+          }
           if (!adminId) {
             setDialogTitle('You are not logged in');
             setDialogMessage('Please login and refresh the page');
