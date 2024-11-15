@@ -11,7 +11,7 @@ export const QRCodeGiveBadge = () => {
 
   //TODO: Check if the link works in production development and it's redirecting to zuzalu page correctly.
   const isDev = process.env.NEXT_PUBLIC_ENV;
-  const prefixToGiveBadge = `${isDev ? `http://localhost:3000/spaces/${params.spaceid}/trustful` : `http://localhost:3000/spaces/${params.spaceid}/trustful`}`;
+  const prefixToGiveBadge = `${isDev ? `http://localhost:3000/spaces/${params.spaceid}/trustful` : `https://www.zuzalu.city/spaces/${params.spaceid}/trustful`}`;
   const linkToGiveBadgeAddress = `${prefixToGiveBadge}?address=${address}`;
 
   return (

@@ -14,7 +14,6 @@ import { Address } from 'viem';
 import { useAccount, useSwitchChain } from 'wagmi';
 import { scroll, scrollSepolia } from 'viem/chains';
 import {
-  CYPHERHOUSE_SPACEID,
   isDev,
   Role,
   ROLES,
@@ -23,13 +22,13 @@ import {
 } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 import {
   getAllAttestationTitles,
-  getAllEvents,
+  getAllEventsBySpaceId,
   getSession,
   getUserRole,
   hasRole,
 } from '@/app/spaces/[spaceid]/trustful/service';
 import { EthereumAddress } from '@/app/spaces/[spaceid]/trustful/utils/types';
-import toast from 'react-hot-toast';
+// import toast from 'react-hot-toast';
 import { getSpace } from '@/app/spaces/[spaceid]/trustful/service/backend/getSpace';
 
 interface User {
@@ -84,21 +83,21 @@ interface TrustfulContextType {
 
 const defaultContextValue: TrustfulContextType = {
   userRole: null,
-  setUserRole: () => { },
+  setUserRole: () => {},
 
   /**BadgeContext */
   selectedBadge: null,
-  setSelectedBadge: () => { },
+  setSelectedBadge: () => {},
 
   /**GiveBadgeContext */
   badgeInputAddress: null,
-  setBadgeInputAddress: () => { },
+  setBadgeInputAddress: () => {},
   addressStep: GiveBadgeStepAddress.INSERT_ADDRESS,
-  setAddressStep: () => { },
+  setAddressStep: () => {},
   inputBadgeTitleList: null,
-  setInputBadgeTitleList: () => { },
+  setInputBadgeTitleList: () => {},
   newTitleAdded: false,
-  setNewTitleAdded: () => { },
+  setNewTitleAdded: () => {},
 };
 
 const TrustfulContext = createContext<TrustfulContextType>(defaultContextValue);
@@ -128,14 +127,14 @@ export const TrustfulContextProvider: React.FC<
 
   const handleBadgeDropdown = async () => {
     if (!address) {
-      toast.error('No account connected. Please connect your wallet.');
+      // toast.error('No account connected. Please connect your wallet.');
       return;
     }
 
     if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
-      toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
-      );
+      // toast.error(
+      //   `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
+      // );
       switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
       return;
     }
@@ -143,9 +142,9 @@ export const TrustfulContextProvider: React.FC<
     const filteredBadges: string[] | Error = await getAllAttestationTitles();
 
     if (filteredBadges instanceof Error || !filteredBadges) {
-      toast.error(
-        'Error Read Contract.Error while reading badge titles from the blockchain.',
-      );
+      // toast.error(
+      //   'Error Read Contract.Error while reading badge titles from the blockchain.',
+      // );
       return;
     }
 
@@ -190,7 +189,6 @@ export const TrustfulContextProvider: React.FC<
 
   const { switchChain } = useSwitchChain();
   const { chainId, address } = useAccount();
-
 
   useEffect(() => {
     const fetchUserRoleByContract = async () => {
@@ -241,53 +239,43 @@ export const TrustfulContextProvider: React.FC<
     fetchUserRole();
   }, [address, chainId]);
 
-  // host_ + titleSession(Name-Session) + _ + Timestamp
-
-  // nas sessoes que eu sou owner adicionar badge de host e atendee
-  // 1. PEGAR Todos os titulos de sessão do backend --> getSession() address - owner host  ( tem que ser host de alguma sessão para ter essa badge especial )
-  // 2. Montar badge ( #1 String ( host_ + titleSession(Name-Session)) #2 Badge ( atendee_ + titleSession(Name-Session)) )
-  // 3. Adicionar essas 2 strings no filteredBadges.
-
-  // Badge de Host e Atendee se for o owner da Sessão.
-
   useEffect(() => {
     handleBadgeDropdown();
 
     const fetchAllEvents = async () => {
       try {
-        // TODO: Get all spaces -> armazenar cada spaceId // ja tem só 1
-        // TODO: Get all events do space de cada espaco
-        // get session passando cada evento e ver se o hostAddress é igual ao address
         const spaces = await getSpace({ userAddress: address as Address });
         const spaceIds = spaces && spaces.map((space) => space.spaceId);
 
         if (spaceIds) {
           for (const spaceId of spaceIds) {
-            console.log('spaceId', spaceId);
-            const events = await getAllEvents({
+            const events = await getAllEventsBySpaceId({
               spaceId: spaceIdValue,
               userAddress: address as Address,
             });
 
-            console.log('eventsxxxx', events);
             if (events && events.length > 0) {
               events.map(async (event) => {
                 const sessions = await getSession({
                   eventid: event.eventId,
                   userAddress: address as Address,
                 });
-                console.log('sessionssessionssessionssessions', sessions);
                 if (sessions) {
                   sessions.sessions.forEach((session) => {
                     if (
                       address &&
                       session.hostAddress &&
-                      session.hostAddress.toLowerCase() == address?.toLowerCase()
+                      session.hostAddress.toLowerCase() ==
+                        address?.toLowerCase()
                     ) {
                       // Add host badge
                       const hostBadgeTitle = `host_${session.name}`;
                       const attendeeBadgeTitle = `attendee_${session.name}`;
-                      setInputBadgeTitleList((prevList) => [...(prevList || []), hostBadgeTitle, attendeeBadgeTitle])
+                      setInputBadgeTitleList((prevList) => [
+                        ...(prevList || []),
+                        hostBadgeTitle,
+                        attendeeBadgeTitle,
+                      ]);
                     }
                   });
                 }
@@ -296,11 +284,11 @@ export const TrustfulContextProvider: React.FC<
           }
         }
       } catch (error) {
-        console.log('error', error);
+        console.error('error', error);
       }
     };
-    fetchAllEvents()
-  }, [address])
+    fetchAllEvents();
+  }, [address]);
 
   return (
     <TrustfulContext.Provider value={TrustfulContextData}>
