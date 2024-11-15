@@ -21,6 +21,7 @@ import Image from 'next/image';
 import { ZuButton } from '@/components/core';
 import { formatUserName } from '@/utils/format';
 import { useLitContext } from '@/context/LitContext';
+import Profile from '@/components/profile';
 
 export function formatAddressString(str?: string, maxLength: number = 10) {
   if (!str) return;
@@ -41,7 +42,9 @@ const Header = () => {
     useCeramicContext();
   const { litDisconnect } = useLitContext();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showProfile, setShowProfile] = useState(false);
   const { disconnect } = useDisconnect();
+
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -59,6 +62,7 @@ const Header = () => {
   };
 
   const handleProfile = () => {
+    setShowProfile(true);
     handleMenuClose();
   };
 
@@ -93,6 +97,7 @@ const Header = () => {
       top={0}
       sx={{ backdropFilter: 'blur(20px)' }}
     >
+      <Profile showModal={showProfile} onClose={() => setShowProfile(false)} />
       <Box
         display="flex"
         alignItems="center"
@@ -152,7 +157,7 @@ const Header = () => {
             onClick={handleMenuClick}
           >
             <Image
-              src="/user/avatar_p.png"
+              src={profile?.avatar ?? '/user/avatar_p.png'}
               alt="avatar"
               height={24}
               width={24}
@@ -239,7 +244,6 @@ const Header = () => {
                     My Profile
                   </Typography>
                 </Stack>
-                <Typography variant="caption">Profile Coming soon</Typography>
               </Stack>
               <Stack
                 flexDirection="column"

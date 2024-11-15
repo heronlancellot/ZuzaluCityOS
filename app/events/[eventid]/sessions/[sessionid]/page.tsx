@@ -1,6 +1,11 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  useRouter,
+  useParams,
+  usePathname,
+  useSearchParams,
+} from 'next/navigation';
 import {
   Stack,
   Typography,
@@ -37,6 +42,7 @@ import {
   PlusIcon,
   MinusIcon,
   ShareIcon,
+  ArrowUpTrayIcon,
 } from '@/components/icons';
 import BpCheckbox from '@/components/event/Checkbox';
 import {
@@ -68,9 +74,10 @@ import {
 import { Thumbnail } from '../../components';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { formatUserName } from '@/utils/format';
+import { useDialog } from '@/components/dialog/DialogContext';
 
 const EditorPreview = dynamic(
   () => import('@/components/editor/EditorPreview'),
@@ -87,14 +94,18 @@ const Home = () => {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { showDialog } = useDialog();
+
   const [tabName, setTabName] = useState('Sessions');
   const params = useParams();
+  const searchParams = useSearchParams();
   const [eventData, setEventData] = useState<Event>();
   const { authenticate, composeClient, ceramic, isAuthenticated, profile } =
     useCeramicContext();
   const [sessionView, setSessionView] = useState<boolean>(false);
   const [verify, setVerify] = useState<boolean>(false);
   const eventId = params.eventid.toString();
+  const isPublic = searchParams.get('public') === '1';
   const [urlOption, setUrlOption] = useState<string>('');
   const [session, setSession] = useState<Session>();
   const [isRsvped, setIsRsvped] = useState<boolean>(false);
@@ -120,22 +131,12 @@ const Home = () => {
   const [directions, setDirections] = useState<string>('');
   const [customLocation, setCustomLocation] = useState<string>('');
   const [isDirections, setIsDirections] = useState<boolean>(false);
-  const [isRSVPFiltered, setIsRSVPFiltered] = useState(false);
-  const [isManagedFiltered, setIsManagedFiltered] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Venue>();
-  const [selectedSession, setSelectedSession] = useState<Session>();
-  const [dateForCalendar, setDateForCalendar] = useState<Dayjs>(
-    dayjs(new Date()),
-  );
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
-  const [sessionsByDate, setSessionsByDate] =
-    useState<Record<string, Session[]>>();
   const [bookedSessionsForDay, setBookedSessionsForDay] = useState<Session[]>(
     [],
   );
   const [availableTimeSlots, setAvailableTimeSlots] = useState<any[]>([]);
   const [venues, setVenues] = useState<Venue[]>([]);
-  const [sessions, setSessions] = useState<Session[]>([]);
   const [people, setPeople] = useState<Profile[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
   const [person, setPerson] = useState(true);
@@ -171,18 +172,43 @@ const Home = () => {
   const [sessionRecordingLink, setSessionRecordingLink] = useState<string>('');
   const [blockClickModal, setBlockClickModal] = useState(false);
   const [hiddenOrganizer, setHiddenOrganizer] = useState(false);
-  const [refreshFlag, setRefreshFlag] = useState(0);
   const [bookedSessions, setBookedSessions] = useState<Session[]>([]);
-  const [descriptiontext, setDescriptionText] = useState('');
   const [sessionUpdated, setSessionUpdated] = useState<boolean>(false);
   const [tagsChanged, setTagsChanged] = useState<boolean>(false);
   const [passingTitle, setPassingTitle] = useState<boolean>(false);
   const [hover, setHover] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const updateSessionPublic = useMutation({
+    mutationFn: async ({ isPublic }: { isPublic: boolean }) => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .update({ isPublic })
+        .eq('id', session?.id);
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      setSessionUpdated((prevState) => !prevState);
+    },
+  });
+
   const toggleDrawer = (anchor: Anchor, open: boolean) => {
     setState({ ...state, [anchor]: open });
   };
+
+  const toggleOpenPublic = useCallback(() => {
+    const isPublic = !session?.isPublic;
+    showDialog({
+      title: isPublic ? 'Open to Public' : 'Make Private',
+      message: isPublic
+        ? `You will list this session to the “Public Sessions” Tab. Once shared to this event's Public Sessions, this session will be viewable by all users.`
+        : `You will hide this session from the “Public Sessions” Tab. This session will no longer be viewable by all users.`,
+      confirmText: 'Share',
+      onConfirm: () => updateSessionPublic.mutateAsync({ isPublic }),
+    });
+  }, [session?.isPublic, showDialog, updateSessionPublic]);
 
   const handleChange = (val: string[]) => {
     setSessionTags(val);
@@ -464,10 +490,10 @@ const Home = () => {
     }
     setSessionDate(date);
     setSessionStartTime(
-      dayjs(date).tz(eventData?.timezone).set('hour', 0).set('minute', 0),
+      dayjs.tz(date, eventData?.timezone).set('hour', 0).set('minute', 0),
     );
     setSessionEndTime(
-      dayjs(date).tz(eventData?.timezone).set('hour', 0).set('minute', 0),
+      dayjs.tz(date, eventData?.timezone).set('hour', 0).set('minute', 0),
     );
   };
 
@@ -740,16 +766,10 @@ const Home = () => {
       experience_level: sessionExperienceLevel,
       createdAt: dayjs().format('YYYY-MM-DDTHH:mm:ss[Z]').toString(),
       startTime: sessionStartTime
-        ? dayjs(sessionStartTime)
-            .utc()
-            .format('YYYY-MM-DDTHH:mm:ss[Z]')
-            .toString()
+        ? dayjs.tz(sessionStartTime, timezone).toISOString()
         : null,
       endTime: sessionEndTime
-        ? dayjs(sessionEndTime)
-            .utc()
-            .format('YYYY-MM-DDTHH:mm:ss[Z]')
-            .toString()
+        ? dayjs.tz(sessionEndTime, timezone).toISOString()
         : null,
       profileId,
       eventId,
@@ -770,6 +790,7 @@ const Home = () => {
       liveStreamLink: sessionLiveStreamLink,
       recording_link: sessionRecordingLink,
     };
+    console.log(formattedData, sessionEndTime, sessionStartTime);
     try {
       setBlockClickModal(true);
       const response = await supaEditSession(formattedData);
@@ -786,51 +807,11 @@ const Home = () => {
 
   useQuery({
     queryKey: ['eventSessionDetail', ceramic?.did?.parent, sessionUpdated],
-    //enabled: !!profileId,
     queryFn: async () => {
       setCurrentHref(window.location.href);
-
-      try {
-        const eventDetails = await getEventDetailInfo();
-        const admins =
-          eventDetails?.admins?.map((admin) => admin.id.toLowerCase()) || [];
-        const superadmins =
-          eventDetails?.superAdmin?.map((superAdmin) =>
-            superAdmin.id.toLowerCase(),
-          ) || [];
-        const members =
-          eventDetails?.members?.map((member) => member.id.toLowerCase()) || [];
-        if (!ceramic.did && localStorage.getItem('ceramic:eth_did')) {
-          await authenticate();
-        }
-        const adminId = ceramic?.did?.parent.toString().toLowerCase() || '';
-        console.log(adminId, superadmins, admins, members);
-        if (!adminId) {
-          setDialogTitle('You are not logged in');
-          setDialogMessage('Please login and refresh the page');
-          setShowLoginModal(true);
-        } else {
-          if (
-            superadmins.includes(adminId) ||
-            admins.includes(adminId) ||
-            members.includes(adminId)
-          ) {
-            getPeople();
-            getSession();
-            getLocation();
-            setCanViewSessions(true);
-          } else {
-            setDialogTitle('You are not a member of this event');
-            setDialogMessage(
-              'Please contact the event organizers to get more information',
-            );
-            setShowLoginModal(true);
-          }
-        }
-        return {};
-      } catch (err) {
-        console.log(err);
-      }
+      getPeople();
+      getSession();
+      getLocation();
     },
   });
 
@@ -1279,6 +1260,7 @@ const Home = () => {
                           {eventData?.timezone}
                         </Typography>
                         <DesktopDatePicker
+                          timezone={eventData?.timezone}
                           value={sessionDate}
                           onChange={(newValue) => {
                             if (newValue !== null) {
@@ -1842,6 +1824,56 @@ const Home = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (session?.id) {
+      const checkAuth = async () => {
+        try {
+          const eventDetails = await getEventDetailInfo();
+          const admins =
+            eventDetails?.admins?.map((admin) => admin.id.toLowerCase()) || [];
+          const superadmins =
+            eventDetails?.superAdmin?.map((superAdmin) =>
+              superAdmin.id.toLowerCase(),
+            ) || [];
+          const members =
+            eventDetails?.members?.map((member) => member.id.toLowerCase()) ||
+            [];
+          if (!ceramic.did && localStorage.getItem('ceramic:eth_did')) {
+            await authenticate();
+          }
+          const adminId = ceramic?.did?.parent.toString().toLowerCase() || '';
+          if (session.isPublic) {
+            setCanViewSessions(true);
+            return {};
+          }
+          if (!adminId) {
+            setDialogTitle('You are not logged in');
+            setDialogMessage('Please login and refresh the page');
+            setShowLoginModal(true);
+          } else {
+            if (
+              superadmins.includes(adminId) ||
+              admins.includes(adminId) ||
+              members.includes(adminId)
+            ) {
+              setCanViewSessions(true);
+            } else {
+              setDialogTitle('You are not a member of this event');
+              setDialogMessage(
+                'Please contact the event organizers to get more information',
+              );
+              setShowLoginModal(true);
+            }
+          }
+          return {};
+        } catch (err) {
+          console.log(err);
+        }
+      };
+      checkAuth();
+    }
+  }, [session?.id]);
+
   const isInTime = useMemo(() => {
     return (
       dayjs(session?.startTime)
@@ -1878,7 +1910,10 @@ const Home = () => {
           name={passingTitle ? eventData?.title : 'View Session'}
           imageUrl={eventData?.imageUrl}
           backFun={() => {
-            sessionStorage.setItem('tab', 'Sessions');
+            sessionStorage.setItem(
+              'tab',
+              isPublic ? 'Public Sessions' : 'Sessions',
+            );
             router.push(`/events/${eventId}`);
           }}
         />
@@ -1942,7 +1977,10 @@ const Home = () => {
       </Stack>
       {session && (
         <Stack
-          sx={{ color: 'white' }}
+          sx={{
+            color: 'white',
+            [theme.breakpoints.down('sm')]: { padding: '20px 10px' },
+          }}
           padding="20px"
           bgcolor="#222222"
           height="auto"
@@ -1952,7 +1990,14 @@ const Home = () => {
             gap="20px"
             justifyContent="center"
           >
-            <Stack gap="20px">
+            <Stack
+              gap="20px"
+              sx={{
+                [theme.breakpoints.down('sm')]: {
+                  gap: '10px',
+                },
+              }}
+            >
               {session.creatorDID === adminId && (
                 <Stack
                   padding="10px"
@@ -1963,6 +2008,13 @@ const Home = () => {
                   width="100%"
                   border="1px solid rgba(255, 199, 125, .1)"
                   borderRadius={'8px'}
+                  sx={{
+                    [theme.breakpoints.down('sm')]: {
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: '10px',
+                    },
+                  }}
                 >
                   <Typography
                     fontSize={'14px'}
@@ -1972,23 +2024,42 @@ const Home = () => {
                   >
                     You created this session
                   </Typography>
-                  <ZuButton
-                    startIcon={<EditIcon size={5} />}
-                    sx={{
-                      padding: '6px 10px',
-                      backgroundColor: 'rgba(255, 199, 125, 0.05)',
-                      gap: '10px',
-                      '& > span': {
-                        margin: '0px',
-                      },
-                      color: 'rgba(255, 199, 125, 1)',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                    }}
-                    onClick={() => toggleDrawer('right', true)}
-                  >
-                    Edit
-                  </ZuButton>
+                  <Stack direction="row" spacing="10px">
+                    <ZuButton
+                      startIcon={<EditIcon size={5} />}
+                      sx={{
+                        padding: '6px 10px',
+                        backgroundColor: 'rgba(255, 199, 125, 0.05)',
+                        gap: '10px',
+                        '& > span': {
+                          margin: '0px',
+                        },
+                        color: 'rgba(255, 199, 125, 1)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                      }}
+                      onClick={() => toggleDrawer('right', true)}
+                    >
+                      Edit
+                    </ZuButton>
+                    <ZuButton
+                      startIcon={<ArrowUpTrayIcon size={5} />}
+                      sx={{
+                        padding: '6px 10px',
+                        backgroundColor: 'rgba(255, 199, 125, 0.05)',
+                        gap: '10px',
+                        '& > span': {
+                          margin: '0px',
+                        },
+                        color: 'rgba(255, 199, 125, 1)',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                      }}
+                      onClick={toggleOpenPublic}
+                    >
+                      {session.isPublic ? 'Make Private' : 'Open to Public'}
+                    </ZuButton>
+                  </Stack>
                 </Stack>
               )}
 
@@ -2112,7 +2183,7 @@ const Home = () => {
                             color="white"
                             sx={{ opacity: 0.5 }}
                           >
-                            {session.video_url}
+                            {session.video_url?.slice(0, 10)}
                           </Typography>
                         </Link>
                       ) : (
@@ -2140,7 +2211,12 @@ const Home = () => {
                               height={24}
                               width={24}
                               borderRadius={12}
-                              src={speaker.avatar || '/user/avatar_p.png'}
+                              src={
+                                people.find(
+                                  (item: any) =>
+                                    item.author?.id === speaker.author.id,
+                                )?.avatar || '/user/avatar_p.png'
+                              }
                             />
                             <Typography variant="bodyB">
                               {formatUserName(speaker.username)}
@@ -2164,7 +2240,7 @@ const Home = () => {
                           rel="noopener noreferrer"
                           sx={{ textDecoration: 'underline', color: '#fff' }}
                         >
-                          {session.liveStreamLink}
+                          {session.liveStreamLink.slice(0, 20) + '...'}
                         </Typography>
                       </Stack>
                     </Stack>
@@ -2183,7 +2259,7 @@ const Home = () => {
                           rel="noopener noreferrer"
                           sx={{ textDecoration: 'underline', color: '#fff' }}
                         >
-                          {session.recording_link}
+                          {session.recording_link.slice(0, 20) + '...'}
                         </Typography>
                       </Stack>
                     </Stack>
@@ -2198,71 +2274,75 @@ const Home = () => {
                       )}
                     </Typography>
                   </Stack>
-                  <Stack spacing="10px">
-                    <Stack
-                      direction="row"
-                      padding="10px 14px"
-                      alignItems="center"
-                      spacing="10px"
-                      border={
-                        isRsvped
-                          ? '1px solid rgba(125, 255, 209, 0.1)'
-                          : '1px solid rgba(255, 255, 255, 0.10)'
-                      }
-                      borderRadius="10px"
-                      bgcolor={
-                        isRsvped ? 'rgba(125, 255, 209, 0.1)' : '#383838'
-                      }
-                      justifyContent="center"
-                      color={isRsvped ? 'rgb(125, 255, 209)' : ''}
-                      sx={{
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={() => setHover(true)}
-                      onMouseLeave={() => setHover(false)}
-                      onClick={() => {
-                        if (isRsvped) {
-                          handleCancelRSVP(session.id);
-                        } else {
-                          handleRSVPClick(session.id);
+                  {ceramic.did?.parent && (
+                    <Stack spacing="10px">
+                      <Stack
+                        direction="row"
+                        padding="10px 14px"
+                        alignItems="center"
+                        spacing="10px"
+                        border={
+                          isRsvped
+                            ? '1px solid rgba(125, 255, 209, 0.1)'
+                            : '1px solid rgba(255, 255, 255, 0.10)'
                         }
-                      }}
-                    >
-                      {!isLoading ? (
-                        isRsvped ? (
-                          hover ? (
-                            <CancelIcon />
+                        borderRadius="10px"
+                        bgcolor={
+                          isRsvped ? 'rgba(125, 255, 209, 0.1)' : '#383838'
+                        }
+                        justifyContent="center"
+                        color={isRsvped ? 'rgb(125, 255, 209)' : ''}
+                        sx={{
+                          cursor: 'pointer',
+                        }}
+                        onMouseEnter={() => setHover(true)}
+                        onMouseLeave={() => setHover(false)}
+                        onClick={() => {
+                          if (isRsvped) {
+                            handleCancelRSVP(session.id);
+                          } else {
+                            handleRSVPClick(session.id);
+                          }
+                        }}
+                      >
+                        {!isLoading ? (
+                          isRsvped ? (
+                            hover ? (
+                              <CancelIcon />
+                            ) : (
+                              <SessionIcon fill={'rgb(125, 255, 209)'} />
+                            )
                           ) : (
-                            <SessionIcon fill={'rgb(125, 255, 209)'} />
+                            <SessionIcon />
                           )
                         ) : (
-                          <SessionIcon />
-                        )
-                      ) : (
-                        <></>
-                      )}
-                      {!isLoading ? (
-                        isRsvped ? (
-                          <Typography variant="bodyBB">
-                            {hover ? 'Cancel RSVP?' : "RSVP'd"}
-                          </Typography>
+                          <></>
+                        )}
+                        {!isLoading ? (
+                          isRsvped ? (
+                            <Typography variant="bodyBB">
+                              {hover ? 'Cancel RSVP?' : "RSVP'd"}
+                            </Typography>
+                          ) : (
+                            <Typography variant="bodyBB">
+                              RSVP Session
+                            </Typography>
+                          )
                         ) : (
-                          <Typography variant="bodyBB">RSVP Session</Typography>
-                        )
-                      ) : (
-                        <></>
-                      )}
-                      {isLoading && (
-                        <CircularProgress
-                          size={'20px'}
-                          sx={{
-                            color: isRsvped ? 'rgb(125, 255, 209)' : 'white',
-                          }}
-                        />
-                      )}
+                          <></>
+                        )}
+                        {isLoading && (
+                          <CircularProgress
+                            size={'20px'}
+                            sx={{
+                              color: isRsvped ? 'rgb(125, 255, 209)' : 'white',
+                            }}
+                          />
+                        )}
+                      </Stack>
+                      {/*<Typography variant="bodyS">Attending: 000</Typography>*/}
                     </Stack>
-                    {/*<Typography variant="bodyS">Attending: 000</Typography>*/}
-                  </Stack>
+                  )}
                 </Stack>
                 {session.video_url && (
                   <Stack spacing="14px" padding="20px">
@@ -2400,7 +2480,12 @@ const Home = () => {
                             height={20}
                             width={20}
                             borderRadius={10}
-                            src={organizer.avatar || '/user/avatar_p.png'}
+                            src={
+                              people.find(
+                                (item: any) =>
+                                  item.author?.id === organizer.author.id,
+                              )?.avatar || '/user/avatar_p.png'
+                            }
                           />
                           <Typography variant="bodyS">
                             {formatUserName(organizer.username)}
@@ -2431,7 +2516,12 @@ const Home = () => {
                             height={20}
                             width={20}
                             borderRadius={10}
-                            src={speaker.avatar || '/user/avatar_p.png'}
+                            src={
+                              people.find(
+                                (item: any) =>
+                                  item.author?.id === speaker.author.id,
+                              )?.avatar || '/user/avatar_p.png'
+                            }
                           />
                           <Typography variant="bodyS">
                             {formatUserName(speaker.username)}

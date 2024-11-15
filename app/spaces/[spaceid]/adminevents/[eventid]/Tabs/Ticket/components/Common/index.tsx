@@ -621,6 +621,7 @@ interface ConfigPanelProps {
   needButton?: boolean;
   buttonText?: string;
   handleOpen?: () => void;
+  sx?: React.CSSProperties;
 }
 
 export const ConfigPanel = ({
@@ -631,6 +632,7 @@ export const ConfigPanel = ({
   needButton = true,
   buttonText = 'Go Setup',
   handleOpen,
+  sx,
 }: ConfigPanelProps) => {
   return (
     <Stack
@@ -641,6 +643,7 @@ export const ConfigPanel = ({
       borderRadius="10px"
       spacing="14px"
       border={!isGreenBorder ? 'none' : '1px solid rgba(125, 255, 209, 0.40)'}
+      sx={sx}
     >
       {icon || <SettingIcon color="#6c6c6c" size={7.5} />}
       <Stack spacing="10px" alignItems="center">

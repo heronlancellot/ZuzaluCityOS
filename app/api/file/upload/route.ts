@@ -1,12 +1,22 @@
 import { type Uploader3Connector } from '@lxdao/uploader3-connector';
-import FormData from 'form-data';
-import fetch from 'node-fetch';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { v4 as uuidv4 } from 'uuid';
 
-const token = `${process.env.NEXT_PUBLIC_CONNECTOR_TOKEN_Prefix}.${process.env.NEXT_PUBLIC_CONNECTOR_TOKEN}`;
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: process.env.R2_ENDPOINT!,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+});
+
+const BUCKET_NAME = process.env.R2_BUCKET_NAME!;
 
 enum ErrorMessage {
   NO_IMAGE_DATA_OR_TYPE = 'No image data or type provided',
   FILE_SIZE_TOO_LARGE = 'File size exceeds 10MB limit',
+  UPLOAD_FAILED = 'Failed to upload file',
 }
 
 export async function GET() {
@@ -14,8 +24,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const body = await req.json();
   const { data: imageData = '', type } =
-    (await req.json()) as Uploader3Connector.PostImageFile;
+    body as Uploader3Connector.PostImageFile;
 
   if (!imageData || !type) {
     return Response.json(
@@ -37,23 +48,26 @@ export async function POST(req: Request) {
   }
 
   try {
-    const formData = new FormData();
-    formData.append('file', buffer, { contentType: type });
-    const res = await fetch('https://node.lighthouse.storage/api/v0/add', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Encryption: 'false',
-        Authorization: `Bearer ${token}`,
-      },
+    const fileExtension = type.split('/')[1] || 'jpg';
+    const key = `uploads/${uuidv4()}.${fileExtension}`;
+
+    const command = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: type,
     });
-    const { Hash: cid } = (await res.json()) as { Hash: string };
-    return Response.json(
-      { url: `https://gateway.lighthouse.storage/ipfs/${cid}` },
-      { status: 200 },
-    );
+
+    await s3Client.send(command);
+
+    const fileUrl = `${process.env.R2_DOMAIN}/${key}`;
+
+    return Response.json({ url: fileUrl }, { status: 200 });
   } catch (e) {
-    // @ts-ignore
-    return Response.json({ error: e.message }, { status: 500 });
+    console.error('Upload error:', e);
+    return Response.json(
+      { error: ErrorMessage.UPLOAD_FAILED },
+      { status: 500 },
+    );
   }
 }

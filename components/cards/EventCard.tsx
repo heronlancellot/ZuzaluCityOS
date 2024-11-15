@@ -9,6 +9,7 @@ import { MapIcon, LockIcon } from '../icons';
 import { Event } from '@/types';
 import { supabase } from '@/utils/supabase/client';
 import { dayjs } from '@/utils/dayjs';
+import WarningIcon from '@mui/icons-material/Warning';
 
 type EventCardProps = { event: Event };
 
@@ -86,10 +87,12 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
     getLocation().catch((err) => console.log(err));
   }, []);
 
-  const handleNavigation = () => {
-    /*if (pathname !== '/') {
-      router.push(`/spaces/${event.spaceId}/events/${event.id}`);
-    } else router.push(`/events/${event.id}`);*/
+  const handleNavigation = (e: React.MouseEvent) => {
+    if (event.source === 'Legacy') {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     router.push(`/events/${event.id}`);
   };
 
@@ -99,11 +102,16 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
       display="flex"
       gap={isMobile ? '10px' : '14px'}
       sx={{
-        cursor: 'pointer',
+        cursor: event.source === 'Legacy' ? 'not-allowed' : 'pointer',
         transition: 'background-color 0.3s',
         ':hover': {
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          backgroundColor:
+            event.source === 'Legacy'
+              ? 'transparent'
+              : 'rgba(255, 255, 255, 0.05)',
         },
+        opacity: event.source === 'Legacy' ? 0.6 : 1,
+        borderRadius: '10px',
       }}
       width={'100%'}
       boxSizing={'border-box'}
@@ -168,8 +176,8 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
             fontWeight={300}
             fontSize={'14px'}
           >
-            {formatTimestamp(event.startTime)} -{' '}
-            {formatTimestamp(event.endTime)}
+            {dayjs(event.startTime).utc().format('MMMM D')} -{' '}
+            {dayjs(event.endTime).utc().format('MMMM D')}
           </Typography>
         </Box>
         <Box display="flex" flexDirection="column">
@@ -222,6 +230,29 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           )}
         </Box>
       </Box> */}
+
+      {event.source === 'Legacy' && (
+        <Box
+          position="absolute"
+          right="10px"
+          top="10px"
+          padding="4px 8px"
+          bgcolor="rgba(255, 255, 255, 0.1)"
+          borderRadius="4px"
+          display="flex"
+          alignItems="center"
+          gap="4px"
+        >
+          <WarningIcon sx={{ color: '#EB5757', fontSize: '12px' }} />
+          <Typography
+            color="#EB5757"
+            variant="caption"
+            sx={{ fontSize: '10px' }}
+          >
+            UPDATE TO BETA
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };

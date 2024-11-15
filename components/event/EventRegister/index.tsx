@@ -10,7 +10,7 @@ import { ScrollIcon, ScrollPassIcon } from 'components/icons';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { ZuPassIcon } from '../../icons/ZuPassIcon';
+import { ZuPassIcon, WalletIcon } from '../../icons';
 import NewUserPromptModal from '../../modals/newUserPrompt';
 import { InitialStep } from '../steps/InitialStep';
 import CheckinConnectButton from '@/components/checkin/CheckinConnectButton';
@@ -25,6 +25,7 @@ import LinkAddress from './linkAddress';
 import SuccessVerify from './successVerify';
 import { useLitContext } from '@/context/LitContext';
 import { Event } from '@/types';
+import { EdDSATicketPCDTypeName } from '@pcd/eddsa-ticket-pcd';
 interface EventRegisterProps {
   onToggle: (anchor: Anchor, open: boolean) => void;
   setWhitelist?: React.Dispatch<React.SetStateAction<boolean>> | any;
@@ -93,7 +94,24 @@ const EventRegister: React.FC<EventRegisterProps> = ({
       auth();
     }*/
     if (!nullifierHash) {
-      auth();
+      const zuPassInfo = event?.regAndAccess?.edges?.[0]?.node.zuPassInfo;
+      const zuPassConfig =
+        zuPassInfo && zuPassInfo.length > 0
+          ? {
+              pcdType: 'eddsa-ticket-pcd' as const,
+              publicKey: zuPassInfo?.[0]?.access?.split(',') as [
+                string,
+                string,
+              ],
+              eventId: zuPassInfo?.[0]?.eventId,
+              eventName: zuPassInfo?.[0]?.eventName,
+            }
+          : null;
+      if (zuPassConfig) {
+        auth([zuPassConfig]);
+      } else {
+        console.error('error');
+      }
     } else {
       setStage('Wallet Link');
     }
@@ -138,7 +156,8 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   }, [nullifierHash]);*/
   useEffect(() => {
     if (nullifierHash) {
-      setStage('Wallet Link');
+      setIsValidating(false);
+      setIsValid(true);
     }
   }, [nullifierHash]);
   useEffect(() => {
@@ -198,7 +217,8 @@ const EventRegister: React.FC<EventRegisterProps> = ({
     litDisconnect();
     window.location.reload();
   };
-  const ticketType = eventRegistration.ticketType as keyof typeof componentsMap;
+  const ticketType =
+    eventRegistration?.ticketType as keyof typeof componentsMap;
 
   const componentsMap = {
     Scrollpass: {
@@ -207,16 +227,22 @@ const EventRegister: React.FC<EventRegisterProps> = ({
       verifyButtonText: address
         ? 'Verify with ' + address.slice(0, 10) + '...'
         : 'Verify on Wallet',
-      verifyButtonIcon: '/user/wallet.png',
+      verifyButtonIcon: <WalletIcon />,
     },
     Zupass: {
       component: ZuPassDefault,
       icon: ZuPassIcon,
       verifyButtonText: 'Validate Zupass',
-      verifyButtonIcon: 'ZuPassIcon',
+      verifyButtonIcon: <ZuPassIcon />,
     },
     ExternalTicketing: {
       component: ExternalTicketingDefault,
+      icon: null,
+      verifyButtonText: undefined,
+      verifyButtonIcon: undefined,
+    },
+    'No Ticketing Required': {
+      component: null,
       icon: null,
       verifyButtonText: undefined,
       verifyButtonIcon: undefined,
@@ -228,6 +254,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   type TicketType = keyof typeof componentsMap;
 
   const TicketIcon = () => {
+    if (!ticketType) return null;
     const { icon: TicketIcon } = componentsMap[ticketType as TicketType];
     return (
       <Box
@@ -245,23 +272,28 @@ const EventRegister: React.FC<EventRegisterProps> = ({
   };
 
   const TicketDefault = () => {
+    if (!ticketType) return null;
     const { component: TicketComponent } =
       componentsMap[ticketType as TicketType];
 
-    if (ticketType === 'Scrollpass') {
-      return (
-        <TicketComponent
-          tickets={eventRegistration.scrollPassTickets ?? []}
-          applyRule={eventRegistration.applyRule}
-          onToggle={onToggle}
-          setSponsor={setSponsor}
-          setWhitelist={setWhitelist}
-          handleStep={handleStep}
-          setApplication={setApplication}
-          checkinOpen={eventRegistration.checkinOpen}
-          registrationOpen={eventRegistration.registrationOpen}
-        />
-      );
+    const commonProps = {
+      applyRule: eventRegistration.applyRule,
+      onToggle,
+      setSponsor,
+      setWhitelist,
+      handleStep,
+      setApplication,
+      checkinOpen: eventRegistration.checkinOpen,
+      registrationOpen: eventRegistration.registrationOpen,
+      tickets: eventRegistration.scrollPassTickets ?? [],
+    };
+
+    if (ticketType === 'Scrollpass' && TicketComponent) {
+      return <TicketComponent {...commonProps} />;
+    } else if (ticketType === 'Zupass' && TicketComponent) {
+      return <TicketComponent {...commonProps} />;
+    } else if (ticketType === 'ExternalTicketing') {
+      return <ExternalTicketingDefault />;
     }
   };
 
@@ -277,9 +309,7 @@ const EventRegister: React.FC<EventRegisterProps> = ({
             eventRegistration.scrollPassTickets
               ?.filter(
                 (ticket) =>
-                  ticket.type === 'Attendee' &&
-                  ticket.checkin === '1' &&
-                  ticket.status === 'available',
+                  ticket.type === 'Attendee' && ticket.checkin === '1',
               )
               .map((ticket) => ticket.contractAddress) || [];
 
@@ -297,10 +327,21 @@ const EventRegister: React.FC<EventRegisterProps> = ({
           }
         }
       } else if (ticketType === 'Zupass') {
-        if (!nullifierHash) {
-          await auth();
-        } else {
-          setStage('Wallet Link');
+        const zuPassInfo = event?.regAndAccess?.edges?.[0]?.node.zuPassInfo;
+        const zuPassConfig =
+          zuPassInfo && zuPassInfo.length > 0
+            ? {
+                pcdType: 'eddsa-ticket-pcd' as const,
+                publicKey: zuPassInfo?.[0]?.access?.split(',') as [
+                  string,
+                  string,
+                ],
+                eventId: zuPassInfo?.[0]?.eventId,
+                eventName: zuPassInfo?.[0]?.eventName,
+              }
+            : null;
+        if (zuPassConfig) {
+          await auth([zuPassConfig]);
         }
       } else if (ticketType === 'ExternalTicketing') {
         handleClick();

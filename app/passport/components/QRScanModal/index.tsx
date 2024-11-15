@@ -120,7 +120,11 @@ const ScanQRModal = ({ showModal, setShowModal }: IScanQRModal) => {
         )) as CeramicResponseType<EventEdge>;
       if (response.data) {
         if (response.data.node) {
-          const regAndAccess = response.data.node.regAndAccess.edges?.[0]?.node;
+          const regAndAccess =
+            response.data.node.regAndAccess?.edges?.[0]?.node;
+          if (!regAndAccess) {
+            return 'Failed to fetch event';
+          }
           const { scannedList = [], scrollPassTickets = [], id } = regAndAccess;
           if (
             scannedList.findIndex((item: any) => item.id === profileId) > -1

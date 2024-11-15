@@ -1,6 +1,9 @@
 import { SwipeableDrawerProps } from '@mui/material';
 import { CSSProperties, Dispatch, SetStateAction } from 'react';
 import { ITimezoneOption } from 'react-timezone-select';
+import { EdDSAPublicKey } from '@pcd/eddsa-pcd';
+import { EdDSATicketPCDTypeName } from '@pcd/eddsa-ticket-pcd';
+import { PipelineEdDSATicketZuAuthConfig } from '@pcd/passport-interface';
 
 export type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
@@ -44,6 +47,8 @@ export interface Event {
   minParticipant: number;
   maxParticipant: number;
   createdAt: string;
+  source?: string;
+  legacyData?: LegacyEvent;
   space?: {
     id?: string;
     name?: string;
@@ -58,22 +63,22 @@ export interface Event {
   };
   customLinks?: [Link];
   tracks?: string;
-  regAndAccess: {
+  regAndAccess?: {
     edges: [
       {
         node: RegistrationAndAccess;
       },
     ];
   };
-  applicationForms: {
+  applicationForms?: {
     edges: [
       {
         node: ApplicationForm;
       },
     ];
   };
-  sessionStorage: string;
-  supportChain: string;
+  sessionStorage?: string;
+  supportChain?: string;
   admins?: {
     id: string;
   }[];
@@ -84,7 +89,24 @@ export interface Event {
     id: string;
   }[];
 }
-
+export interface LegacyEvent {
+  id?: string;
+  name?: string;
+  event_space_type?: string;
+  status?: string;
+  start_date?: string;
+  end_date?: string;
+  description?: string;
+  format?: string;
+  event_type?: string[];
+  experience_level?: string[];
+  creator_id?: string;
+  tagline?: string;
+  social_links?: string;
+  extra_links?: string;
+  image_url?: string;
+  main_location_id?: string;
+}
 export interface RegistrationAndAccess {
   applyRule: string;
   applyOption: string;
@@ -121,7 +143,7 @@ export interface ScrollPassTickets {
   eventId: string;
 }
 
-export interface ZuPassInfo {
+export interface ZuPassInfo extends PipelineEdDSATicketZuAuthConfig {
   access?: string;
   eventId: string;
   eventName: string;
@@ -192,6 +214,7 @@ export interface Space {
   superAdmin?: {
     id: string;
   }[];
+  customLinks?: Link[];
   events: {
     edges: {
       node: {
@@ -200,7 +223,18 @@ export interface Space {
       };
     }[];
   };
+  customAttributes: TBD[];
 }
+
+export interface CalendarConfig {
+  name: string;
+  category: string;
+  accessRule: string;
+}
+
+type TBD = {
+  tbd: string;
+};
 
 export interface SpaceEdge {
   node: Space;
@@ -247,6 +281,7 @@ export interface Session {
   liveStreamLink?: string;
   recording_link?: string;
   uuid: string;
+  isPublic?: boolean;
 }
 export type SessionSupabaseData = {
   title: string;
@@ -482,3 +517,44 @@ export interface UpdateRegAndAccessRequest
     id: string;
   }[];
 }
+
+export type ZupassConfig = PipelineEdDSATicketZuAuthConfig[];
+
+export interface ZupassConfigItem {
+  pcdType: typeof EdDSATicketPCDTypeName;
+  publicKey: EdDSAPublicKey;
+  eventId: string;
+  eventName: string;
+}
+
+export interface CalEvent {
+  id: number;
+  name: string;
+  category: string;
+  description?: string;
+  image_url?: string;
+  is_all_day: boolean;
+  start_date: string;
+  end_date: string;
+  creator: string;
+  timezone: string;
+  format: string;
+  location_name?: string;
+  location_url?: string;
+  recurring: string;
+  uuid: string;
+  weekdays?: string;
+  monthdays?: string;
+  rrule?: string;
+}
+
+export const SOCIAL_TYPES = [
+  { key: 'website', value: 'Website' },
+  { key: 'twitter', value: 'Twitter' },
+  { key: 'telegram', value: 'Telegram' },
+  { key: 'nostr', value: 'Nostr' },
+  { key: 'lens', value: 'Lens' },
+  { key: 'github', value: 'Github' },
+  { key: 'discord', value: 'Discord' },
+  { key: 'ens', value: 'ENS' },
+];

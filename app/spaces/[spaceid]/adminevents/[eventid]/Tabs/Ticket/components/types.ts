@@ -42,6 +42,7 @@ export enum TicketingMethod {
   ZuPass = 'Zupass',
   ScrollPass = 'Scrollpass',
   LottoPGF = 'LottoPGF',
+  Lemonade = 'Lemonade',
 }
 
 export enum ApplyRule {

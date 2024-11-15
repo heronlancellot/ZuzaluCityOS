@@ -1,36 +1,23 @@
 'use client';
 import SlotDates from '@/components/calendar/SlotDate';
-import {
-  EventCard,
-  EventCardMonthGroup,
-  EventCardSkeleton,
-  groupEventsByMonth,
-} from '@/components/cards/EventCard';
 import { SpaceCardSkeleton } from '@/components/cards/SpaceCard';
 import { ZuCalendar } from '@/components/core';
-import { dashboardEvent, isDev, prodShowSpaceId } from '@/constant';
+import { dashboardEvent } from '@/constant';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { Event, EventData, Space, SpaceData } from '@/types';
 import { Dayjs, dayjs } from '@/utils/dayjs';
-import {
-  Box,
-  Skeleton,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import Carousel from 'components/Carousel';
-import { EventIcon, RightArrowCircleIcon, SpaceIcon } from 'components/icons';
+import { RightArrowCircleIcon, SpaceIcon } from 'components/icons';
 import { Sidebar } from 'components/layout';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { Fragment, useEffect, useMemo, useState } from 'react';
-import MiniDashboard from './components/MiniDashboard';
-import { EventComingSoonCard } from '@/components/cards/ComingSoonCard';
+import React, { useEffect, useState } from 'react';
 import { getSpacesQuery } from '@/services/space';
 import Banner from './components/Banner';
+import { supabase } from '@/utils/supabase/client';
+import EventList from '@/components/event/EventList';
 
 const Home: React.FC = () => {
   const theme = useTheme();
@@ -50,20 +37,7 @@ const Home: React.FC = () => {
     dayjs(new Date()),
   );
 
-  const {
-    ceramic,
-    composeClient,
-    isAuthenticated,
-    authenticate,
-    logout,
-    showAuthPrompt,
-    hideAuthPrompt,
-    isAuthPromptVisible,
-    newUser,
-    profile,
-    username,
-    createProfile,
-  } = useCeramicContext();
+  const { ceramic, composeClient } = useCeramicContext();
 
   const getSpaces = async () => {
     try {
@@ -73,7 +47,10 @@ const Home: React.FC = () => {
         let fetchedSpaces: Space[] = spaceData.zucitySpaceIndex.edges.map(
           (edge) => edge.node,
         );
-        setSpaces(fetchedSpaces);
+        const shuffledSpaces = [...fetchedSpaces].sort(
+          () => Math.random() - 0.5,
+        );
+        setSpaces(shuffledSpaces);
       } else {
         console.error('Invalid data structure:', response.data);
       }
@@ -85,7 +62,8 @@ const Home: React.FC = () => {
   const getEvents = async () => {
     try {
       setIsEventsLoading(true);
-      const response: any = await composeClient.executeQuery(`
+
+      const ceramicResponse: any = await composeClient.executeQuery(`
       query {
         zucityEventIndex(first: 20, sorting: { createdAt: DESC }) {
           edges {
@@ -129,16 +107,67 @@ const Home: React.FC = () => {
       }
     `);
 
-      if (response && response.data && 'zucityEventIndex' in response.data) {
-        const eventData: EventData = response.data as EventData;
-        const fetchedEvents: Event[] = eventData.zucityEventIndex.edges.map(
-          (edge) => edge.node,
-        );
-        setEvents(fetchedEvents);
-        setIsEventsLoading(false);
-        const getEvent =
-          fetchedEvents &&
-          fetchedEvents.find((event) => event.id === dashboardEvent);
+      const { data: legacyEvents, error } = await supabase
+        .from('legacyEvents')
+        .select('*');
+
+      if (error) throw error;
+
+      let allEvents: Event[] = [];
+      if (ceramicResponse?.data?.zucityEventIndex) {
+        const ceramicEvents: Event[] =
+          ceramicResponse.data.zucityEventIndex.edges.map((edge: any) => ({
+            ...edge.node,
+            source: 'ceramic',
+          }));
+        allEvents = [...ceramicEvents];
+      }
+
+      if (legacyEvents) {
+        const convertedLegacyEvents: Event[] = legacyEvents
+          .filter((legacy): legacy is NonNullable<typeof legacy> => !!legacy.id)
+          .map((legacy) => ({
+            id: legacy.id,
+            title: legacy.name ?? '',
+            description: legacy.description ?? '',
+            startTime: legacy.start_date ?? '',
+            endTime: legacy.end_date ?? '',
+            status: legacy.status ?? '',
+            tagline: legacy.tagline ?? '',
+            imageUrl: legacy.image_url ?? '',
+            profileId: '',
+            spaceId: '',
+            timezone: 'UTC',
+            tracks: legacy.event_type || [],
+            source: 'Legacy',
+            participantCount: 0,
+            minParticipant: 0,
+            maxParticipant: 0,
+            createdAt: legacy.start_date,
+            gated: false,
+            externalUrl: '',
+            meetingUrl: '',
+            legacyData: {
+              event_space_type: legacy.event_space_type,
+              format: legacy.format,
+              experience_level: legacy.experience_level,
+              social_links: legacy.social_links,
+              extra_links: legacy.extra_links,
+            },
+          }));
+        allEvents = [...allEvents, ...convertedLegacyEvents];
+      }
+
+      allEvents.sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
+
+      setEvents(allEvents);
+      setIsEventsLoading(false);
+
+      const getEvent = allEvents.find((event) => event.id === dashboardEvent);
+      if (getEvent) {
         setTargetEvent(getEvent);
         const userDid = ceramic.did?.parent.toString().toLowerCase() || '';
         if (getEvent) {
@@ -160,11 +189,10 @@ const Home: React.FC = () => {
             setTargetEventView(canView);
           }
         }
-      } else {
-        console.error('Invalid data structure:', response.data);
       }
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      setIsEventsLoading(false);
     }
   };
 
@@ -209,7 +237,10 @@ const Home: React.FC = () => {
             input: {
               where: {
                 startTime: {
-                  equalTo: selectedDate.format('YYYY-MM-DD') + 'T00:00:00Z',
+                  lessThanOrEqualTo:
+                    selectedDate.format('YYYY-MM-DD') + 'T23:59:59Z',
+                  greaterThanOrEqualTo:
+                    selectedDate.format('YYYY-MM-DD') + 'T00:00:00Z',
                 },
               },
             },
@@ -310,26 +341,6 @@ const Home: React.FC = () => {
     });
   }, [dateForCalendar]);
 
-  const eventsData = useMemo(() => {
-    const data = groupEventsByMonth(events);
-    const keys = Object.keys(data).sort((a, b) => {
-      const dateA = dayjs(a, 'MMMM YYYY');
-      const dateB = dayjs(b, 'MMMM YYYY');
-      return dateA.isBefore(dateB) ? 1 : -1;
-    });
-    const groupedEvents: { [key: string]: Event[] } = {};
-    keys.forEach((key) => {
-      const value = data[key];
-      value.sort((a, b) => {
-        const dateA = dayjs(a.startTime);
-        const dateB = dayjs(b.startTime);
-        return dateA.isAfter(dateB) ? 1 : -1;
-      });
-      groupedEvents[key] = value;
-    });
-    return groupedEvents;
-  }, [events]);
-
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box width={'100vw'} minHeight={'calc(100vh - 50px)'}>
@@ -355,24 +366,6 @@ const Home: React.FC = () => {
               margin: '0 auto',
             }}
           >
-            {targetEvent && (
-              <MiniDashboard
-                imageUrl={targetEvent.imageUrl}
-                spaceName={targetEvent.title}
-                startTime={dayjs(targetEvent.startTime).format('MMMM DD')}
-                endTime={dayjs(targetEvent.endTime).format('MMMM DD')}
-                showManage={
-                  targetEvent.superAdmin
-                    ?.map((ad) => ad.id.toLowerCase())
-                    .includes(
-                      ceramic.did?.parent.toString().toLowerCase() || '',
-                    ) ?? false
-                }
-                eventId={targetEvent.id}
-                spaceId={targetEvent.spaceId as string}
-                loggedIn={ceramic && targetEventView}
-              />
-            )}
             <Banner />
             <Box marginTop="30px">
               <Box
@@ -385,6 +378,11 @@ const Home: React.FC = () => {
                   position: 'sticky',
                   top: '-30px',
                   zIndex: 100,
+                  [theme.breakpoints.down('sm')]: {
+                    top: '-13px',
+                    padding: '10px 10px',
+                    margin: '0 -10px',
+                  },
                 }}
               >
                 <Box display="flex" alignItems="center" gap="10px">
@@ -415,7 +413,7 @@ const Home: React.FC = () => {
                   variant="bodyM"
                   sx={{ opacity: '0.5', fontSize: '12px' }}
                 >
-                  Newest Spaces
+                  Random Spaces
                 </Typography>
               </Box>
               {spaces.length > 0 ? (
@@ -429,91 +427,27 @@ const Home: React.FC = () => {
                 </Box>
               )}
             </Box>
-            <Box display="flex" gap="20px" marginTop="20px">
-              <Box
-                position="relative"
-                flexGrow={1}
-                display="flex"
-                flexDirection="column"
-                gap="20px"
-                sx={{ inset: '0' }}
-              >
-                <Box
-                  sx={{
-                    backgroundColor: 'rgba(34, 34, 34, 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    position: 'sticky',
-                    top: '-30px',
-                    zIndex: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <Box display="flex" justifyContent="space-between">
-                    <Box display="flex" alignItems="center" gap="10px">
-                      <EventIcon />
-                      <Typography color="white" variant="subtitleLB">
-                        Events
-                      </Typography>
-                    </Box>
-                    <Link
-                      href={'/events'}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        textDecoration: 'blink',
-                      }}
-                    >
-                      <Box display="flex" alignItems="center" gap="10px">
-                        <Typography color="white" variant="bodyB">
-                          View All Events
-                        </Typography>
-                        <RightArrowCircleIcon />
-                      </Box>
-                    </Link>
-                  </Box>
-                </Box>
-                {isEventsLoading ? (
-                  <>
-                    <EventCardMonthGroup>
-                      <Skeleton width={60}></Skeleton>
-                    </EventCardMonthGroup>
-                    <EventCardSkeleton />
-                    <EventCardSkeleton />
-                    <EventCardSkeleton />
-                    <EventCardSkeleton />
-                    <EventCardSkeleton />
-                  </>
-                ) : events.length === 0 ? (
-                  <Box
-                    display={'flex'}
-                    height={200}
-                    alignItems={'center'}
-                    justifyContent={'center'}
-                  >
-                    <Typography color={'#ccc'}>
-                      No data at the moment
-                    </Typography>
-                  </Box>
-                ) : (
-                  <>
-                    {Object.entries(eventsData).map(([month, eventsList]) => {
-                      return (
-                        <Fragment key={month}>
-                          <EventCardMonthGroup>{month}</EventCardMonthGroup>
-                          {eventsList.map((event, index) => (
-                            <EventCard
-                              key={`EventCard-${index}`}
-                              event={event}
-                            />
-                          ))}
-                        </Fragment>
-                      );
-                    })}
-                    {/*<EventComingSoonCard />*/}
-                  </>
-                )}
-              </Box>
+            <Box
+              display="flex"
+              gap="20px"
+              marginTop="20px"
+              sx={{
+                [theme.breakpoints.down('sm')]: {
+                  gap: 0,
+                },
+              }}
+            >
+              <EventList
+                events={events}
+                headerStyle={{
+                  [theme.breakpoints.down('sm')]: {
+                    top: '-13px',
+                    padding: '10px 10px',
+                    margin: '0 -10px',
+                  },
+                }}
+                isLoading={isEventsLoading}
+              />
               <Box>
                 {!isTablet && (
                   <Box
@@ -534,39 +468,6 @@ const Home: React.FC = () => {
                     >
                       Sort & Filter Events
                     </Typography>
-                    {/*<Box
-                        display="flex"
-                        gap="4px"
-                        padding="2px"
-                        borderRadius="10px"
-                        bgcolor="#2d2d2d"
-                      >
-                        <Button
-                          sx={{
-                            flex: 1,
-                            backgroundColor: isPast ? '#2d2d2d' : '#424242',
-                            borderRadius: '8px',
-                            color: 'white',
-                            fontFamily: 'Inter',
-                          }}
-                          onClick={() => setIsPast(false)}
-                        >
-                          Upcoming
-                        </Button>
-                        <Button
-                          sx={{
-                            flex: 1,
-                            backgroundColor: isPast ? '#424242' : '#2d2d2d',
-                            borderRadius: '8px',
-                            color: 'white',
-                            fontFamily: 'Inter',
-                          }}
-                          onClick={() => setIsPast(true)}
-                        >
-                          Past
-                        </Button>
-                      </Box>
-                      */}
                     <Box>
                       <ZuCalendar
                         onChange={(val) => {
@@ -596,7 +497,7 @@ const Home: React.FC = () => {
                               })
 
                               .map((event) => {
-                                return dayjs(event.startTime).date();
+                                return dayjs(event.startTime).utc().date();
                               }),
                           } as any,
                         }}

@@ -53,7 +53,7 @@ const Thumbnail: React.FC<IThumbnail> = ({ name, imageUrl, backFun }) => {
             src={imageUrl}
             width={24}
             height={24}
-            style={{ borderRadius: '8px' }}
+            style={{ borderRadius: '8px', width: '24px', height: '24px' }}
             alt="event_image"
           />
         )}
