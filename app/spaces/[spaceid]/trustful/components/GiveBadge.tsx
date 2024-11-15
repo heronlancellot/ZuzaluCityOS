@@ -19,12 +19,7 @@ import {
 import { watchAccount } from '@wagmi/core';
 import { useSearchParams } from 'next/navigation';
 import { BeatLoader } from 'react-spinners';
-import {
-  isAddress,
-  encodeAbiParameters,
-  parseAbiParameters,
-  zeroAddress,
-} from 'viem';
+import { isAddress, encodeAbiParameters, parseAbiParameters } from 'viem';
 import { scroll, scrollSepolia } from 'viem/chains';
 import { useAccount, useSwitchChain } from 'wagmi';
 import {
@@ -341,7 +336,7 @@ export const GiveBadge = () => {
       refUID:
         inputBadge.title === 'Check-out'
           ? (commentBadge as `0x${string}`)
-          : zeroAddress,
+          : '0x0000000000000000000000000000000000000000000000000000000000000000',
       data: data,
       value: BigInt(0),
     };
