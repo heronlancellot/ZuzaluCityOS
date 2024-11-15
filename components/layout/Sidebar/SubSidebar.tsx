@@ -22,7 +22,7 @@ import { useRouter, usePathname } from 'next/navigation';
 
 import styles from './SubSidebar.module.css';
 import { TrustfulIcon } from '@/components/icons/TrustfulIcon';
-import { TestApplicationSpaceId } from '@/app/spaces/[spaceid]/trustful/constants/constants';
+import { CYPHERHOUSE_SPACEID } from '@/app/spaces/[spaceid]/trustful/constants/constants';
 
 interface SubSidebarProps {
   spaceId: string;
@@ -242,7 +242,7 @@ const SubSidebar: React.FC<SubSidebarProps> = ({
             content="Events"
             isActive={pathname === `/spaces/${spaceId}/events`}
           />
-          {spaceId == TestApplicationSpaceId && (
+          {spaceId == CYPHERHOUSE_SPACEID && (
             <SidebarButton
               icon={<TrustfulIcon />}
               onClick={() => router.push(`/spaces/${spaceId}/trustful`)}
