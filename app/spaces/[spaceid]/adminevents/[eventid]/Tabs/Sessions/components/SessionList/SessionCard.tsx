@@ -13,7 +13,7 @@ import {
   SessionIcon,
   UserCircleIcon,
 } from 'components/icons';
-import { Session } from '@/types';
+import { Profile, Session } from '@/types';
 import { supabase } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -24,6 +24,8 @@ interface SessionCardProps {
   spaceId?: string;
   userDID?: string;
   isLive?: boolean;
+  isPublic?: boolean;
+  people: Profile[];
 }
 
 const SessionCard: React.FC<SessionCardProps> = ({
@@ -32,6 +34,8 @@ const SessionCard: React.FC<SessionCardProps> = ({
   spaceId,
   userDID,
   isLive,
+  isPublic,
+  people,
 }) => {
   const [hover, setHover] = useState<boolean>(false);
   const [isRSVP, setIsRSVP] = useState<boolean>(false);
@@ -44,7 +48,11 @@ const SessionCard: React.FC<SessionCardProps> = ({
         `/spaces/${spaceId}/events/${eventId}/sessions/${session.uuid}`,
       );
     } else {
-      router.push(`/events/${eventId}/sessions/${session.uuid}`);
+      router.push(
+        `/events/${eventId}/sessions/${session.uuid}${
+          isPublic ? '?public=1' : ''
+        }`,
+      );
     }
   };
   const getRSVPNB = async (sessionID: number) => {
@@ -200,6 +208,8 @@ const SessionCard: React.FC<SessionCardProps> = ({
       direction="row"
       padding="10px 10px 20px 10px"
       borderRadius={'10px'}
+      width="100%"
+      overflow="hidden"
       sx={{
         ':hover': {
           backgroundColor: '#383838',
@@ -207,7 +217,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
         cursor: 'pointer',
       }}
     >
-      <Stack spacing="10px" flex={1}>
+      <Stack spacing="10px" flex={1} minWidth={0}>
         <Stack direction="row" spacing="10px" alignItems="center">
           {isLive && (
             <Typography
@@ -258,7 +268,11 @@ const SessionCard: React.FC<SessionCardProps> = ({
                       height={20}
                       width={20}
                       borderRadius={10}
-                      src={speaker.avatar || '/user/avatar_p.png'}
+                      src={
+                        people.find(
+                          (item: any) => item.author?.id === speaker.author.id,
+                        )?.avatar || '/user/avatar_p.png'
+                      }
                     />
                     <Typography variant="bodyS">
                       {formatUserName(speaker.username)}
@@ -277,14 +291,28 @@ const SessionCard: React.FC<SessionCardProps> = ({
           <MapIcon size={4} />
           <Typography
             variant="caption"
-            sx={{ opacity: 0.5 }}
-            textTransform={'uppercase'}
+            sx={{
+              opacity: 0.5,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              wordBreak: 'break-word',
+              maxWidth: '90%',
+            }}
+            textTransform={session.format !== 'online' ? 'uppercase' : 'none'}
           >
             {session.format === 'online' ? session.video_url : session.location}
           </Typography>
         </Stack>
       </Stack>
-      <Stack gap={'10px'} alignItems={'flex-end'}>
+      <Stack
+        gap={'10px'}
+        alignItems={'flex-end'}
+        minWidth={'fit-content'}
+        ml={1}
+      >
         {userDID && session.creatorDID === userDID && (
           <Stack
             direction={'row'}

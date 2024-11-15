@@ -10,7 +10,7 @@ import {
 import { ZuButton } from 'components/core';
 import { LockIcon, MapIcon } from 'components/icons';
 import { Event } from '@/types';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { convertDateStringFormat } from '@/utils';
 import Link from 'next/link';
 import CopyToClipboard from 'react-copy-to-clipboard';
@@ -18,6 +18,7 @@ import dynamic from 'next/dynamic';
 import { deleteEvent } from 'services/event/deleteEvent';
 import { useCeramicContext } from '@/context/CeramicContext';
 import useGetShareLink from '@/hooks/useGetShareLink';
+import Dialog from '@/app/spaces/components/Modal/Dialog';
 
 const EditorPreview = dynamic(
   () => import('@/components/editor/EditorPreview'),
@@ -38,6 +39,8 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
   const { ceramic, profile, composeClient } = useCeramicContext();
   const userDID = ceramic?.did?.parent.toString().toLowerCase() || '';
   const [showCopyToast, setShowCopyToast] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
+  const router = useRouter();
   const adminDeleteEvent = async () => {
     const deleteEventInput = {
       eventId: eventId as string,
@@ -45,6 +48,9 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
     };
     try {
       const response = await deleteEvent(deleteEventInput);
+      if (response.status === 200) {
+        router.push(`/spaces`);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -61,7 +67,7 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
       padding={2}
       direction="row"
       gap={2}
-      bgcolor="#283734"
+      bgcolor="#262626"
       borderRadius={3}
       position={'relative'}
       overflow={'hidden'}
@@ -73,18 +79,19 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
         },
       }}
     >
-      <Stack
-        sx={{
-          backgroundImage: `url(${eventData.imageUrl ? eventData.imageUrl : '/12.webp'})`,
-          width: '100%',
-          height: '100%',
-          filter: 'blur(10px)',
-          position: 'absolute',
-          top: '0px',
-          left: '0px',
-          zIndex: '0',
+      <Dialog
+        title="Are you sure you want to delete this event?"
+        message="This action cannot be undone. (If you have questions, please contact the platform)"
+        confirmText="Delete"
+        showModal={showModal}
+        onClose={() => {
+          setShowModal(false);
         }}
-      ></Stack>
+        onConfirm={() => {
+          adminDeleteEvent();
+          setShowModal(false);
+        }}
+      />
       <Box
         component="img"
         src={eventData.imageUrl ? eventData.imageUrl : '/12.webp'}
@@ -216,7 +223,7 @@ const OverviewDetail = ({ eventData, handleEditEvent }: PropTypes) => {
             </Link>
             <ZuButton
               sx={{ backgroundColor: 'red', flex: 1 }}
-              onClick={() => adminDeleteEvent()}
+              onClick={() => setShowModal(true)}
             >
               Delete Event
             </ZuButton>

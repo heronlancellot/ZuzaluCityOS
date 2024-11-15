@@ -8,24 +8,14 @@ import {
   SwipeableDrawer,
   useTheme,
 } from '@mui/material';
-import {
-  EventName,
-  EventAbout,
-  EventRegister,
-  EventDetail,
-  Initial,
-  Disclaimer,
-  Email,
-  Payment,
-} from '@/components/event';
+import { EventName, EventAbout, EventDetail } from '@/components/event';
 import { ZuButton } from '@/components/core';
-import { XMarkIcon, LockIcon } from '@/components/icons';
+import { XMarkIcon } from '@/components/icons';
 import {
   CeramicResponseType,
   Event,
   EventEdge,
   Anchor,
-  Coordinates,
   Contract,
 } from '@/types';
 import { useCeramicContext } from '@/context/CeramicContext';
@@ -247,7 +237,7 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
                 <Verify
                   setIsVerify={setIsVerify}
                   eventContractID={
-                    eventData?.regAndAccess.edges[0].node
+                    eventData?.regAndAccess?.edges?.[0]?.node
                       .scrollPassContractFactoryID
                   }
                   setFilteredResults={setFilteredResults}
@@ -389,6 +379,7 @@ const About: React.FC<IAbout> = ({ eventData, setEventData, setVerify }) => {
                     </Stack> */}
 
             <EventName
+              eventId={eventId}
               tagline={eventData.tagline}
               endTime={eventData.endTime}
               startTime={eventData.startTime}

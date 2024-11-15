@@ -51,7 +51,7 @@ const schema = Yup.object().shape({
   name: Yup.string().required('Event name is required'),
   tagline: Yup.string().required('Event tagline is required'),
   description: Yup.string(),
-  externalUrl: Yup.string(),
+  externalUrl: Yup.string().required('External Website is required'),
   startTime: Yup.mixed().dayjs().required('Start date is required'),
   endTime: Yup.mixed().dayjs().required('End date is required'),
   timezone: Yup.object().shape({
@@ -74,14 +74,16 @@ const schema = Yup.object().shape({
   locations: Yup.array()
     .of(Yup.string().required('Location is required'))
     .min(1, 'At least one location is required'),
-  socialLinks: Yup.array().of(
-    Yup.object().shape({
-      title: Yup.string().required('Social media type is required'),
-      links: Yup.string()
-        .url('Must be a valid URL')
-        .required('URL is required'),
-    }),
-  ),
+  socialLinks: Yup.array()
+    .of(
+      Yup.object().shape({
+        title: Yup.string().required('Social media type is required'),
+        links: Yup.string()
+          .url('Must be a valid URL')
+          .required('URL is required'),
+      }),
+    )
+    .min(1, 'At least one social media is required'),
   tracks: Yup.array(Yup.string().required('Track is required')).min(
     1,
     'At least one track is required',
@@ -220,7 +222,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           socialLinks: socialLinks ?? [],
           adminId,
           person: isPerson!,
-          timezone: timezone ? timezone.value! : dayjs.tz.guess(),
+          timezone: timezone?.value ? timezone.value : dayjs.tz.guess(),
           tracks: tracks || [],
           locations: locations || [],
           externalUrl: externalUrl || 'TBD',
@@ -405,7 +407,7 @@ export const EventForm: React.FC<EventFormProps> = ({
               </Stack>
             </Stack>
             <Stack spacing="10px" padding="20px">
-              <FormLabel>External Website</FormLabel>
+              <FormLabel>External Website*</FormLabel>
               <Controller
                 name="externalUrl"
                 control={control}
@@ -422,63 +424,6 @@ export const EventForm: React.FC<EventFormProps> = ({
                 )}
               />
             </Stack>
-            {/*<Stack spacing="10px" padding="20px">
-              <FormLabel>Participant*</FormLabel>
-              <Controller
-                name="participant"
-                control={control}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <ZuInput
-                      {...field}
-                      type="number"
-                      placeholder="Type Participant"
-                    />
-                    {error && (
-                      <FormHelperText error>{error.message}</FormHelperText>
-                    )}
-                  </>
-                )}
-              />
-            </Stack>
-            <Stack spacing="10px" padding="20px">
-              <FormLabel>Max Participant*</FormLabel>
-              <Controller
-                name="max_participant"
-                control={control}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <ZuInput
-                      {...field}
-                      type="number"
-                      placeholder="Type Max Participant"
-                    />
-                    {error && (
-                      <FormHelperText error>{error.message}</FormHelperText>
-                    )}
-                  </>
-                )}
-              />
-            </Stack>
-            <Stack spacing="10px" padding="20px">
-              <FormLabel>Min Participant*</FormLabel>
-              <Controller
-                name="min_participant"
-                control={control}
-                render={({ field, fieldState: { error } }) => (
-                  <>
-                    <ZuInput
-                      {...field}
-                      type="number"
-                      placeholder="Type Min Participant"
-                    />
-                    {error && (
-                      <FormHelperText error>{error.message}</FormHelperText>
-                    )}
-                  </>
-                )}
-              />
-            </Stack>*/}
           </Box>
         </Box>
         <Box display="flex" flexDirection="column" gap="20px" padding={3}>
@@ -492,7 +437,12 @@ export const EventForm: React.FC<EventFormProps> = ({
               gap="20px"
               padding="20px"
             >
-              <Box display="flex" justifyContent="space-between" gap="20px">
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                gap="20px"
+                width={'100%'}
+              >
                 <FormatCheckboxGroup
                   checked={!!isPerson}
                   handleChange={() => {
@@ -503,15 +453,49 @@ export const EventForm: React.FC<EventFormProps> = ({
               <Stack spacing="10px">
                 <FormLabel>Location*</FormLabel>
                 {locations!.map((location, index) => (
-                  <ZuInput
+                  <Stack
+                    direction="row"
+                    gap="10px"
+                    alignItems="center"
                     key={`Location_Index${index}`}
-                    placeholder="city, country"
-                    onChange={(e) => {
-                      let newLocations = locations || [];
-                      newLocations[index] = e.target.value;
-                      setValue('locations', [...newLocations]);
-                    }}
-                  />
+                  >
+                    <ZuInput
+                      placeholder="city, country"
+                      onChange={(e) => {
+                        let newLocations = locations || [];
+                        newLocations[index] = e.target.value;
+                        setValue('locations', [...newLocations]);
+                      }}
+                    />
+                    <Box
+                      display={'flex'}
+                      flexDirection={'column'}
+                      justifyContent={'flex-end'}
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        const newLocations = locations!.filter(
+                          (_, i) => i !== index,
+                        );
+                        setValue('locations', [...newLocations]);
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          borderRadius: '10px',
+                          width: '40px',
+                          height: '40px',
+                          padding: '10px 14px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                        }}
+                      >
+                        <CancelIcon sx={{ fontSize: 20 }} />
+                      </Box>
+                    </Box>
+                  </Stack>
                 ))}
                 {errors.locations && (
                   <FormHelperText error>
@@ -539,10 +523,10 @@ export const EventForm: React.FC<EventFormProps> = ({
               <FormTitle>Links</FormTitle>
             </Box>
             <Box
-              padding={'20px'}
+              padding={'0 20px 20px'}
               display={'flex'}
               flexDirection={'column'}
-              gap={'30px'}
+              gap={'20px'}
             >
               {fields.map((item, index) => {
                 return (
@@ -649,8 +633,12 @@ export const EventForm: React.FC<EventFormProps> = ({
                         display={'flex'}
                         flexDirection={'column'}
                         justifyContent={'flex-start'}
-                        sx={{ cursor: 'pointer' }}
-                        onClick={() => remove(index)}
+                        sx={{
+                          cursor:
+                            fields.length === 1 ? 'not-allowed' : 'pointer',
+                          opacity: fields.length === 1 ? 0.5 : 1,
+                        }}
+                        onClick={() => fields.length > 1 && remove(index)}
                       >
                         <Box
                           sx={{

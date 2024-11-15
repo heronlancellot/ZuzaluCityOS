@@ -86,7 +86,7 @@ export async function POST(req: Request) {
       }
       `;
     const regAndAccess =
-      getEventResponse.data.node.regAndAccess.edges?.[0]?.node;
+      getEventResponse.data.node.regAndAccess?.edges?.[0]?.node;
     const existingContracts: Contract[] = Array.isArray(
       regAndAccess.scrollPassTickets,
     )
@@ -117,7 +117,6 @@ export async function POST(req: Request) {
       Update_QUERY,
       variables,
     );
-    console.log(updateResult);
     return NextResponse.json(
       {
         message: 'Successfully added into member list',

@@ -26,6 +26,7 @@ interface CeramicContextType {
   showAuthPrompt: () => void;
   hideAuthPrompt: () => void;
   createProfile: (newName: string) => Promise<void>;
+  getProfile: () => Promise<void>;
 }
 
 const CeramicContext = createContext<CeramicContextType>({
@@ -41,6 +42,7 @@ const CeramicContext = createContext<CeramicContextType>({
   showAuthPrompt: () => {},
   hideAuthPrompt: () => {},
   createProfile: async (newName: string) => {},
+  getProfile: async () => {},
 });
 
 export const CeramicProvider = ({ children }: any) => {
@@ -73,6 +75,7 @@ export const CeramicProvider = ({ children }: any) => {
     setIsAuthenticated(false);
     setNewUser(false);
   };
+
   const getProfile = async () => {
     if (ceramic.did !== undefined) {
       const profile: any = await composeClient.executeQuery(`
@@ -151,6 +154,7 @@ export const CeramicProvider = ({ children }: any) => {
         showAuthPrompt,
         hideAuthPrompt,
         createProfile,
+        getProfile,
       }}
     >
       {children}

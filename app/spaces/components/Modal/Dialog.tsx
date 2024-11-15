@@ -12,6 +12,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import React from 'react';
+import { useState } from 'react';
+
 interface Proptypes {
   title: string;
   message: React.ReactNode;
@@ -20,7 +22,7 @@ interface Proptypes {
   confirmText?: string;
   actions?: React.ReactNode;
   onClose?: () => void;
-  onConfirm?: () => void;
+  onConfirm?: (() => void) | (() => Promise<void>);
   isLoading?: boolean;
 }
 
@@ -33,10 +35,31 @@ export default function Dialog({
   actions,
   showActions = true,
   confirmText = 'Finish',
-  isLoading = false,
+  isLoading: externalLoading = false,
 }: Proptypes) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [internalLoading, setInternalLoading] = useState(false);
+
+  const isLoading = externalLoading || internalLoading;
+
+  const handleConfirm = async () => {
+    if (!onConfirm) return;
+
+    try {
+      const result = onConfirm();
+
+      if (result instanceof Promise) {
+        setInternalLoading(true);
+        await result;
+      }
+      onClose?.();
+    } catch (error) {
+      console.error('Error in dialog confirmation:', error);
+    } finally {
+      setInternalLoading(false);
+    }
+  };
 
   return (
     <MDialog
@@ -103,10 +126,11 @@ export default function Dialog({
           actions
         ) : showActions ? (
           <Button
-            onClick={onConfirm}
+            onClick={handleConfirm}
             variant="contained"
             fullWidth
             disabled={isLoading}
+            sx={{ height: '40px' }}
           >
             {isLoading ? (
               <CircularProgress size={24} color="inherit" />

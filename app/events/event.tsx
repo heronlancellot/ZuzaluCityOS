@@ -1,26 +1,23 @@
 'use client';
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import {
   Box,
   Typography,
   useTheme,
   useMediaQuery,
   Stack,
-  Grid,
   OutlinedInput,
   InputAdornment,
-  Button,
   Skeleton,
 } from '@mui/material';
 import debounce from 'lodash/debounce';
 import { Sidebar } from 'components/layout';
 import SidebarLeft from './components/Sidebar';
-import { EventCard, LotteryCard } from '@/components/cards';
-// import SelectButton from '@/components/buttons/SelectButton';
+import { EventCard } from '@/components/cards';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useCeramicContext } from '../../context/CeramicContext';
-import { Event, EventData } from '@/types';
+import { Event } from '@/types';
 import { EventIcon, SearchIcon } from '@/components/icons';
 import EventHeader from './components/EventHeader';
 import {
@@ -28,6 +25,9 @@ import {
   EventCardSkeleton,
   groupEventsByMonth,
 } from '@/components/cards/EventCard';
+import { supabase } from '@/utils/supabase/client';
+import dayjs from 'dayjs';
+import EventList from '@/components/event/EventList';
 
 const EventsPage: React.FC = () => {
   const theme = useTheme();
@@ -39,26 +39,42 @@ const EventsPage: React.FC = () => {
   const { composeClient } = useCeramicContext();
 
   const getEvents = async () => {
-    setIsEventsLoading(true);
-    const response: any = await composeClient.executeQuery(`
+    try {
+      setIsEventsLoading(true);
+
+      const ceramicResponse: any = await composeClient.executeQuery(`
       query {
-        zucityEventIndex(first: 20) {
+        zucityEventIndex(first: 20, sorting: { createdAt: DESC }) {
           edges {
             node {
-              id
-              title
+              createdAt
               description
-              startTime
               endTime
-              timezone
-              status
-              tagline
-              imageUrl
               externalUrl
+              gated
+              id
+              imageUrl
               meetingUrl
               profileId
               spaceId
-              createdAt
+              startTime
+              status
+              tagline
+              timezone
+              title
+              members{
+              id
+              }
+              admins{
+              id
+              }
+              superAdmin{
+              id
+              }
+              profile {
+                username
+                avatar
+              }
               space {
                 name
                 avatar
@@ -69,21 +85,68 @@ const EventsPage: React.FC = () => {
         }
       }
     `);
-    if ('zucityEventIndex' in response.data) {
-      const eventData: EventData = response.data as EventData;
-      const fetchedEvents: Event[] = eventData.zucityEventIndex.edges.map(
-        (edge) => edge.node,
-      );
-      const searchedEvents: Event[] = fetchedEvents.filter((item) => {
-        return item?.title.toLowerCase().includes(searchVal?.toLowerCase());
-      });
-      if (searchedEvents?.length > 0) {
-        setEvents(searchedEvents);
-      } else {
-        setEvents(fetchedEvents);
+
+      const { data: legacyEvents, error } = await supabase
+        .from('legacyEvents')
+        .select('*');
+
+      if (error) throw error;
+
+      let allEvents: Event[] = [];
+      if (ceramicResponse?.data?.zucityEventIndex) {
+        const ceramicEvents: Event[] =
+          ceramicResponse.data.zucityEventIndex.edges.map((edge: any) => ({
+            ...edge.node,
+            source: 'ceramic',
+          }));
+        allEvents = [...ceramicEvents];
       }
-    } else {
-      console.error('Invalid data structure:', response.data);
+
+      if (legacyEvents) {
+        const convertedLegacyEvents: Event[] = legacyEvents
+          .filter((legacy): legacy is NonNullable<typeof legacy> => !!legacy.id)
+          .map((legacy) => ({
+            id: legacy.id,
+            title: legacy.name ?? '',
+            description: legacy.description ?? '',
+            startTime: legacy.start_date ?? '',
+            endTime: legacy.end_date ?? '',
+            status: legacy.status ?? '',
+            tagline: legacy.tagline ?? '',
+            imageUrl: legacy.image_url ?? '',
+            profileId: '',
+            spaceId: '',
+            timezone: 'UTC',
+            tracks: legacy.event_type || [],
+            source: 'Legacy',
+            participantCount: 0,
+            minParticipant: 0,
+            maxParticipant: 0,
+            createdAt: legacy.start_date,
+            gated: false,
+            externalUrl: '',
+            meetingUrl: '',
+            legacyData: {
+              event_space_type: legacy.event_space_type,
+              format: legacy.format,
+              experience_level: legacy.experience_level,
+              social_links: legacy.social_links,
+              extra_links: legacy.extra_links,
+            },
+          }));
+        allEvents = [...allEvents, ...convertedLegacyEvents];
+      }
+
+      allEvents.sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
+
+      setEvents(allEvents);
+      setIsEventsLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+      setIsEventsLoading(false);
     }
   };
 
@@ -95,7 +158,6 @@ const EventsPage: React.FC = () => {
       });
   }, []);
 
-  // TODO: Implement search functionality
   const onSearch = () => {
     getEvents()
       .catch((error) => console.error('Failed to fetch events:', error))
@@ -123,57 +185,14 @@ const EventsPage: React.FC = () => {
         {!isTablet && <Sidebar selected={selected} />}
         <Stack direction="column" borderLeft="1px solid #383838" flex={1}>
           <EventHeader />
-          <Box
-            display="flex"
-            padding={'0 20px'}
-            margin={'20px 0 0 0'}
-            justifyContent="space-between"
-          >
-            <Box display="flex" alignItems="center" gap="10px">
-              <EventIcon />
-              <Typography color="white" variant="subtitleLB">
-                Events
-              </Typography>
-            </Box>
-            {/*<Box display={"flex"} position={"relative"} justifyContent={"end"}>*/}
-            {/*    <SelectButton Icon={CalendarIcon} title={'Dates'} onOpened={() => setShowDate(true)} onClosed={() => setShowDate(false)} />*/}
-            {/*    {showDate && <Box backgroundColor={"#222"} position={"absolute"} top={"40px"} padding={"10px"} borderRadius={"10px"} zIndex={"1000"} right={"0"}>*/}
-            {/*        <Box*/}
-            {/*            display="flex"*/}
-            {/*            gap="4px"*/}
-            {/*            padding="2px"*/}
-            {/*            borderRadius="10px"*/}
-            {/*            bgcolor="#2d2d2d"*/}
-            {/*        >*/}
-            {/*            <Button*/}
-            {/*                sx={{*/}
-            {/*                    flex: 1,*/}
-            {/*                    backgroundColor: '#424242',*/}
-            {/*                    borderRadius: '8px',*/}
-            {/*                    color: 'white',*/}
-            {/*                    fontFamily: 'Inter',*/}
-            {/*                }}*/}
-            {/*            >*/}
-            {/*                Upcoming*/}
-            {/*            </Button>*/}
-            {/*            <Button*/}
-            {/*                sx={{*/}
-            {/*                    flex: 1,*/}
-            {/*                    backgroundColor: '#2d2d2d',*/}
-            {/*                    borderRadius: '8px',*/}
-            {/*                    color: 'white',*/}
-            {/*                    fontFamily: 'Inter',*/}
-            {/*                }}*/}
-            {/*            >*/}
-            {/*                Past*/}
-            {/*            </Button>*/}
-            {/*        </Box>*/}
-            {/*        <Box>*/}
-            {/*            <ZuCalendar defaultValue={dayjs('2022-04-17')}/>*/}
-            {/*        </Box>*/}
-            {/*    </Box>}*/}
-            {/*</Box>*/}
-          </Box>
+          <Stack p="20px">
+            <EventList
+              top={50}
+              hasAllButton={false}
+              events={events}
+              isLoading={isEventsLoading}
+            />
+          </Stack>
           <Stack
             sx={{
               display: 'none',
@@ -215,50 +234,6 @@ const EventsPage: React.FC = () => {
                 </InputAdornment>
               }
             />
-          </Stack>
-          <Stack
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              flexWrap: 'wrap',
-              gap: '20px',
-              padding: '20px',
-              justifyContent: 'center',
-            }}
-          >
-            {isEventsLoading ? (
-              <>
-                <EventCardMonthGroup>
-                  <Skeleton width={60}></Skeleton>
-                </EventCardMonthGroup>
-                <EventCardSkeleton />
-                <EventCardSkeleton />
-              </>
-            ) : (
-              events.length > 0 &&
-              Object.entries(groupEventsByMonth(events)).map(
-                ([month, events], index) => {
-                  return (
-                    <Fragment key={month + index}>
-                      <EventCardMonthGroup>{month}</EventCardMonthGroup>
-                      {events.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                      ))}
-                      {/*<Grid*/}
-                      {/*  key={`Lottery-Card`}*/}
-                      {/*  xs={12}*/}
-                      {/*  sm={6}*/}
-                      {/*  md={4}*/}
-                      {/*  xl={3}*/}
-                      {/*  sx={{ display: 'flex', justifyContent: 'center' }}*/}
-                      {/*>*/}
-                      {/*  <LotteryCard />*/}
-                      {/*</Grid>*/}
-                    </Fragment>
-                  );
-                },
-              )
-            )}
           </Stack>
         </Stack>
         <SidebarLeft

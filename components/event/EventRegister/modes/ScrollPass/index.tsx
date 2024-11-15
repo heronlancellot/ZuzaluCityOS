@@ -41,21 +41,22 @@ const ScrollPassDefault: React.FC<ScrollPassDefaultProps> = ({
   return (
     <Stack
       padding={'24px 20px'}
-      border={'1px solid rgba(255, 255, 255, 0.10)'}
       borderRadius={'0px 0px 10px 10px'}
       margin={'0px !important'}
       gap={'20px'}
     >
       <Stack spacing="10px">
-        {tickets.map((ticket, index) => (
-          <TicketCard
-            key={index}
-            name={ticket.name}
-            price={ticket.price}
-            description={ticket.description}
-            tokenType={ticket.tokenType}
-          />
-        ))}
+        {tickets
+          .filter((ticket) => ticket.checkin === '1')
+          .map((ticket, index) => (
+            <TicketCard
+              key={index}
+              name={ticket.name}
+              price={ticket.price}
+              description={ticket.description}
+              tokenType={ticket.tokenType}
+            />
+          ))}
         {applyRule === 'Apply to Purchase' && registrationOpen === '1' && (
           <Stack spacing={1}>
             <Typography

@@ -88,7 +88,22 @@ const OverviewInvite = ({ event }: PropTypes) => {
       console.error('Failed to fetch event:', error);
     }
   };
+
+  const isValidEVMAddress = (address: string): boolean => {
+    return /^0x[a-fA-F0-9]{40}$/.test(address);
+  };
+
   const updateEventAdmin = async () => {
+    if (!initialAdmin.trim()) {
+      alert('Please enter the admin address');
+      return;
+    }
+
+    if (!isValidEVMAddress(initialAdmin)) {
+      alert('Please enter a valid EVM address');
+      return;
+    }
+
     const addAdminInput: AddAdminRequest = {
       eventId: params.eventid as string,
       adminAddress: initialAdmin,
@@ -108,6 +123,16 @@ const OverviewInvite = ({ event }: PropTypes) => {
   };
 
   const updateEventMember = async () => {
+    if (!initialMember.trim()) {
+      alert('Please enter the member address');
+      return;
+    }
+
+    if (!isValidEVMAddress(initialMember)) {
+      alert('Please enter a valid EVM address');
+      return;
+    }
+
     const addMemberInput: AddMemberRequest = {
       eventId: params.eventid as string,
       memberAddress: initialMember,
@@ -127,6 +152,11 @@ const OverviewInvite = ({ event }: PropTypes) => {
     }
   };
   const updateTrack = async () => {
+    if (!newTrack.trim()) {
+      alert('Please enter the track name');
+      return;
+    }
+
     const addTrackInput = {
       eventId: params.eventid as string,
       newTrack: newTrack,

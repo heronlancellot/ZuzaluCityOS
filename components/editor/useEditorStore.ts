@@ -14,8 +14,7 @@ export const decodeOutputData = (value: string | OutputData): OutputData => {
 
 export const encodeOutputData = (data: OutputData) => {
   if (!data) return JSON.stringify({});
-  // FIXME: This is a temporary solution to fix the issue with the double quotes
-  return JSON.stringify(data).replaceAll('"', '\\"');
+  return JSON.stringify(data);
 };
 
 export const getOutputDataLength = (blocks?: OutputBlockData[]) => {

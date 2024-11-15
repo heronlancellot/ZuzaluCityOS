@@ -63,9 +63,9 @@ const Home = () => {
   }, []);
 
   const handleFormClose = useCallback(() => {
-    toggleDrawer();
+    setOpen(false);
     refetch();
-  }, [refetch, toggleDrawer]);
+  }, [refetch]);
 
   return (
     <Stack direction="row" width={'100%'}>

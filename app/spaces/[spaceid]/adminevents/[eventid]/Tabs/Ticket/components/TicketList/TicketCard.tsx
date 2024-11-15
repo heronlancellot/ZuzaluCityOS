@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, Typography, useMediaQuery } from '@mui/material';
 import ZuButton from 'components/core/Button';
 import {
@@ -11,6 +11,8 @@ import Image from 'next/image';
 import { shortenAddress } from '@/utils/format';
 import { mUSDC_TOKEN } from '@/constant';
 import { Contract, RegistrationAndAccess } from '@/types';
+import { ERC20_ABI } from '@/utils/erc20_abi';
+import { client } from '@/context/WalletContext';
 type Anchor = 'top' | 'left' | 'bottom' | 'right';
 
 export type TicketCardProps = {
@@ -32,13 +34,6 @@ export type TicketCardProps = {
 };
 
 const TicketCard: React.FC<TicketCardProps> = ({
-  // name,
-  // price,
-  // open,
-  // status,
-  // sold,
-  // tokenSymbol,
-  // address,
   ticket,
   index,
   ticketAddresses,
@@ -49,7 +44,21 @@ const TicketCard: React.FC<TicketCardProps> = ({
   regAndAccess,
 }) => {
   const isMobile = useMediaQuery('(max-width:500px)');
+  const [decimal, setDecimal] = useState<number>(18);
   let status = true;
+
+  useEffect(() => {
+    const fetchDecimal = async () => {
+      const decimalValue = (await client.readContract({
+        address: ticket[2]?.result,
+        abi: ERC20_ABI,
+        functionName: 'decimals',
+      })) as number;
+      setDecimal(decimalValue);
+    };
+
+    fetchDecimal();
+  }, [ticket]);
 
   const currentTicket = regAndAccess?.scrollPassTickets?.find(
     (ticket) =>
@@ -67,8 +76,8 @@ const TicketCard: React.FC<TicketCardProps> = ({
       bgcolor="#2d2d2d"
       sx={{ cursor: 'pointer' }}
       onClick={() => {
-        setToggleAction && setToggleAction('ViewVault'),
-          onToggle('right', true);
+        setToggleAction && setToggleAction('ViewVault');
+        onToggle('right', true);
         setVaultIndex && setVaultIndex(index);
       }}
     >
@@ -80,15 +89,16 @@ const TicketCard: React.FC<TicketCardProps> = ({
         height={100}
         objectFit="cover"
         style={{
-          width: isMobile ? '100%' : undefined,
-          height: isMobile ? '100%' : undefined,
+          width: isMobile ? '100%' : '100px',
+          height: isMobile ? '100%' : '100px',
         }}
       />
       <Stack direction="column" spacing="14px" width="100%">
         <Stack
           direction="row"
-          alignItems="center"
+          alignItems="baseline"
           justifyContent="space-between"
+          gap="20px"
         >
           <Stack
             gap="10px"
@@ -98,28 +108,40 @@ const TicketCard: React.FC<TicketCardProps> = ({
             <Typography fontSize={24} fontWeight={700} lineHeight={1.2}>
               {ticket[0]?.result}
             </Typography>
-            <Stack direction="row" alignItems="center" spacing="5px">
-              <Typography
-                fontSize={16}
-                fontWeight={700}
-                lineHeight={1.2}
-                sx={{ opacity: 0.7 }}
-              >
-                {(ticket[3].result / BigInt(10 ** 18)).toString()}{' '}
-              </Typography>
-              <Typography fontSize={10} lineHeight={1.2} sx={{ opacity: 0.7 }}>
-                {ticket[2]?.result === mUSDC_TOKEN ? 'USDC' : 'USDT'}
-              </Typography>
+          </Stack>
+          <Stack spacing="5px" alignItems="center" direction="row">
+            <Stack alignItems="center" direction="row" spacing="10px">
+              <Stack direction="row" alignItems="center" spacing="5px">
+                <Typography
+                  fontSize={16}
+                  fontWeight={700}
+                  lineHeight={1.2}
+                  sx={{ opacity: 0.7 }}
+                >
+                  {(ticket[3].result / BigInt(10 ** decimal)).toString()}{' '}
+                </Typography>
+                <Typography
+                  fontSize={10}
+                  lineHeight={1.2}
+                  sx={{ opacity: 0.7 }}
+                >
+                  {ticket[2]?.result === mUSDC_TOKEN ? 'USDC' : 'USDT'}
+                </Typography>
+              </Stack>
+              {isChecked && (
+                <Stack alignItems="center" direction="row">
+                  <CheckIcon size={4} />
+                  <Typography
+                    fontSize={10}
+                    lineHeight={1.2}
+                    sx={{ opacity: 0.7, whiteSpace: 'nowrap' }}
+                  >
+                    CHECK-IN ENABLED
+                  </Typography>
+                </Stack>
+              )}
             </Stack>
           </Stack>
-          {isChecked && (
-            <Stack spacing="5px" alignItems="center" direction="row">
-              <CheckIcon size={4} />
-              <Typography fontSize={10} lineHeight={1.2} sx={{ opacity: 0.7 }}>
-                CHECK-IN ENABLED
-              </Typography>
-            </Stack>
-          )}
         </Stack>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
@@ -144,7 +166,7 @@ const TicketCard: React.FC<TicketCardProps> = ({
               fontSize={13}
               lineHeight={1.4}
             >
-              {status ? 'Available' : 'Hidden'}: To All
+              {status ? 'Available' : 'Hidden'}
             </Typography>
           </Stack>
           <Typography fontSize={14} lineHeight={1.6} sx={{ opacity: 0.7 }}>

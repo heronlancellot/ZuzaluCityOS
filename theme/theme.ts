@@ -85,8 +85,9 @@ let theme = createTheme({
         icon: {
           color: 'rgba(255, 255, 255, 0.6)',
         },
-        outlined: {
-          backgroundColor: '#373737',
+        root: {
+          borderRadius: '10px',
+          backgroundColor: '#313131',
         },
       },
     },
@@ -100,6 +101,47 @@ let theme = createTheme({
         },
         clearIndicator: {
           color: 'rgba(255, 255, 255, 0.6)',
+        },
+        inputRoot: {
+          borderRadius: '10px',
+          backgroundColor: '#313131',
+        },
+      },
+      defaultProps: {
+        size: 'small',
+      },
+    },
+    MuiTimePicker: {
+      defaultProps: {
+        sx: {
+          '& .MuiSvgIcon-root': {
+            color: 'white',
+          },
+          '& .MuiOutlinedInput-notchedOutline': {
+            border: 'none',
+          },
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: '#313131',
+            borderRadius: '10px',
+          },
+        },
+        slotProps: {
+          popper: {
+            sx: {
+              ...{
+                '& .MuiPickersDay-root': { color: 'black' },
+                '& .MuiPickersDay-root.Mui-selected': {
+                  backgroundColor: '#D7FFC4',
+                },
+                '& .MuiPickersCalendarHeader-root': {
+                  color: 'black',
+                },
+                '& .MuiMultiSectionDigitalClock-root': {
+                  color: 'black',
+                },
+              },
+            },
+          },
         },
       },
     },

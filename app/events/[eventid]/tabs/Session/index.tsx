@@ -1993,8 +1993,6 @@ const Sessions: React.FC<ISessions> = ({ eventData, option }) => {
 
   const columnRef = useRef<HTMLDivElement>(null);
 
-  console.log(sessionsByDate);
-
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Stack
@@ -2005,7 +2003,7 @@ const Sessions: React.FC<ISessions> = ({ eventData, option }) => {
         sx={{
           padding: '40px 20px',
           [theme.breakpoints.down('md')]: {
-            padding: '20px',
+            padding: '20px 10px',
           },
         }}
       >
@@ -2050,7 +2048,14 @@ const Sessions: React.FC<ISessions> = ({ eventData, option }) => {
                   </ZuButton>*/}
                   <ZuButton
                     startIcon={<TuneOutlinedIcon />}
-                    sx={{ width: '100%', flex: '1 0 0' }}
+                    sx={{
+                      width: '100%',
+                      flex: '1 0 0',
+                      [theme.breakpoints.down('sm')]: {
+                        minWidth: '100px',
+                        flex: 0,
+                      },
+                    }}
                     onClick={() => setShowFilterSessionPop(true)}
                   >
                     Filter
@@ -2235,6 +2240,7 @@ const Sessions: React.FC<ISessions> = ({ eventData, option }) => {
                             session={session}
                             userDID={adminId}
                             eventId={eventId}
+                            people={people}
                             isLive={
                               dayjs(new Date())
                                 .tz(eventData?.timezone)

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Stack } from '@mui/material';
 import { Thumbnail, Subbar } from './components';
-import { About, Sessions, Announcements } from './tabs';
+import { About, Sessions, Announcements, PublicSessions } from './tabs';
 import { CeramicResponseType, EventEdge, Event } from '@/types';
 import { useCeramicContext } from '@/context/CeramicContext';
 import { useParams } from 'next/navigation';
@@ -61,6 +61,7 @@ const Home = () => {
                   space {
                     avatar
                     name
+                    id
                   }
                   regAndAccess(first: 1) {
                     edges {
@@ -177,10 +178,17 @@ const Home = () => {
         canViewSessions={sessionView}
       />
       {tabName === 'About' && (
-        <About eventData={eventData} setVerify={setVerify} />
+        <About
+          eventData={eventData}
+          setVerify={setVerify}
+          canEdit={announcementsEdit}
+        />
       )}
       {tabName === 'Sessions' && (
         <Sessions eventData={eventData} option={urlOption} />
+      )}
+      {tabName === 'Public Sessions' && (
+        <PublicSessions eventData={eventData} option={urlOption} />
       )}
       {tabName === 'Announcements' && (
         <Announcements
