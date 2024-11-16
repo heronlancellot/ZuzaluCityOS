@@ -46,7 +46,7 @@ export const ShareSection = () => {
           <Box
             flex={1}
             as="main"
-            className="p-6 sm:px-[60px] sm:py-[80px] flex flex-col items-center"
+            className="p-6 sm:px-[60px] sm:py-[80px] flex flex-col items-center lg-c:pr-[256px]"
             gap={6}
           >
             <Card

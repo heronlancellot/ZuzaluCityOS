@@ -244,8 +244,9 @@ export const MyBadgeDetails = () => {
                     <Text className="text-slate-50 text-sm font-medium leading-none">
                       Issuer
                     </Text>
-
-                    {getEllipsedAddress(selectedBadge.attester as Address)}
+                    <p className="chakra-text text-slate-50 opacity-70 text-sm font-normal leading-tight css-0">
+                      {getEllipsedAddress(selectedBadge.attester as Address)}
+                    </p>
                   </Flex>
                 </Flex>
                 <Divider className="border-slate-50 opacity-10 w-full" />
@@ -259,7 +260,10 @@ export const MyBadgeDetails = () => {
                     <Text className="text-slate-50 text-sm font-medium leading-none">
                       Receiver
                     </Text>
-                    {getEllipsedAddress(selectedBadge.recipient as Address)}
+                    <p className="chakra-text text-slate-50 opacity-70 text-sm font-normal leading-tight css-0
+                    ">
+                      {getEllipsedAddress(selectedBadge.recipient as Address)}
+                    </p>
                   </Flex>
                 </Flex>
               </Flex>
@@ -374,19 +378,14 @@ export const MyBadgeDetails = () => {
               )}
           </Box>
           {selectedBadge.schema.id === TRUSTFUL_SCHEMAS.ATTEST_EVENT.uid &&
-          badgeStatus === BadgeStatus.PENDING ? (
-            <Box
-              as="footer"
-              position="fixed"
-              bottom={0}
-              zIndex={0}
-              textAlign={'center'}
-              className="px-6 py-4 bg-[#161617] w-full flex group border-t border-[#F5FFFF14] border-opacity-[8] gap-3"
-            >
+            badgeStatus === BadgeStatus.PENDING ? (
+
+            <Box className="px-6 py-4 sm:px-[60px] w-full flex gap-3">
+
               <Button
                 className="w-full flex justify-center items-center gap-2 px-6 bg-lime-200 bg-opacity-10 text-[#B1EF42] rounded-lg"
-                _hover={{ bg: '#B1EF42', color: '#161617' }}
-                _active={{ bg: '#B1EF42', color: '#161617' }}
+                _hover={{ bg: '#DB4C40', color: '#161617' }}
+                _active={{ bg: '#DB4C40', color: '#161617' }}
                 isLoading={loadingDeny}
                 spinner={<BeatLoader size={8} color="white" />}
                 onClick={() => {
@@ -413,7 +412,9 @@ export const MyBadgeDetails = () => {
               </Button>
             </Box>
           ) : (
-            <TheFooterNavbar />
+            <Box className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full items-center">
+              <TheFooterNavbar />
+            </Box>
           )}
         </>
       ) : (

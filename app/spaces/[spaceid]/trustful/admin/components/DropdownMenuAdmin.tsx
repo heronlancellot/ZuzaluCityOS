@@ -580,30 +580,30 @@ export const DropdownMenuAdmin = () => {
           <Flex className="gap-4 pb-4 justify-start items-center">
             <Select
               placeholder="Select Role"
-              className="flex text-black opacity-70 font-normal leading-tight"
+              className="flex text-white opacity-70 font-normal leading-tight"
               color="white"
               onChange={handleRoleSelectChange}
               focusBorderColor={'#B1EF42'}
             >
               {userRole && userRole.role === Role.ROOT
                 ? Object.entries(ROLES_OPTIONS).map(
-                    ([roleName, roleValue], index) => (
-                      <option key={index} value={roleValue}>
-                        {roleName}
-                      </option>
-                    ),
-                  )
+                  ([roleName, roleValue], index) => (
+                    <option key={index} value={roleValue}>
+                      {roleName}
+                    </option>
+                  ),
+                )
                 : userRole &&
-                  userRole.role === Role.MANAGER &&
-                  Object.entries(ROLES_OPTIONS)
-                    .filter(
-                      ([_, roleValue]) => roleValue !== ROLES_OPTIONS.ROOT,
-                    )
-                    .map(([roleName, roleValue], index) => (
-                      <option key={index} value={roleValue}>
-                        {roleName}
-                      </option>
-                    ))}
+                userRole.role === Role.MANAGER &&
+                Object.entries(ROLES_OPTIONS)
+                  .filter(
+                    ([_, roleValue]) => roleValue !== ROLES_OPTIONS.ROOT,
+                  )
+                  .map(([roleName, roleValue], index) => (
+                    <option key={index} value={roleValue}>
+                      {roleName}
+                    </option>
+                  ))}
             </Select>
           </Flex>
           <InputAddressUser
@@ -712,7 +712,7 @@ export const DropdownMenuAdmin = () => {
           </Flex>
           <Flex className="gap-4 pb-4 justify-start items-center">
             <Select
-              className="flex opacity-70 text-black font-normal leading-tight"
+              className="flex opacity-70 text-white font-normal leading-tight"
               color="white"
               placeholder="Select an option"
               onChange={handleAttestationValidBadge}
@@ -899,7 +899,7 @@ export const DropdownMenuAdmin = () => {
         <Flex className="w-full flex-col">
           <Flex className="gap-4 pb-4 justify-start items-center">
             <Input
-              style={{ color: 'black' }}
+              style={{ color: 'white' }}
               name="joinSession"
               placeholder="Session id"
               onChange={handleInputValuesChange}
@@ -954,8 +954,8 @@ export const DropdownMenuAdmin = () => {
         <Flex className="w-full flex-col">
           <Flex className="gap-4 pb-4 justify-start items-center">
             <Textarea
-              style={{ color: 'black' }}
-              className="text-black text-base font-normal leading-snug"
+              style={{ color: 'white' }}
+              className="text-white text-base font-normal leading-snug"
               color="white"
               placeholder="Set the Session Name..."
               _placeholder={{
@@ -973,9 +973,9 @@ export const DropdownMenuAdmin = () => {
               minH="unset"
               resize="none"
             />
-            <Text>eventId:</Text>
+            <Text className='text-white'>eventId:</Text>
             <Input
-              style={{ color: 'black' }}
+              style={{ color: 'white' }}
               name="createSessionEventId"
               placeholder="Event id"
               onChange={handleInputValuesChange}
@@ -983,9 +983,9 @@ export const DropdownMenuAdmin = () => {
               type="number"
               min={1}
             />
-            <Text>ZuCityId:</Text>
+            <Text className='text-white'>ZuCityId:</Text>
             <Input
-              style={{ color: 'black' }}
+              style={{ color: 'white' }}
               name="createSessionzucityId"
               placeholder="zucity Id"
               onChange={handleInputValuesChange}
@@ -994,7 +994,7 @@ export const DropdownMenuAdmin = () => {
               min={1}
             />
           </Flex>
-          <Text>HostAddress:</Text>
+          <Text className='text-white'>HostAddress:</Text>
           <InputAddressUser
             label="Address to host Address"
             onInputChange={(value: string) => setInputAddress(value)}
@@ -1043,7 +1043,7 @@ export const DropdownMenuAdmin = () => {
         <Flex className="w-full flex-col">
           <Flex className="gap-4 pb-4 justify-start items-center">
             <Input
-              style={{ color: 'black' }}
+              style={{ color: 'white' }}
               name="wrapSessionId"
               placeholder="Session id"
               onChange={handleInputValuesChange}
@@ -1104,7 +1104,7 @@ export const DropdownMenuAdmin = () => {
             {userRole.role === Role.ROOT ? (
               <Select
                 placeholder="Select option"
-                className="flex text-black opacity-70 font-normal leading-tight"
+                className="flex text-white opacity-70 font-normal leading-tight"
                 color="white"
                 onChange={(e) => handleActionSelectChange(e, Role.ROOT)}
                 focusBorderColor={'#B1EF42'}
@@ -1118,7 +1118,7 @@ export const DropdownMenuAdmin = () => {
             ) : userRole.role === Role.MANAGER ? (
               <Select
                 placeholder="Select option"
-                className="flex text-black opacity-70 font-normal leading-tight"
+                className="flex text-white opacity-70 font-normal leading-tight"
                 color="white"
                 onChange={(e) => handleActionSelectChange(e, Role.MANAGER)}
                 focusBorderColor={'#B1EF42'}
