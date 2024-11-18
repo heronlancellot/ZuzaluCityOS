@@ -22,7 +22,12 @@ export const AdminSection = () => {
 
   useEffect(() => {
     if (villagerAttestationCount === 0) {
-      toast.error('You have not checked in. Please check-in first.');
+      toast.error(
+        <span className="flex flex-col">
+          <strong>You have not checked in.</strong>{' '}
+          <p>Please check-in first.</p>
+        </span>,
+      );
       push('/pre-checkin');
     }
   }, [villagerAttestationCount]);

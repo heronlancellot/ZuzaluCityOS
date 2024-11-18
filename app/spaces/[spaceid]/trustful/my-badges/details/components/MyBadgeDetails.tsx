@@ -56,7 +56,13 @@ export const MyBadgeDetails = () => {
   const toastSwitchRightNetwork = () => {
     if (isDev ? chainId !== scrollSepolia.id : chainId !== scroll.id) {
       toast.error(
-        `Unsupported network. Please switch to the ${isDev ? 'Scroll Sepolia' : 'Scroll'} network.`,
+        <span className="flex flex-col">
+          <strong>Unsupported network.</strong>{' '}
+          <p>
+            Please switch to the
+            {isDev ? 'Scroll Sepolia' : 'Scroll'} network.
+          </p>
+        </span>,
       );
       switchChain({ chainId: isDev ? scrollSepolia.id : scroll.id });
       return;
@@ -65,7 +71,13 @@ export const MyBadgeDetails = () => {
 
   useEffect(() => {
     if (villagerAttestationCount === 0) {
-      toast.error('You have not checked in. Please check-in first.');
+      toast.error(
+        <span className="flex flex-col">
+          <strong>You have not checked in.</strong>{' '}
+          <p>Please check-in first.</p>
+        </span>,
+      );
+
       push('/pre-checkin');
     }
     if (selectedBadge) {
@@ -88,7 +100,12 @@ export const MyBadgeDetails = () => {
       setLoadingConfirm(false);
       setLoadingDeny(false);
 
-      toast.error('No badge selected. Please select a badge.');
+      toast.error(
+        <span className="flex flex-col">
+          <strong>No badge selected.</strong> <p>Please select a badge.</p>
+        </span>,
+      );
+
       return false;
     }
 
@@ -96,7 +113,12 @@ export const MyBadgeDetails = () => {
       setLoadingConfirm(false);
       setLoadingDeny(false);
 
-      toast.error('No account connected. Please connect your wallet.');
+      toast.error(
+        <span className="flex flex-col">
+          <strong>No account connected.</strong>{' '}
+          <p>Please connect your wallet.</p>
+        </span>,
+      );
       return false;
     }
     return true;
@@ -110,7 +132,12 @@ export const MyBadgeDetails = () => {
     if (response instanceof Error) {
       setLoadingConfirm(false);
       setLoadingDeny(false);
-      toast.error('Error while processing attestation. Transaction Rejected');
+      toast.error(
+        <span className="flex flex-col">
+          <strong>Error while processing attestation.</strong>{' '}
+          <p>Transaction Rejected</p>
+        </span>,
+      );
       return;
     }
 
@@ -119,7 +146,10 @@ export const MyBadgeDetails = () => {
       setLoadingDeny(false);
 
       toast.error(
-        'Error while processing attestation. Contract execution reverted',
+        <span className="flex flex-col">
+          <strong>Error while processing attestation.</strong>{' '}
+          <p>Contract execution reverted</p>
+        </span>,
       );
       return;
     }
@@ -129,7 +159,12 @@ export const MyBadgeDetails = () => {
     }
 
     toast.success(
-      `Badge sent successfully https://scrollscan.com/tx/${response.transactionHash}.`,
+      <span className="flex flex-col">
+        <strong>Badge sent successfully.</strong>{' '}
+        <p>
+          {`https://scrollscan.com/tx/${response.transactionHash}.${response.transactionHash}`}
+        </p>
+      </span>,
     );
 
     if (isConfirm === null) {
@@ -260,8 +295,10 @@ export const MyBadgeDetails = () => {
                     <Text className="text-slate-50 text-sm font-medium leading-none">
                       Receiver
                     </Text>
-                    <p className="chakra-text text-slate-50 opacity-70 text-sm font-normal leading-tight css-0
-                    ">
+                    <p
+                      className="chakra-text text-slate-50 opacity-70 text-sm font-normal leading-tight css-0
+                    "
+                    >
                       {getEllipsedAddress(selectedBadge.recipient as Address)}
                     </p>
                   </Flex>
@@ -378,10 +415,8 @@ export const MyBadgeDetails = () => {
               )}
           </Box>
           {selectedBadge.schema.id === TRUSTFUL_SCHEMAS.ATTEST_EVENT.uid &&
-            badgeStatus === BadgeStatus.PENDING ? (
-
+          badgeStatus === BadgeStatus.PENDING ? (
             <Box className="px-6 py-4 sm:px-[60px] w-full flex gap-3">
-
               <Button
                 className="w-full flex justify-center items-center gap-2 px-6 bg-lime-200 bg-opacity-10 text-[#B1EF42] rounded-lg"
                 _hover={{ bg: '#DB4C40', color: '#161617' }}
