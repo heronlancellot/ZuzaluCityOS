@@ -84,21 +84,21 @@ interface TrustfulContextType {
 
 const defaultContextValue: TrustfulContextType = {
   userRole: null,
-  setUserRole: () => { },
+  setUserRole: () => {},
 
   /**BadgeContext */
   selectedBadge: null,
-  setSelectedBadge: () => { },
+  setSelectedBadge: () => {},
 
   /**GiveBadgeContext */
   badgeInputAddress: null,
-  setBadgeInputAddress: () => { },
+  setBadgeInputAddress: () => {},
   addressStep: GiveBadgeStepAddress.INSERT_ADDRESS,
-  setAddressStep: () => { },
+  setAddressStep: () => {},
   inputBadgeTitleList: null,
-  setInputBadgeTitleList: () => { },
+  setInputBadgeTitleList: () => {},
   newTitleAdded: false,
-  setNewTitleAdded: () => { },
+  setNewTitleAdded: () => {},
 };
 
 const TrustfulContext = createContext<TrustfulContextType>(defaultContextValue);
@@ -129,11 +129,11 @@ export const TrustfulContextProvider: React.FC<
   const handleBadgeDropdown = async () => {
     if (!address) {
       // toast.error('No account connected. Please connect your wallet.');
-      toast.error(
-        <span className="flex flex-col">
-          <strong>No account connected.</strong> <p>Please connect your wallet.</p>
-        </span>,
-      );
+      // toast.error(
+      //   <span className="flex flex-col">
+      //     <strong>No account connected.</strong> <p>Please connect your wallet.</p>
+      //   </span>,
+      // );
       return;
     }
 
@@ -272,7 +272,7 @@ export const TrustfulContextProvider: React.FC<
                       address &&
                       session.hostAddress &&
                       session.hostAddress.toLowerCase() ==
-                      address?.toLowerCase()
+                        address?.toLowerCase()
                     ) {
                       // Add host badge
                       const hostBadgeTitle = `host_${session.name}`;
